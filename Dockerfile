@@ -1,7 +1,6 @@
-FROM php:8.1-fpm
+FROM php:8.1-cli
 
 RUN apt-get update && apt-get install -y \
-    nginx \
     curl \
     unzip \
     git \
@@ -21,9 +20,8 @@ RUN composer install --no-interaction --no-dev
 
 RUN php artisan key:generate --force
 
-RUN chown -R www-data:www-data storage bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+RUN php artisan config:cache
 
-EXPOSE 80
+EXPOSE 8000
 
-CMD php artisan serve --host=0.0.0.0 --port=80
+CMD php artisan serve --host=0.0.0.0 --port=8000
