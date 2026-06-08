@@ -1,41 +1,23 @@
-FROM php:8.2-fpm
+FROM richarvey/nginx-php-fpm:latest
 
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    nginx
+COPY . .
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Image config
+ENV SKIP_COMPOSER 0
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Laravel config
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
-WORKDIR /var/www/html
+# Run Laravel migrations
+RUN if [ -f "artisan" ]; then php artisan migrate --force; fi
 
-COPY . /var/www/html
-
-RUN composer install --no-interaction --optimize-autoload --no-dev
-
-RUN mkdir -p /var/www/html/storage/framework/sessions \
-    && mkdir -p /var/www/html/storage/framework/views \
-    && mkdir -p /var/www/html/storage/framework/cache \
-    && chown -R www-data:www-data /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html/bootstrap/cache \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-RUN php artisan key:generate --force || true
-
-COPY ./nginx/default.conf /etc/nginx/sites-available/default
-
-RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-EXPOSE 80
-
-CMD service nginx start && php-fpm
+CMD ["/start.sh"]
