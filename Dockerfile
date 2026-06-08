@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev
 
-RUN docker-php-ext-install pdo_mysql mbstring gd
+RUN docker-php-ext-install pdo_mysql mbstring gd zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -18,7 +18,7 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+RUN composer install --no-interaction --no-dev
 
 RUN php artisan key:generate --force
 
