@@ -1,23 +1,55 @@
-FROM richarvey/nginx-php-fpm:latest
+FROM php:8.2-fpm
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    curl \
+    zip \
+    unzip \
+    git \
+    libpq-dev \
+    libpng-dev \
+    libonig-dev
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring gd
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
 COPY . .
 
-# Image config
-ENV SKIP_COMPOSER 0
-ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+# Install dependencies
+RUN composer install --no-interaction --no-dev --optimize-autoload
 
-# Laravel config
-ENV APP_ENV production
-ENV APP_DEBUG false
-ENV LOG_CHANNEL stderr
+# Generate key
+RUN php artisan key:generate --force
 
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER 1
+# Set permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
 
-# Run Laravel migrations
-RUN if [ -f "artisan" ]; then php artisan migrate --force; fi
+# Copy nginx config
+RUN echo 'server { \
+    listen 80; \
+    server_name _; \
+    root /var/www/html/public; \
+    index index.php; \
+    location / { \
+        try_files $uri $uri/ /index.php?$query_string; \
+    } \
+    location ~ \.php$ { \
+        fastcgi_pass 127.0.0.1:9000; \
+        fastcgi_index index.php; \
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+        include fastcgi_params; \
+    } \
+}' > /etc/nginx/sites-enabled/default
 
-CMD ["/start.sh"]
+EXPOSE 80
+
+CMD service nginx start && php-fpm
