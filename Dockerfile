@@ -8,6 +8,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN composer install
+RUN composer install --no-interaction
 
 CMD php artisan serve --host=0.0.0.0 --port=8000
