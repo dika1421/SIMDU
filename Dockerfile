@@ -1,6 +1,5 @@
 FROM php:8.2-fpm
 
-# Install dependencies
 RUN apt-get update && apt-get install -y \
     nginx \
     curl \
@@ -11,29 +10,21 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev
 
-# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring gd
 
-# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
 COPY . .
 
-# Install dependencies
 RUN composer install --no-interaction --no-dev --optimize-autoload
 
-# Generate key
 RUN php artisan key:generate --force
 
-# Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
 
-# Copy nginx config
 RUN echo 'server { \
     listen 80; \
     server_name _; \
