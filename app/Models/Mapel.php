@@ -43,39 +43,47 @@ class Mapel extends Model
     ];
     
     /**
-     * Relasi ke jadwal (tabel jadwal yang ada)
+     * PERBAIKAN: Relasi ke jadwal menggunakan 'mata_pelajaran_id'
      */
     public function jadwal(): HasMany
     {
-        return $this->hasMany(Jadwal::class, 'mapel_id', 'id');
+        return $this->hasMany(Jadwal::class, 'mata_pelajaran_id', 'id');
     }
     
     /**
-     * Relasi ke nilai
+     * PERBAIKAN: Relasi ke nilai menggunakan 'mata_pelajaran_id'
      */
     public function nilai(): HasMany
     {
-        return $this->hasMany(Nilai::class, 'mapel_id', 'id');
+        return $this->hasMany(Nilai::class, 'mata_pelajaran_id', 'id');
     }
     
     /**
-     * Relasi ke guru melalui jadwal
+     * PERBAIKAN: Relasi ke guru melalui jadwal
      */
     public function guru(): BelongsToMany
     {
-        return $this->belongsToMany(Guru::class, 'jadwal', 'mapel_id', 'guru_id')
-                    ->withPivot('kelas_id', 'hari', 'jam_mulai', 'jam_selesai')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            Guru::class, 
+            'jadwals', 
+            'mata_pelajaran_id', 
+            'guru_id'
+        )->withPivot('kelas_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan')
+         ->withTimestamps();
     }
     
     /**
-     * Relasi ke kelas melalui jadwal
+     * PERBAIKAN: Relasi ke kelas melalui jadwal
      */
     public function kelas(): BelongsToMany
     {
-        return $this->belongsToMany(Kelas::class, 'jadwal', 'mapel_id', 'kelas_id')
-                    ->withPivot('guru_id', 'hari', 'jam_mulai', 'jam_selesai')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            Kelas::class, 
+            'jadwals', 
+            'mata_pelajaran_id', 
+            'kelas_id'
+        )->withPivot('guru_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan')
+         ->withTimestamps();
     }
     
     /**
@@ -112,6 +120,14 @@ class Mapel extends Model
     public function getKodeDanNamaAttribute(): string
     {
         return $this->kode_mapel . ' - ' . $this->nama_mapel;
+    }
+    
+    /**
+     * Accessor untuk KKM (Kriteria Ketuntasan Minimal)
+     */
+    public function getKkmAttribute($value)
+    {
+        return $value ?? 75;
     }
     
     /**

@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\Nilai;
-use App\Models\Absensi;
-use App\Models\KalenderAkademik;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\KalenderAkademik;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+
+// PERBAIKAN: Import model Absensi dengan namespace yang benar
+use App\Models\Absensi;
 
 class DashboardController extends Controller
 {
@@ -60,49 +62,73 @@ class DashboardController extends Controller
                 Log::info('Auto created siswa for user: ' . $user->id);
             }
             
-            // Nilai terbaru
-            $nilaiTerbaru = Nilai::with(['mataPelajaran'])
-                ->where('siswa_id', $siswa->id)
-                ->where('status', 'published')
-                ->orderBy('created_at', 'desc')
-                ->take(5)
-                ->get();
+            // Nilai terbaru (dengan pengecekan model Nilai)
+            $nilaiTerbaru = collect();
+            $rataNilai = 0;
             
-            $rataNilai = Nilai::where('siswa_id', $siswa->id)
-                ->where('status', 'published')
-                ->avg('nilai_akhir') ?? 0;
+            if (class_exists('App\Models\Nilai')) {
+                $nilaiTerbaru = Nilai::with(['mataPelajaran'])
+                    ->where('siswa_id', $siswa->id)
+                    ->where('status', 'published')
+                    ->orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get();
+                
+                $rataNilai = Nilai::where('siswa_id', $siswa->id)
+                    ->where('status', 'published')
+                    ->avg('nilai_akhir') ?? 0;
+            }
             
-            // Absensi hari ini
-            $absensiHariIni = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $siswa->id)
-                ->whereDate('tanggal', Carbon::today())
-                ->first();
-            
-            // Statistik absensi bulan ini
-            $absensiBulanIni = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $siswa->id)
-                ->whereMonth('tanggal', Carbon::now()->month)
-                ->whereYear('tanggal', Carbon::now()->year)
-                ->get();
-            
+            // PERBAIKAN: Query absensi yang benar sesuai struktur tabel
+            $absensiHariIni = null;
+            $absensiBulanIni = collect();
             $statistikAbsensi = [
-                'hadir' => $absensiBulanIni->where('status', 'hadir')->count(),
-                'sakit' => $absensiBulanIni->where('status', 'sakit')->count(),
-                'izin' => $absensiBulanIni->where('status', 'izin')->count(),
-                'alfa' => $absensiBulanIni->where('status', 'alfa')->count(),
+                'hadir' => 0,
+                'sakit' => 0,
+                'izin' => 0,
+                'alpha' => 0,
             ];
+            $persentaseKehadiran = 0;
             
-            $totalAbsensi = array_sum($statistikAbsensi);
-            $persentaseKehadiran = $totalAbsensi > 0 
-                ? round(($statistikAbsensi['hadir'] / $totalAbsensi) * 100, 2) 
-                : 0;
+            // Cek apakah model Absensi ada
+            if (class_exists('App\Models\Absensi')) {
+                // Absensi hari ini - PERBAIKAN: menggunakan siswa_id, bukan absensi_id
+                $absensiHariIni = Absensi::where('siswa_id', $siswa->id)
+                    ->where('absensi_type', 'siswa')
+                    ->whereDate('tanggal', Carbon::today())
+                    ->first();
+                
+                // Statistik absensi bulan ini - PERBAIKAN: menggunakan siswa_id
+                $absensiBulanIni = Absensi::where('siswa_id', $siswa->id)
+                    ->where('absensi_type', 'siswa')
+                    ->whereMonth('tanggal', Carbon::now()->month)
+                    ->whereYear('tanggal', Carbon::now()->year)
+                    ->get();
+                
+                $statistikAbsensi = [
+                    'hadir' => $absensiBulanIni->where('status', 'hadir')->count(),
+                    'sakit' => $absensiBulanIni->where('status', 'sakit')->count(),
+                    'izin' => $absensiBulanIni->where('status', 'izin')->count(),
+                    'alpha' => $absensiBulanIni->where('status', 'alpha')->count(),
+                ];
+                
+                $totalAbsensi = array_sum($statistikAbsensi);
+                $persentaseKehadiran = $totalAbsensi > 0 
+                    ? round(($statistikAbsensi['hadir'] / $totalAbsensi) * 100, 2) 
+                    : 0;
+            } else {
+                Log::warning('Model Absensi tidak ditemukan');
+            }
             
             // Event mendatang
-            $eventsMendatang = KalenderAkademik::where('status', 'aktif')
-                ->where('tanggal_mulai', '>=', Carbon::today())
-                ->orderBy('tanggal_mulai', 'asc')
-                ->take(5)
-                ->get();
+            $eventsMendatang = collect();
+            if (class_exists('App\Models\KalenderAkademik')) {
+                $eventsMendatang = KalenderAkademik::where('status', 'aktif')
+                    ->where('tanggal_mulai', '>=', Carbon::today())
+                    ->orderBy('tanggal_mulai', 'asc')
+                    ->take(5)
+                    ->get();
+            }
             
             return view('siswa.dashboard', compact(
                 'siswa', 
@@ -120,7 +146,102 @@ class DashboardController extends Controller
                 'line' => $e->getLine()
             ]);
             
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            // Return view dengan data kosong
+            return view('siswa.dashboard', [
+                'siswa' => null,
+                'nilaiTerbaru' => collect(),
+                'rataNilai' => 0,
+                'absensiHariIni' => null,
+                'statistikAbsensi' => ['hadir' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0],
+                'persentaseKehadiran' => 0,
+                'eventsMendatang' => collect(),
+                'error' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Get profil siswa
+     */
+    public function profil()
+    {
+        try {
+            $user = auth()->user();
+            $siswa = Siswa::where('user_id', $user->id)->first();
+            
+            return view('siswa.profil', compact('siswa', 'user'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in siswa profil: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memuat profil');
+        }
+    }
+    
+    /**
+     * Update profil siswa
+     */
+    public function updateProfil(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $siswa = Siswa::where('user_id', $user->id)->first();
+            
+            if (!$siswa) {
+                return redirect()->back()->with('error', 'Data siswa tidak ditemukan');
+            }
+            
+            $request->validate([
+                'nama_lengkap' => 'required|string|max:255',
+                'no_telepon' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string',
+            ]);
+            
+            // Update user name
+            $user->update([
+                'name' => $request->nama_lengkap
+            ]);
+            
+            // Update siswa
+            $siswa->update([
+                'nama_lengkap' => $request->nama_lengkap,
+                'no_telepon' => $request->no_telepon,
+                'alamat' => $request->alamat,
+            ]);
+            
+            return redirect()->back()->with('success', 'Profil berhasil diupdate');
+            
+        } catch (\Exception $e) {
+            Log::error('Error update profil siswa: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update profil: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Change password
+     */
+    public function changePassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'password_lama' => 'required',
+                'password_baru' => 'required|min:6|confirmed',
+            ]);
+            
+            $user = auth()->user();
+            
+            if (!\Hash::check($request->password_lama, $user->password)) {
+                return redirect()->back()->with('error', 'Password lama tidak sesuai');
+            }
+            
+            $user->update([
+                'password' => \Hash::make($request->password_baru)
+            ]);
+            
+            return redirect()->back()->with('success', 'Password berhasil diubah');
+            
+        } catch (\Exception $e) {
+            Log::error('Error change password siswa: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengubah password: ' . $e->getMessage());
         }
     }
 }

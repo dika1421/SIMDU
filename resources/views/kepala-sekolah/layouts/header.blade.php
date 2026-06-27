@@ -276,6 +276,12 @@
             border-left: 4px solid #dc3545;
         }
         
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
         /* CARDS */
         .card {
             border: none;
@@ -429,7 +435,7 @@
                     <li class="menu-section">MANAJEMEN GURU</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen-guru.index') }}" 
-                           class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen-guru.*') ? 'active' : '' }}">
+                           class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen-guru.index') ? 'active' : '' }}">
                             <i class="fas fa-chalkboard-teacher"></i>
                             Data Guru
                         </a>
@@ -437,8 +443,8 @@
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen-guru.absensi') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen-guru.absensi') ? 'active' : '' }}">
-                            <i class="fas fa-calendar-check"></i>
-                            Absensi Guru
+                            <i class="fas fa-chart-bar"></i>
+                            Rekap Absensi
                         </a>
                     </li>
                     
@@ -490,7 +496,8 @@
                         </a>
                     </li>
                     
-                    <!-- PENGATURAN -->
+                    <!-- ========== MENU PENGATURAN DIHAPUS DARI SIDEBAR ========== -->
+                    <!-- 
                     <li class="menu-section">PENGATURAN</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.profil.index') }}" 
@@ -506,6 +513,7 @@
                             Pengaturan Sistem
                         </a>
                     </li>
+                    -->
                     
                     <li><hr></li>
                     
@@ -548,23 +556,27 @@
                         </ul>
                     </div>
                     
+                    <!-- USER DROPDOWN - MENU PROFIL & PENGATURAN ADA DI SINI -->
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle"></i>
                             <span>{{ Auth::user()->name }}</span>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <!-- Profil -->
                             <li>
                                 <a class="dropdown-item" href="{{ route('kepala-sekolah.profil.index') }}">
                                     <i class="fas fa-user me-2"></i> Profil
                                 </a>
                             </li>
+                            <!-- Pengaturan Sistem -->
                             <li>
                                 <a class="dropdown-item" href="{{ route('kepala-sekolah.pengaturan') }}">
                                     <i class="fas fa-cog me-2"></i> Pengaturan
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
+                            <!-- Logout -->
                             <li>
                                 <a class="dropdown-item text-danger" href="#" 
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -580,7 +592,7 @@
             <div class="page-content">
                 <!-- Alert Messages -->
                 @if(session('success'))
-                    <div class="alert alert-success">
+                    <div class="alert alert-success alert-dismissible fade show">
                         <i class="fas fa-check-circle me-2"></i>
                         {{ session('success') }}
                         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -588,9 +600,17 @@
                 @endif
 
                 @if(session('error'))
-                    <div class="alert alert-danger">
+                    <div class="alert alert-danger alert-dismissible fade show">
                         <i class="fas fa-exclamation-circle me-2"></i>
                         {{ session('error') }}
+                        <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div class="alert alert-warning alert-dismissible fade show">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {{ session('warning') }}
                         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif

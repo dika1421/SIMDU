@@ -39,37 +39,38 @@
 <div class="row g-4 mb-4">
     <div class="col-md-2">
         <div class="stat-card bg-success text-white text-center">
-            <h3 class="mb-0">{{ $statistik['hadir'] }}</h3>
+            <h3 class="mb-0">{{ $statistik['hadir'] ?? 0 }}</h3>
             <small>Hadir</small>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card bg-warning text-white text-center">
-            <h3 class="mb-0">{{ $statistik['sakit'] }}</h3>
+            <h3 class="mb-0">{{ $statistik['sakit'] ?? 0 }}</h3>
             <small>Sakit</small>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card bg-info text-white text-center">
-            <h3 class="mb-0">{{ $statistik['izin'] }}</h3>
+            <h3 class="mb-0">{{ $statistik['izin'] ?? 0 }}</h3>
             <small>Izin</small>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card bg-danger text-white text-center">
-            <h3 class="mb-0">{{ $statistik['alfa'] }}</h3>
-            <small>Alfa</small>
+            {{-- PERBAIKAN: Gunakan 'alpha' bukan 'alfa' --}}
+            <h3 class="mb-0">{{ $statistik['alpha'] ?? 0 }}</h3>
+            <small>Alpha</small>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card bg-secondary text-white text-center">
-            <h3 class="mb-0">{{ $statistik['terlambat'] }}</h3>
+            <h3 class="mb-0">{{ $statistik['terlambat'] ?? 0 }}</h3>
             <small>Terlambat</small>
         </div>
     </div>
     <div class="col-md-2">
         <div class="stat-card bg-primary text-white text-center">
-            <h3 class="mb-0">{{ $statistik['persentase'] }}%</h3>
+            <h3 class="mb-0">{{ $statistik['persentase'] ?? 0 }}%</h3>
             <small>Kehadiran</small>
         </div>
     </div>
@@ -90,7 +91,7 @@
 </div>
 
 <!-- Riwayat Keterlambatan -->
-@if($terlambatList->count() > 0)
+@if(isset($terlambatList) && $terlambatList->count() > 0)
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
@@ -101,16 +102,18 @@
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
-                            实例
+                            <tr>
                                 <th>Tanggal</th>
+                                <th>Hari</th>
                                 <th>Waktu Masuk</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($terlambatList as $t)
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($t['tanggal'])->format('d/m/Y') }}</td>
-                                <td>{{ $t['waktu'] }} WIB</td>
+                                <td>{{ $t['tanggal'] ?? '-' }}</td>
+                                <td>{{ $t['hari'] ?? '-' }}</td>
+                                <td>{{ $t['waktu'] ?? '-' }} WIB</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -135,91 +138,178 @@
                         <thead>
                             <tr>
                                 <th>Tanggal</th>
+                                <th>Hari</th>
                                 <th>Status</th>
                                 <th>Waktu Masuk</th>
+                                <th>Waktu Keluar</th>
                                 <th>Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($absensi as $a)
+                            @forelse($absensi as $a)
                             <tr>
-                                <td>{{ \Carbon\Carbon::parse($a->tanggal)->format('d/m/Y') }}</td>
+                                <td>{{ $a->tanggal_formatted ?? \Carbon\Carbon::parse($a->tanggal)->format('d/m/Y') }}</td>
+                                <td>{{ $a->nama_hari ?? \Carbon\Carbon::parse($a->tanggal)->translatedFormat('l') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ 
-                                        $a->status == 'hadir' ? 'success' : 
-                                        ($a->status == 'sakit' ? 'warning' : 
-                                        ($a->status == 'izin' ? 'info' : 'danger')) 
-                                    }}">
-                                        {{ ucfirst($a->status) }}
+                                    @php
+                                        $badgeClass = match($a->status) {
+                                            'hadir' => 'success',
+                                            'sakit' => 'warning',
+                                            'izin' => 'info',
+                                            'alpha' => 'danger',
+                                            'terlambat' => 'secondary',
+                                            default => 'secondary'
+                                        };
+                                        $statusText = match($a->status) {
+                                            'hadir' => 'Hadir',
+                                            'sakit' => 'Sakit',
+                                            'izin' => 'Izin',
+                                            'alpha' => 'Alpha',
+                                            'terlambat' => 'Terlambat',
+                                            default => ucfirst($a->status)
+                                        };
+                                    @endphp
+                                    <span class="badge bg-{{ $badgeClass }}">
+                                        {{ $statusText }}
                                     </span>
                                 </td>
-                                <td>{{ $a->waktu_masuk ? \Carbon\Carbon::parse($a->waktu_masuk)->format('H:i') : '-' }}</td>
+                                <td>{{ $a->waktu_masuk_formatted ?? ($a->waktu_masuk ? \Carbon\Carbon::parse($a->waktu_masuk)->format('H:i') : '-') }}</td>
+                                <td>{{ $a->waktu_keluar_formatted ?? ($a->waktu_keluar ? \Carbon\Carbon::parse($a->waktu_keluar)->format('H:i') : '-') }}</td>
                                 <td>{{ $a->keterangan ?? '-' }}</td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="fas fa-calendar-times fa-3x text-muted mb-3 d-block"></i>
+                                    <p class="text-muted mb-0">Belum ada data absensi untuk bulan ini</p>
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-                @if($absensi->isEmpty())
-                    <div class="text-center py-5">
-                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Belum ada data absensi</p>
-                    </div>
-                @endif
             </div>
         </div>
     </div>
 </div>
 
+@push('styles')
+<style>
+    .stat-card {
+        padding: 15px;
+        border-radius: 10px;
+        transition: transform 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-card h3 {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .stat-card small {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+</style>
+@endpush
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Chart Kehadiran Mingguan
-        var ctx = document.getElementById('kehadiranChart').getContext('2d');
-        var mingguanData = @json($mingguan);
+        var ctx = document.getElementById('kehadiranChart');
         
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: mingguanData.map(item => item.minggu),
-                datasets: [
-                    {
-                        label: 'Hadir',
-                        data: mingguanData.map(item => item.hadir),
-                        backgroundColor: '#28a745'
+        @if(isset($mingguan) && count($mingguan) > 0)
+            var mingguanData = @json($mingguan);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: mingguanData.map(item => item.minggu),
+                    datasets: [
+                        {
+                            label: 'Hadir',
+                            data: mingguanData.map(item => item.hadir),
+                            backgroundColor: '#28a745',
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Sakit',
+                            data: mingguanData.map(item => item.sakit),
+                            backgroundColor: '#ffc107',
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Izin',
+                            data: mingguanData.map(item => item.izin),
+                            backgroundColor: '#17a2b8',
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Alpha',
+                            data: mingguanData.map(item => item.alpha),
+                            backgroundColor: '#dc3545',
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Terlambat',
+                            data: mingguanData.map(item => item.terlambat),
+                            backgroundColor: '#6c757d',
+                            borderRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
                     },
-                    {
-                        label: 'Sakit',
-                        data: mingguanData.map(item => item.sakit),
-                        backgroundColor: '#ffc107'
-                    },
-                    {
-                        label: 'Izin',
-                        data: mingguanData.map(item => item.izin),
-                        backgroundColor: '#17a2b8'
-                    },
-                    {
-                        label: 'Alfa',
-                        data: mingguanData.map(item => item.alfa),
-                        backgroundColor: '#dc3545'
+                    scales: {
+                        x: { 
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Minggu'
+                            }
+                        },
+                        y: { 
+                            stacked: true, 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Jumlah Kehadiran'
+                            }
+                        }
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, beginAtZero: true }
                 }
-            }
-        });
+            });
+        @else
+            console.log('Data mingguan kosong');
+        @endif
         
         // DataTable
-        $('#absensiTable').DataTable({
-            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
-            pageLength: 10
-        });
+        if ($('#absensiTable tbody tr').length > 0) {
+            $('#absensiTable').DataTable({
+                language: { 
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                },
+                pageLength: 10,
+                order: [[0, 'desc']]
+            });
+        }
     });
 </script>
 @endpush

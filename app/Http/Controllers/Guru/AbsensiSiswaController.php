@@ -8,7 +8,7 @@ use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Guru;
 use App\Models\Mapel;
-use App\Models\Jadwal;  // TAMBAHKAN INI
+use App\Models\Jadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -84,8 +84,8 @@ class AbsensiSiswaController extends Controller
 
             // Ambil absensi untuk tanggal ini berdasarkan mata pelajaran
             foreach ($siswa as $s) {
-                $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                    ->where('absensi_id', $s->id)
+                // PERBAIKAN: Gunakan 'siswa_id' langsung, bukan 'absensi_type' dan 'absensi_id'
+                $absensi = Absensi::where('siswa_id', $s->id)
                     ->whereDate('tanggal', $tanggal)
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
                         $q->where('mata_pelajaran_id', $mataPelajaranId);
@@ -93,8 +93,9 @@ class AbsensiSiswaController extends Controller
                     ->first();
                 
                 $s->status_absensi = $absensi ? $absensi->status : null;
-                $s->waktu_absensi = $absensi ? $absensi->waktu_masuk : null;
+                $s->waktu_absensi = $absensi ? $absensi->jam_masuk : null;
                 $s->keterangan_absensi = $absensi ? $absensi->keterangan : null;
+                $s->jam_keluar = $absensi ? $absensi->jam_keluar : null;
             }
 
             // Statistik
@@ -114,9 +115,25 @@ class AbsensiSiswaController extends Controller
                 'terlambat' => 'Terlambat'
             ];
 
-            return view('guru.absensi-siswa.index', compact('siswa', 'kelas', 'kelasId', 'tanggal', 'statusList', 'search', 
-                'totalSiswa', 'hadir', 'sakit', 'izin', 'alfa', 'terlambat', 'belumAbsen', 'mataPelajaranList', 'mataPelajaranId'));
-                
+            return view('guru.absensi-siswa.index', compact(
+                'siswa', 
+                'kelas', 
+                'kelasId', 
+                'tanggal', 
+                'statusList', 
+                'search', 
+                'totalSiswa', 
+                'hadir', 
+                'sakit', 
+                'izin', 
+                'alfa', 
+                'terlambat', 
+                'belumAbsen', 
+                'mataPelajaranList', 
+                'mataPelajaranId',
+                'guru'
+            ));
+            
         } catch (\Exception $e) {
             Log::error('Absensi Index Error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -141,20 +158,22 @@ class AbsensiSiswaController extends Controller
             $savedCount = 0;
             foreach ($request->absensi as $siswaId => $data) {
                 if (isset($data['status']) && !empty($data['status'])) {
+                    // PERBAIKAN: Gunakan 'siswa_id' langsung
                     Absensi::updateOrCreate(
                         [
-                            'absensi_type' => 'App\\Models\\Siswa',
-                            'absensi_id' => $siswaId,
+                            'siswa_id' => $siswaId,
                             'tanggal' => $request->tanggal,
                             'mata_pelajaran_id' => $request->mata_pelajaran_id,
                         ],
                         [
                             'status' => $data['status'],
-                            'waktu_masuk' => isset($data['waktu_absen']) && $data['waktu_absen'] 
+                            'jam_masuk' => isset($data['waktu_absen']) && $data['waktu_absen'] 
                                 ? Carbon::parse($request->tanggal . ' ' . $data['waktu_absen']) 
                                 : Carbon::now(),
                             'keterangan' => $data['keterangan'] ?? null,
                             'diinput_oleh' => auth()->id(),
+                            'jenis_absensi' => Absensi::TYPE_SISWA,
+                            'kelas_id' => $request->kelas_id,
                         ]
                     );
                     $savedCount++;
@@ -206,13 +225,21 @@ class AbsensiSiswaController extends Controller
             if ($siswa) {
                 $mataPelajaranId = $request->get('mata_pelajaran_id');
                 
-                $sudahAbsen = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                    ->where('absensi_id', $siswa->id)
+                // PERBAIKAN: Gunakan 'siswa_id' langsung
+                $sudahAbsen = Absensi::where('siswa_id', $siswa->id)
                     ->whereDate('tanggal', date('Y-m-d'))
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
                         $q->where('mata_pelajaran_id', $mataPelajaranId);
                     })
                     ->exists();
+                
+                // Cek apakah sudah checkout
+                $absensi = Absensi::where('siswa_id', $siswa->id)
+                    ->whereDate('tanggal', date('Y-m-d'))
+                    ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
+                        $q->where('mata_pelajaran_id', $mataPelajaranId);
+                    })
+                    ->first();
                 
                 return response()->json([
                     'success' => true,
@@ -221,7 +248,10 @@ class AbsensiSiswaController extends Controller
                         'nis' => $siswa->nis,
                         'nama' => $siswa->user->name ?? $siswa->nis,
                         'kelas' => $siswa->kelas->nama ?? '-',
-                        'sudah_absen' => $sudahAbsen
+                        'sudah_absen' => $sudahAbsen,
+                        'sudah_checkout' => $absensi && $absensi->jam_keluar ? true : false,
+                        'jam_masuk' => $absensi ? $absensi->jam_masuk : null,
+                        'jam_keluar' => $absensi ? $absensi->jam_keluar : null,
                     ]
                 ]);
             }
@@ -243,6 +273,7 @@ class AbsensiSiswaController extends Controller
             'siswa_id' => 'required|integer|exists:siswa,id',
             'status' => 'required|in:hadir,sakit,izin,alfa,terlambat',
             'mata_pelajaran_id' => 'nullable|exists:mata_pelajarans,id',
+            'action' => 'nullable|in:checkin,checkout',
         ]);
         
         try {
@@ -251,14 +282,15 @@ class AbsensiSiswaController extends Controller
             $tanggal = date('Y-m-d');
             $waktuAbsen = Carbon::now();
             $mataPelajaranId = $request->get('mata_pelajaran_id');
+            $action = $request->get('action', 'checkin');
             
-            $siswa = Siswa::with('user')->find($request->siswa_id);
+            $siswa = Siswa::with(['user', 'kelas'])->find($request->siswa_id);
             if (!$siswa) {
                 return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan'], 404);
             }
             
-            $existing = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $request->siswa_id)
+            // PERBAIKAN: Gunakan 'siswa_id' langsung
+            $existing = Absensi::where('siswa_id', $request->siswa_id)
                 ->whereDate('tanggal', $tanggal)
                 ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
                     $q->where('mata_pelajaran_id', $mataPelajaranId);
@@ -266,24 +298,41 @@ class AbsensiSiswaController extends Controller
                 ->first();
                 
             if ($existing) {
-                $existing->update([
-                    'status' => $request->status,
-                    'waktu_masuk' => $waktuAbsen,
-                    'keterangan' => $request->keterangan,
-                    'diinput_oleh' => auth()->id(),
-                ]);
-                $message = '✅ Absensi berhasil diupdate!';
-                $isUpdate = true;
+                if ($action == 'checkout' && !$existing->jam_keluar) {
+                    // Checkout
+                    $existing->update([
+                        'jam_keluar' => $waktuAbsen,
+                        'updated_at' => now(),
+                    ]);
+                    $message = '✅ Checkout berhasil!';
+                    $isUpdate = true;
+                } elseif ($action == 'checkin') {
+                    // Update status
+                    $existing->update([
+                        'status' => $request->status,
+                        'jam_masuk' => $waktuAbsen,
+                        'keterangan' => $request->keterangan,
+                        'diinput_oleh' => auth()->id(),
+                        'updated_at' => now(),
+                    ]);
+                    $message = '✅ Absensi berhasil diupdate!';
+                    $isUpdate = true;
+                } else {
+                    $message = 'ℹ️ Siswa sudah checkout sebelumnya';
+                    $isUpdate = false;
+                }
             } else {
+                // Create new absensi
                 Absensi::create([
-                    'absensi_type' => 'App\\Models\\Siswa',
-                    'absensi_id' => $request->siswa_id,
+                    'siswa_id' => $request->siswa_id,
                     'tanggal' => $tanggal,
                     'status' => $request->status,
-                    'waktu_masuk' => $waktuAbsen,
+                    'jam_masuk' => $waktuAbsen,
                     'keterangan' => $request->keterangan,
                     'mata_pelajaran_id' => $mataPelajaranId,
                     'diinput_oleh' => auth()->id(),
+                    'jenis_absensi' => Absensi::TYPE_SISWA,
+                    'kelas_id' => $siswa->kelas_id,
                 ]);
                 $message = '✅ Absensi berhasil disimpan!';
                 $isUpdate = false;
@@ -299,6 +348,14 @@ class AbsensiSiswaController extends Controller
                 'terlambat' => 'Terlambat'
             ];
             
+            // Ambil data terbaru
+            $absensi = Absensi::where('siswa_id', $request->siswa_id)
+                ->whereDate('tanggal', $tanggal)
+                ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
+                    $q->where('mata_pelajaran_id', $mataPelajaranId);
+                })
+                ->first();
+            
             return response()->json([
                 'success' => true, 
                 'message' => $message,
@@ -308,7 +365,9 @@ class AbsensiSiswaController extends Controller
                     'kelas' => $siswa->kelas->nama ?? '-',
                     'status' => $statusText[$request->status] ?? $request->status,
                     'waktu' => $waktuAbsen->format('H:i:s'),
-                    'is_update' => $isUpdate
+                    'is_update' => $isUpdate,
+                    'jam_masuk' => $absensi ? $absensi->jam_masuk : null,
+                    'jam_keluar' => $absensi ? $absensi->jam_keluar : null,
                 ]
             ]);
             
@@ -434,8 +493,8 @@ class AbsensiSiswaController extends Controller
             // Hitung statistik per siswa berdasarkan mata pelajaran
             $statistikSiswa = [];
             foreach ($siswa as $s) {
-                $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                    ->where('absensi_id', $s->id)
+                // PERBAIKAN: Gunakan 'siswa_id' langsung
+                $absensi = Absensi::where('siswa_id', $s->id)
                     ->whereYear('tanggal', $tahun)
                     ->whereMonth('tanggal', $bulan)
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -472,8 +531,19 @@ class AbsensiSiswaController extends Controller
             // Data untuk dropdown tahun
             $tahunList = range(date('Y') - 2, date('Y') + 1);
             
-            return view('guru.absensi-siswa.riwayat', compact('kelas', 'siswa', 'statistikSiswa', 
-                'kelasId', 'mataPelajaranId', 'mataPelajaranList', 'bulan', 'tahun', 'bulanList', 'tahunList', 'search'));
+            return view('guru.absensi-siswa.riwayat', compact(
+                'kelas', 
+                'siswa', 
+                'statistikSiswa', 
+                'kelasId', 
+                'mataPelajaranId', 
+                'mataPelajaranList', 
+                'bulan', 
+                'tahun', 
+                'bulanList', 
+                'tahunList', 
+                'search'
+            ));
             
         } catch (\Exception $e) {
             Log::error('Riwayat Error: ' . $e->getMessage());
@@ -547,8 +617,8 @@ class AbsensiSiswaController extends Controller
                 $rekapKelas['total_siswa'] = $siswa->count();
                 
                 foreach ($siswa as $s) {
-                    $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                        ->where('absensi_id', $s->id)
+                    // PERBAIKAN: Gunakan 'siswa_id' langsung
+                    $absensi = Absensi::where('siswa_id', $s->id)
                         ->whereYear('tanggal', $tahun)
                         ->whereMonth('tanggal', $bulan)
                         ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -589,8 +659,18 @@ class AbsensiSiswaController extends Controller
             ];
             $tahunList = range(date('Y') - 2, date('Y') + 1);
             
-            return view('guru.absensi-siswa.laporan', compact('kelas', 'statistik', 'rekapKelas', 
-                'bulan', 'tahun', 'kelasId', 'mataPelajaranId', 'mataPelajaranList', 'bulanList', 'tahunList'));
+            return view('guru.absensi-siswa.laporan', compact(
+                'kelas', 
+                'statistik', 
+                'rekapKelas', 
+                'bulan', 
+                'tahun', 
+                'kelasId', 
+                'mataPelajaranId', 
+                'mataPelajaranList', 
+                'bulanList', 
+                'tahunList'
+            ));
             
         } catch (\Exception $e) {
             Log::error('Laporan Error: ' . $e->getMessage());

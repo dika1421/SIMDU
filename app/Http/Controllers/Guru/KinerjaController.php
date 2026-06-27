@@ -7,10 +7,12 @@ use App\Models\Nilai;
 use App\Models\Absensi;
 use App\Models\Guru;
 use App\Models\Mapel;
+use App\Models\Jadwal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema; // <-- TAMBAHKAN INI
+use Illuminate\Support\Facades\Schema;
+use Carbon\Carbon;
 
 class KinerjaController extends Controller
 {
@@ -33,7 +35,9 @@ class KinerjaController extends Controller
             $tahun = $request->tahun ?? now()->year;
             $semester = $request->semester ?? 'ganjil';
 
-            // Statistik Nilai
+            // =============================================
+            // 1. STATISTIK NILAI
+            // =============================================
             $nilaiQuery = Nilai::where('guru_id', $guru->id);
             
             // Cek apakah kolom status ada
@@ -59,9 +63,11 @@ class KinerjaController extends Controller
                 'E' => (clone $nilaiPublished)->where('nilai_akhir', '<', 40)->count(),
             ];
 
-            // Statistik Absensi
-            $absensi = Absensi::where('absensi_type', 'App\\Models\\Guru')
-                ->where('absensi_id', $guru->id)
+            // =============================================
+            // 2. STATISTIK ABSENSI - PERBAIKAN
+            // =============================================
+            // PERBAIKAN: Gunakan 'guru_id' langsung, bukan 'absensi_type' dan 'absensi_id'
+            $absensi = Absensi::where('guru_id', $guru->id)
                 ->whereYear('tanggal', $tahun)
                 ->get();
 
@@ -77,12 +83,48 @@ class KinerjaController extends Controller
                          $statistikAbsensi['izin'] + $statistikAbsensi['alfa'];
             $persenHadir = $totalHari > 0 ? round(($statistikAbsensi['hadir'] / $totalHari) * 100, 2) : 0;
 
-            // Mapel yang diajar
+            // =============================================
+            // 3. ABSENSI PER BULAN (untuk chart)
+            // =============================================
+            $absensiPerBulan = [];
+            $bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            
+            for ($i = 1; $i <= 12; $i++) {
+                $absensiBulan = Absensi::where('guru_id', $guru->id)
+                    ->whereYear('tanggal', $tahun)
+                    ->whereMonth('tanggal', $i)
+                    ->get();
+                
+                $absensiPerBulan[] = [
+                    'bulan' => $bulanList[$i - 1],
+                    'hadir' => $absensiBulan->where('status', 'hadir')->count(),
+                    'sakit' => $absensiBulan->where('status', 'sakit')->count(),
+                    'izin' => $absensiBulan->where('status', 'izin')->count(),
+                    'alfa' => $absensiBulan->where('status', 'alfa')->count(),
+                    'total' => $absensiBulan->count(),
+                ];
+            }
+
+            // =============================================
+            // 4. STATISTIK MENGAJAR
+            // =============================================
+            $totalKelas = Jadwal::where('guru_id', $guru->id)->distinct('kelas_id')->count();
+            $totalMapel = Jadwal::where('guru_id', $guru->id)->distinct('mata_pelajaran_id')->count();
+            
+            // Total siswa dari semua kelas yang diajar
+            $kelasIds = Jadwal::where('guru_id', $guru->id)->distinct('kelas_id')->pluck('kelas_id');
+            $totalSiswa = \App\Models\Siswa::whereIn('kelas_id', $kelasIds)->where('status', 'aktif')->count();
+
+            // =============================================
+            // 5. MAPEL YANG DIAJAR
+            // =============================================
             $mapel = Mapel::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->get();
 
-            // Grafik nilai per bulan
+            // =============================================
+            // 6. NILAI PER BULAN (untuk chart)
+            // =============================================
             $nilaiPerBulan = [];
             for ($i = 1; $i <= 12; $i++) {
                 $query = Nilai::where('guru_id', $guru->id)
@@ -93,7 +135,49 @@ class KinerjaController extends Controller
                     $query->where('status', 'published');
                 }
                 
-                $nilaiPerBulan[] = $query->avg('nilai_akhir') ?? 0;
+                $nilaiPerBulan[] = round($query->avg('nilai_akhir') ?? 0, 2);
+            }
+
+            // =============================================
+            // 7. ABSENSI HARI INI
+            // =============================================
+            $hariIni = Carbon::today();
+            $absensiHariIni = Absensi::where('guru_id', $guru->id)
+                ->whereDate('tanggal', $hariIni)
+                ->first();
+
+            $statusHariIni = $absensiHariIni ? $absensiHariIni->status : 'belum_absen';
+            $jamMasuk = $absensiHariIni ? $absensiHariIni->jam_masuk : null;
+            $jamKeluar = $absensiHariIni ? $absensiHariIni->jam_keluar : null;
+
+            // =============================================
+            // 8. CHART 7 HARI TERAKHIR
+            // =============================================
+            $chartLabels = [];
+            $chartDataHadir = [];
+            $chartDataSakit = [];
+            $chartDataIzin = [];
+            $chartDataAlpha = [];
+
+            for ($i = 6; $i >= 0; $i--) {
+                $tanggal = Carbon::today()->subDays($i);
+                $chartLabels[] = $tanggal->translatedFormat('d M');
+                
+                $absensiHari = Absensi::where('guru_id', $guru->id)
+                    ->whereDate('tanggal', $tanggal)
+                    ->first();
+                
+                if ($absensiHari) {
+                    $chartDataHadir[] = $absensiHari->status == 'hadir' ? 1 : 0;
+                    $chartDataSakit[] = $absensiHari->status == 'sakit' ? 1 : 0;
+                    $chartDataIzin[] = $absensiHari->status == 'izin' ? 1 : 0;
+                    $chartDataAlpha[] = $absensiHari->status == 'alfa' ? 1 : 0;
+                } else {
+                    $chartDataHadir[] = 0;
+                    $chartDataSakit[] = 0;
+                    $chartDataIzin[] = 0;
+                    $chartDataAlpha[] = 0;
+                }
             }
 
             return view('guru.kinerja.index', compact(
@@ -106,7 +190,19 @@ class KinerjaController extends Controller
                 'statistikAbsensi',
                 'persenHadir',
                 'mapel',
-                'nilaiPerBulan'
+                'nilaiPerBulan',
+                'totalKelas',
+                'totalMapel',
+                'totalSiswa',
+                'absensiPerBulan',
+                'statusHariIni',
+                'jamMasuk',
+                'jamKeluar',
+                'chartLabels',
+                'chartDataHadir',
+                'chartDataSakit',
+                'chartDataIzin',
+                'chartDataAlpha'
             ));
             
         } catch (\Exception $e) {
@@ -136,9 +232,16 @@ class KinerjaController extends Controller
             
             // Ambil nilai untuk mapel tertentu
             $query = Nilai::where('guru_id', $guru->id)
-                ->where('mata_pelajaran_id', $mapelId)
-                ->where('tahun_ajaran', $tahun . '/' . ($tahun + 1))
-                ->where('semester', $semester);
+                ->where('mata_pelajaran_id', $mapelId);
+            
+            // Filter tahun ajaran jika ada kolom
+            if (Schema::hasColumn('nilai', 'tahun_ajaran')) {
+                $query->where('tahun_ajaran', $tahun . '/' . ($tahun + 1));
+            }
+            
+            if (Schema::hasColumn('nilai', 'semester')) {
+                $query->where('semester', $semester);
+            }
             
             if (Schema::hasColumn('nilai', 'status')) {
                 $query->where('status', 'published');
@@ -149,6 +252,7 @@ class KinerjaController extends Controller
             $rataNilai = $nilai->avg('nilai_akhir') ?? 0;
             $nilaiTertinggi = $nilai->max('nilai_akhir') ?? 0;
             $nilaiTerendah = $nilai->min('nilai_akhir') ?? 0;
+            $totalSiswa = $nilai->count();
             
             $distribusi = [
                 'A' => $nilai->where('nilai_akhir', '>=', 85)->count(),
@@ -166,11 +270,48 @@ class KinerjaController extends Controller
                 'nilaiTerendah',
                 'distribusi',
                 'tahun',
-                'semester'
+                'semester',
+                'totalSiswa'
             ));
             
         } catch (\Exception $e) {
             Log::error('Error in kinerja detail mapel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export kinerja ke PDF/Excel
+     */
+    public function export(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $guru = Guru::where('user_id', $user->id)->first();
+            
+            if (!$guru) {
+                return redirect()->back()->with('error', 'Data guru tidak ditemukan.');
+            }
+            
+            $tahun = $request->tahun ?? now()->year;
+            
+            // Data untuk export
+            $data = [
+                'guru' => $guru,
+                'tahun' => $tahun,
+                'rataNilai' => Nilai::where('guru_id', $guru->id)->avg('nilai_akhir') ?? 0,
+                'totalNilai' => Nilai::where('guru_id', $guru->id)->count(),
+                'totalHadir' => Absensi::where('guru_id', $guru->id)->where('status', 'hadir')->count(),
+                'totalSakit' => Absensi::where('guru_id', $guru->id)->where('status', 'sakit')->count(),
+                'totalIzin' => Absensi::where('guru_id', $guru->id)->where('status', 'izin')->count(),
+                'totalAlpha' => Absensi::where('guru_id', $guru->id)->where('status', 'alfa')->count(),
+            ];
+            
+            // TODO: Implement export ke PDF/Excel
+            return redirect()->back()->with('info', 'Fitur export sedang dalam pengembangan.');
+            
+        } catch (\Exception $e) {
+            Log::error('Error in kinerja export: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

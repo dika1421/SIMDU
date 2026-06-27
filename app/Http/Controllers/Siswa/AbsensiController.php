@@ -5,25 +5,31 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Siswa;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class AbsensiController extends Controller
 {
+    /**
+     * Get siswa data for current logged in user
+     */
     private function getSiswa()
     {
         try {
             $user = auth()->user();
             
             if (!$user) {
+                Log::warning('No authenticated user found');
                 return null;
             }
             
             $siswa = Siswa::where('user_id', $user->id)->first();
             
             if (!$siswa) {
-                $kelas = \App\Models\Kelas::first();
+                $kelas = Kelas::first();
                 
                 $siswa = Siswa::create([
                     'user_id' => $user->id,
@@ -52,6 +58,9 @@ class AbsensiController extends Controller
         }
     }
     
+    /**
+     * Display absensi siswa (dashboard)
+     */
     public function index(Request $request)
     {
         try {
@@ -64,9 +73,9 @@ class AbsensiController extends Controller
             $bulan = $request->bulan ?? Carbon::now()->month;
             $tahun = $request->tahun ?? Carbon::now()->year;
             
-            // Ambil data absensi
-            $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $siswa->id)
+            // PERBAIKAN: Gunakan siswa_id, bukan absensi_id
+            $absensi = Absensi::where('siswa_id', $siswa->id)
+                ->where('absensi_type', 'siswa')
                 ->whereMonth('tanggal', $bulan)
                 ->whereYear('tanggal', $tahun)
                 ->orderBy('tanggal', 'asc')
@@ -77,7 +86,7 @@ class AbsensiController extends Controller
                 'hadir' => $absensi->where('status', 'hadir')->count(),
                 'sakit' => $absensi->where('status', 'sakit')->count(),
                 'izin' => $absensi->where('status', 'izin')->count(),
-                'alfa' => $absensi->where('status', 'alfa')->count(),
+                'alpha' => $absensi->where('status', 'alpha')->count(),
                 'terlambat' => $absensi->where('status', 'terlambat')->count(),
                 'total' => $absensi->count(),
             ];
@@ -94,17 +103,24 @@ class AbsensiController extends Controller
                 ->map(function($item) {
                     return [
                         'tanggal' => Carbon::parse($item->tanggal)->format('d/m/Y'),
+                        'hari' => Carbon::parse($item->tanggal)->translatedFormat('l'),
                         'waktu' => $item->waktu_masuk ? Carbon::parse($item->waktu_masuk)->format('H:i') : '-',
                     ];
                 });
             
+            // Cek absensi hari ini
+            $absensiHariIni = Absensi::where('siswa_id', $siswa->id)
+                ->where('absensi_type', 'siswa')
+                ->whereDate('tanggal', Carbon::today())
+                ->first();
+            
             // Data untuk filter
             $bulanList = $this->getBulanList();
-            $tahunList = range(date('Y') - 2, date('Y') + 1);
+            $tahunList = $this->getTahunList($siswa->id);
             
             return view('siswa.absensi.index', compact(
                 'absensi', 'statistik', 'mingguan', 'terlambatList',
-                'bulan', 'tahun', 'bulanList', 'tahunList'
+                'bulan', 'tahun', 'bulanList', 'tahunList', 'absensiHariIni', 'siswa'
             ));
             
         } catch (\Exception $e) {
@@ -113,6 +129,9 @@ class AbsensiController extends Controller
         }
     }
     
+    /**
+     * Display riwayat absensi siswa
+     */
     public function riwayat(Request $request)
     {
         try {
@@ -125,13 +144,13 @@ class AbsensiController extends Controller
             $bulan = $request->bulan ?? Carbon::now()->month;
             $tahun = $request->tahun ?? Carbon::now()->year;
             
-            // Ambil data absensi
-            $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $siswa->id)
+            // PERBAIKAN: Gunakan siswa_id, bukan absensi_id
+            $absensi = Absensi::where('siswa_id', $siswa->id)
+                ->where('absensi_type', 'siswa')
                 ->whereMonth('tanggal', $bulan)
                 ->whereYear('tanggal', $tahun)
                 ->orderBy('tanggal', 'desc')
-                ->get();
+                ->paginate(15);
             
             // Rekap per bulan
             $rekapBulanan = [
@@ -140,32 +159,20 @@ class AbsensiController extends Controller
                 'hadir' => $absensi->where('status', 'hadir')->count(),
                 'sakit' => $absensi->where('status', 'sakit')->count(),
                 'izin' => $absensi->where('status', 'izin')->count(),
-                'alfa' => $absensi->where('status', 'alfa')->count(),
+                'alpha' => $absensi->where('status', 'alpha')->count(),
                 'terlambat' => $absensi->where('status', 'terlambat')->count(),
-                'total' => $absensi->count(),
-                'persentase' => $absensi->count() > 0 
-                    ? round(($absensi->where('status', 'hadir')->count() / $absensi->count()) * 100, 2) 
+                'total' => $absensi->total(),
+                'persentase' => $absensi->total() > 0 
+                    ? round(($absensi->where('status', 'hadir')->count() / $absensi->total()) * 100, 2) 
                     : 0
             ];
             
-            // Data statistik per hari
-            $statistikHarian = [];
-            foreach ($absensi as $a) {
-                $statistikHarian[] = [
-                    'tanggal' => Carbon::parse($a->tanggal)->format('d/m/Y'),
-                    'hari' => Carbon::parse($a->tanggal)->translatedFormat('l'),
-                    'status' => $a->status,
-                    'waktu_masuk' => $a->waktu_masuk ? Carbon::parse($a->waktu_masuk)->format('H:i') : '-',
-                    'keterangan' => $a->keterangan ?? '-'
-                ];
-            }
-            
             // Data untuk filter
             $bulanList = $this->getBulanList();
-            $tahunList = range(date('Y') - 2, date('Y') + 1);
+            $tahunList = $this->getTahunList($siswa->id);
             
             return view('siswa.absensi.riwayat', compact(
-                'absensi', 'statistikHarian', 'rekapBulanan',
+                'absensi', 'rekapBulanan',
                 'bulan', 'tahun', 'bulanList', 'tahunList', 'siswa'
             ));
             
@@ -175,6 +182,108 @@ class AbsensiController extends Controller
         }
     }
     
+    /**
+     * Display rekap absensi
+     */
+    public function rekap(Request $request)
+    {
+        try {
+            $siswa = $this->getSiswa();
+            
+            if (!$siswa) {
+                return redirect()->back()->with('error', 'Data siswa tidak ditemukan');
+            }
+            
+            $tahun = $request->tahun ?? Carbon::now()->year;
+            
+            // Rekap per bulan dalam setahun
+            $rekapPerBulan = [];
+            for ($bulan = 1; $bulan <= 12; $bulan++) {
+                $absensi = Absensi::where('siswa_id', $siswa->id)
+                    ->where('absensi_type', 'siswa')
+                    ->whereMonth('tanggal', $bulan)
+                    ->whereYear('tanggal', $tahun)
+                    ->get();
+                
+                $rekapPerBulan[$bulan] = [
+                    'bulan' => $this->getBulanList()[$bulan],
+                    'hadir' => $absensi->where('status', 'hadir')->count(),
+                    'sakit' => $absensi->where('status', 'sakit')->count(),
+                    'izin' => $absensi->where('status', 'izin')->count(),
+                    'alpha' => $absensi->where('status', 'alpha')->count(),
+                    'terlambat' => $absensi->where('status', 'terlambat')->count(),
+                    'total' => $absensi->count(),
+                ];
+            }
+            
+            $tahunList = $this->getTahunList($siswa->id);
+            
+            return view('siswa.absensi.rekap', compact('rekapPerBulan', 'tahun', 'tahunList', 'siswa'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in absensi rekap: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Export absensi ke CSV
+     */
+    public function export(Request $request)
+    {
+        try {
+            $siswa = $this->getSiswa();
+            
+            if (!$siswa) {
+                return redirect()->back()->with('error', 'Data siswa tidak ditemukan');
+            }
+            
+            $bulan = $request->bulan ?? Carbon::now()->month;
+            $tahun = $request->tahun ?? Carbon::now()->year;
+            
+            $absensi = Absensi::where('siswa_id', $siswa->id)
+                ->where('absensi_type', 'siswa')
+                ->whereMonth('tanggal', $bulan)
+                ->whereYear('tanggal', $tahun)
+                ->orderBy('tanggal', 'asc')
+                ->get();
+            
+            $filename = "absensi_{$siswa->nis}_{$tahun}_{$bulan}.csv";
+            $handle = fopen('php://temp', 'w');
+            
+            // Header CSV
+            fputcsv($handle, ['No', 'Tanggal', 'Hari', 'Waktu Masuk', 'Waktu Keluar', 'Status', 'Keterangan']);
+            
+            // Data CSV
+            foreach ($absensi as $index => $a) {
+                fputcsv($handle, [
+                    $index + 1,
+                    Carbon::parse($a->tanggal)->format('d/m/Y'),
+                    Carbon::parse($a->tanggal)->translatedFormat('l'),
+                    $a->waktu_masuk ? Carbon::parse($a->waktu_masuk)->format('H:i') : '-',
+                    $a->waktu_keluar ? Carbon::parse($a->waktu_keluar)->format('H:i') : '-',
+                    ucfirst($a->status),
+                    $a->keterangan ?? '-'
+                ]);
+            }
+            
+            rewind($handle);
+            $csvContent = stream_get_contents($handle);
+            fclose($handle);
+            
+            return response($csvContent, 200)
+                ->header('Content-Type', 'text/csv')
+                ->header('Content-Disposition', "attachment; filename={$filename}");
+                
+        } catch (\Exception $e) {
+            Log::error('Error in absensi export: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get weekly attendance data for chart
+     */
     private function getKehadiranMingguan($siswaId, $bulan, $tahun)
     {
         $data = [];
@@ -182,13 +291,13 @@ class AbsensiController extends Controller
         $endDate = $startDate->copy()->endOfMonth();
         
         $currentWeek = $startDate->copy()->startOfWeek();
+        $weekNumber = 1;
         
         while ($currentWeek <= $endDate) {
             $weekEnd = $currentWeek->copy()->endOfWeek();
-            $weekNumber = $currentWeek->weekOfMonth;
             
-            $absensi = Absensi::where('absensi_type', 'App\\Models\\Siswa')
-                ->where('absensi_id', $siswaId)
+            $absensi = Absensi::where('siswa_id', $siswaId)
+                ->where('absensi_type', 'siswa')
                 ->whereBetween('tanggal', [$currentWeek, $weekEnd])
                 ->get();
             
@@ -197,16 +306,20 @@ class AbsensiController extends Controller
                 'hadir' => $absensi->where('status', 'hadir')->count(),
                 'sakit' => $absensi->where('status', 'sakit')->count(),
                 'izin' => $absensi->where('status', 'izin')->count(),
-                'alfa' => $absensi->where('status', 'alfa')->count(),
+                'alpha' => $absensi->where('status', 'alpha')->count(),
                 'terlambat' => $absensi->where('status', 'terlambat')->count(),
             ];
             
             $currentWeek->addWeek();
+            $weekNumber++;
         }
         
         return $data;
     }
     
+    /**
+     * Get list of months
+     */
     private function getBulanList()
     {
         return [
@@ -214,5 +327,26 @@ class AbsensiController extends Controller
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
         ];
+    }
+    
+    /**
+     * Get list of available years for this student
+     */
+    private function getTahunList($siswaId)
+    {
+        $tahunAbsensi = Absensi::where('siswa_id', $siswaId)
+            ->where('absensi_type', 'siswa')
+            ->select(DB::raw('DISTINCT EXTRACT(YEAR FROM tanggal) as tahun'))
+            ->pluck('tahun')
+            ->toArray();
+        
+        $currentYear = date('Y');
+        $years = range($currentYear - 2, $currentYear + 1);
+        
+        // Merge with existing years
+        $allYears = array_unique(array_merge($years, $tahunAbsensi));
+        sort($allYears);
+        
+        return $allYears;
     }
 }

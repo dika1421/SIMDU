@@ -29,4 +29,4 @@ return new class extends Migration
             echo "✅ Kolom soft delete berhasil dihapus dari tabel jadwal\n";
         }
     }
-};
+};  

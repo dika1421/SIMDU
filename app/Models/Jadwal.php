@@ -1,4 +1,5 @@
 <?php
+// app/Models/Jadwal.php
 
 namespace App\Models;
 
@@ -14,7 +15,7 @@ class Jadwal extends Model
     protected $fillable = [
         'kelas_id',
         'guru_id',
-        'mata_pelajaran_id',
+        'mata_pelajaran_id',  // PERBAIKAN: gunakan mata_pelajaran_id
         'hari',
         'jam_mulai',
         'jam_selesai',
@@ -27,7 +28,10 @@ class Jadwal extends Model
     
     protected $casts = [
         'jam_mulai' => 'datetime',
-        'jam_selesai' => 'datetime'
+        'jam_selesai' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
     ];
     
     public function kelas()
@@ -40,15 +44,19 @@ class Jadwal extends Model
         return $this->belongsTo(Guru::class, 'guru_id');
     }
     
-    // PERBAIKAN: Relasi ke mapel dengan foreign key yang benar
+    /**
+     * PERBAIKAN: Relasi ke Mapel menggunakan 'mata_pelajaran_id'
+     */
     public function mapel()
     {
-        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id', 'id');
+        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id');
     }
     
-    // Alias untuk kompatibilitas
+    /**
+     * Alias untuk mapel (kompatibilitas)
+     */
     public function mataPelajaran()
     {
-        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id', 'id');
+        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id');
     }
 }

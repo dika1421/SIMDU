@@ -24,10 +24,10 @@
         
         .login-card {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 540px;
             padding: 40px;
             animation: fadeIn 0.5s ease;
         }
@@ -35,11 +35,11 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-30px) scale(0.95);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
             }
         }
         
@@ -48,46 +48,73 @@
             margin-bottom: 30px;
         }
         
+        .login-header .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
         .login-header h3 {
             color: #333;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
         }
         
         .login-header p {
-            color: #666;
+            color: #888;
             font-size: 14px;
+            margin-bottom: 0;
         }
         
         .role-selector {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 25px;
-            background: #f8f9fa;
-            padding: 8px;
+            background: #f0f2f5;
+            padding: 6px;
             border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            flex-wrap: wrap;
         }
         
         .role-btn {
             flex: 1;
-            padding: 10px;
+            min-width: 60px;
+            padding: 8px 6px;
             border: none;
             background: transparent;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 600;
-            color: #666;
+            color: #888;
+            font-size: 0.75rem;
+            text-align: center;
         }
         
         .role-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         
         .role-btn i {
-            margin-right: 8px;
+            display: block;
+            margin: 0 auto 4px;
+            font-size: 1.2rem;
+        }
+        
+        .role-btn:hover:not(.active) {
+            background: #e8e8e8;
         }
         
         .form-group {
@@ -99,9 +126,44 @@
             color: #555;
             margin-bottom: 8px;
             display: block;
+            font-size: 0.9rem;
         }
         
-        .input-group {
+        .form-label .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+        
+        .form-label .role-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        
+        .role-badge.ks {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .role-badge.admin {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .role-badge.guru {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .role-badge.siswa {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        
+        .input-group-custom {
             position: relative;
         }
         
@@ -110,8 +172,9 @@
             left: 15px;
             top: 50%;
             transform: translateY(-50%);
-            color: #999;
+            color: #aaa;
             z-index: 1;
+            font-size: 1rem;
         }
         
         .password-toggle {
@@ -120,31 +183,40 @@
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #999;
+            color: #aaa;
             z-index: 10;
             background: transparent;
             border: none;
             font-size: 1rem;
+            padding: 5px;
         }
         
         .password-toggle:hover {
             color: #667eea;
         }
         
-        .form-control {
+        .form-control-custom {
             padding-left: 45px;
             padding-right: 45px;
             height: 50px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid #e8e8e8;
             border-radius: 10px;
             font-size: 15px;
             transition: all 0.3s;
+            width: 100%;
+            background: #fafafa;
         }
         
-        .form-control:focus {
+        .form-control-custom:focus {
             border-color: #667eea;
-            box-shadow: none;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             outline: none;
+            background: white;
+        }
+        
+        .form-control-custom.is-invalid {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
         }
         
         .btn-login {
@@ -158,11 +230,35 @@
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
+            position: relative;
+            overflow: hidden;
         }
         
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-login .spinner {
+            display: none;
+        }
+        
+        .btn-login.loading .spinner {
+            display: inline-block;
+        }
+        
+        .btn-login.loading .btn-text {
+            display: none;
         }
         
         .alert {
@@ -170,11 +266,14 @@
             padding: 15px;
             margin-bottom: 20px;
             border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .alert-danger {
-            background: #fff2f0;
-            color: #e74c3c;
+            background: #fef0ef;
+            color: #c0392b;
             border-left: 4px solid #e74c3c;
         }
         
@@ -184,170 +283,306 @@
             border-left: 4px solid #27ae60;
         }
         
+        .alert i {
+            font-size: 1.2rem;
+        }
+        
         .remember-me {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            gap: 10px;
         }
         
-        .remember-me input {
-            margin-right: 10px;
+        .remember-me input[type="checkbox"] {
             width: 18px;
             height: 18px;
             cursor: pointer;
+            accent-color: #667eea;
         }
         
         .remember-me label {
             color: #666;
             cursor: pointer;
             font-size: 14px;
-        }
-        
-        .info-text {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-            text-align: center;
+            margin-bottom: 0;
         }
         
         .password-hint {
             background: #f0f7ff;
-            padding: 10px;
+            padding: 12px 15px;
             border-radius: 8px;
             font-size: 12px;
             margin-top: 10px;
+            border: 1px solid #d6e4ff;
         }
         
         .password-hint code {
             background: #e9ecef;
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .password-hint .highlight {
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .password-hint .role-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0 6px;
+            border-radius: 4px;
+            font-weight: 700;
             font-size: 11px;
         }
         
         .demo-accounts {
-            margin-top: 30px;
+            margin-top: 25px;
             padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 2px solid #f0f0f0;
         }
         
         .demo-accounts h6 {
-            color: #666;
+            color: #888;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .demo-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
         
         .demo-item {
             background: #f8f9fa;
             padding: 10px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+        
+        .demo-item:hover {
+            background: #f0f2ff;
+            border-color: #667eea;
         }
         
         .demo-item strong {
-            color: #667eea;
+            color: #333;
             display: block;
-            margin-bottom: 5px;
+            font-size: 12px;
+            margin-bottom: 3px;
         }
         
-        .demo-item span {
-            font-size: 11px;
+        .demo-item .label {
             color: #999;
-            display: block;
+            font-size: 10px;
         }
         
-        .demo-item small {
-            display: block;
+        .demo-item .value {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        .demo-item .pass {
+            font-family: monospace;
             font-size: 10px;
             color: #27ae60;
-            margin-top: 5px;
-            font-family: monospace;
+            margin-top: 3px;
+            display: block;
+            background: #e8f5e9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .demo-item .role-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
+        .role-badge.ks {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .role-badge.admin {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .role-badge.guru {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .role-badge.siswa {
+            background: #fce4ec;
+            color: #c62828;
+        }
+        
+        .footer-text {
+            margin-top: 20px;
+            text-align: center;
+            color: #bbb;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 25px 20px;
+                margin: 15px;
+                border-radius: 15px;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .login-header .logo {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            
+            .role-btn {
+                font-size: 0.7rem;
+                padding: 6px 4px;
+                min-width: 50px;
+            }
+            
+            .role-btn i {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-card">
         <div class="login-header">
-            <h3>🔐 SIMDU</h3>
-            <p>Silakan login untuk mengakses sistem</p>
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3>Sistem Informasi Sekolah</h3>
+            <p>SMK Bisa</p>
         </div>
         
         <!-- Role Selector -->
         <div class="role-selector">
             <button type="button" class="role-btn active" data-role="guru" onclick="setRole('guru')">
-                <i class="fas fa-chalkboard-user"></i> Guru / Staf
+                <i class="fas fa-chalkboard-user"></i>
+                Guru / Staf
             </button>
             <button type="button" class="role-btn" data-role="siswa" onclick="setRole('siswa')">
-                <i class="fas fa-user-graduate"></i> Siswa
+                <i class="fas fa-user-graduate"></i>
+                Siswa
             </button>
         </div>
         
-        <!-- Tampilkan error jika ada -->
+        <!-- Alert Messages -->
         <?php if(session('error')): ?>
             <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <?php echo e(session('error')); ?>
-
+                <i class="fas fa-exclamation-circle"></i>
+                <span><?php echo e(session('error')); ?></span>
             </div>
         <?php endif; ?>
         
         <?php if($errors->any()): ?>
             <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <?php echo e($errors->first()); ?>
-
+                <i class="fas fa-exclamation-circle"></i>
+                <span><?php echo e($errors->first()); ?></span>
+            </div>
+        <?php endif; ?>
+        
+        <?php if(session('success')): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span><?php echo e(session('success')); ?></span>
             </div>
         <?php endif; ?>
         
         <!-- Form Login untuk Guru/Staf -->
-        <form id="loginFormGuru" method="POST" action="<?php echo e(route('login.guru')); ?>" style="display: block;">
+        <form id="loginFormGuru" method="POST" action="<?php echo e(route('login.guru')); ?>" style="display: block;" onsubmit="return handleSubmit(this)">
             <?php echo csrf_field(); ?>
             <div class="form-group">
                 <label class="form-label">
                     <i class="fas fa-id-card me-1"></i> 
-                    NUPTK (Username)
+                    NUPTK <span class="required">*</span>
+                    <span class="role-badge guru">Guru</span>
+                    <span class="role-badge ks">Kepsek</span>
+                    <span class="role-badge admin">Admin</span>
                 </label>
-                <div class="input-group">
+                <div class="input-group-custom">
                     <i class="fas fa-user input-icon"></i>
                     <input type="text" 
-                           class="form-control" 
+                           class="form-control-custom <?php $__errorArgs = ['nuptk'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                            name="nuptk" 
                            id="nuptk"
                            placeholder="Masukkan NUPTK (16 digit)"
                            value="<?php echo e(old('nuptk')); ?>"
                            autofocus
-                           maxlength="20">
+                           maxlength="20"
+                           required>
                 </div>
-                <div class="info-text">
-                    Masukkan NUPTK yang terdaftar (contoh: 195875365530062)
+                <div class="info-text text-muted small mt-1">
+                    <i class="fas fa-info-circle"></i> Masukkan NUPTK yang terdaftar (contoh: 195875365530062)
                 </div>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Password</label>
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
+                <label class="form-label">
+                    <i class="fas fa-lock me-1"></i> 
+                    Password <span class="required">*</span>
+                </label>
+                <div class="input-group-custom">
+                    <i class="fas fa-key input-icon"></i>
                     <input type="password" 
-                           class="form-control" 
+                           class="form-control-custom <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                            name="password" 
                            id="passwordGuru"
-                           placeholder="Masukkan password">
+                           placeholder="Masukkan password"
+                           required>
                     <button type="button" class="password-toggle" onclick="togglePassword('passwordGuru', this)">
                         <i class="far fa-eye"></i>
                     </button>
                 </div>
                 <div class="password-hint" id="guruHint">
                     <i class="fas fa-info-circle me-1"></i>
-                    Format password: <code>simdu#4</code> + <strong>4 digit terakhir NUPTK</strong>
-                    <br>Contoh: Jika NUPTK = <strong>195875365530062</strong>, password = <strong>simdu#40062</strong>
+                    Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                    <br>
+                    <span class="badge bg-success me-1">#1</span> Kepala Sekolah &nbsp;
+                    <span class="badge bg-primary me-1">#2</span> Admin &nbsp;
+                    <span class="badge bg-warning text-dark me-1">#3</span> Guru
+                    <br>Contoh: NUPTK = <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek) / <code>simdu#30062</code> (Guru)
                 </div>
             </div>
             
@@ -356,50 +591,73 @@
                 <label for="remember">Ingat saya</label>
             </div>
             
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt me-2"></i>
-                Login sebagai Guru / Staf
+            <button type="submit" class="btn-login" id="btnLoginGuru">
+                <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login sebagai Guru / Staf</span>
+                <span class="spinner"><i class="fas fa-spinner fa-spin me-2"></i>Memproses...</span>
             </button>
         </form>
         
         <!-- Form Login untuk Siswa -->
-        <form id="loginFormSiswa" method="POST" action="<?php echo e(route('login.siswa')); ?>" style="display: none;">
+        <form id="loginFormSiswa" method="POST" action="<?php echo e(route('login.siswa')); ?>" style="display: none;" onsubmit="return handleSubmit(this)">
             <?php echo csrf_field(); ?>
             <div class="form-group">
                 <label class="form-label">
-                    <i class="fas fa-id-badge me-1"></i> NIS (Username)
+                    <i class="fas fa-id-badge me-1"></i> 
+                    NIS <span class="required">*</span>
+                    <span class="role-badge siswa">Siswa</span>
                 </label>
-                <div class="input-group">
+                <div class="input-group-custom">
                     <i class="fas fa-user-graduate input-icon"></i>
                     <input type="text" 
-                           class="form-control" 
+                           class="form-control-custom <?php $__errorArgs = ['nis'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                            name="nis" 
                            id="nis"
                            placeholder="Masukkan NIS"
-                           value="<?php echo e(old('nis')); ?>">
+                           value="<?php echo e(old('nis')); ?>"
+                           required>
                 </div>
-                <div class="info-text">
-                    Masukkan NIS (Nomor Induk Siswa) yang terdaftar
+                <div class="info-text text-muted small mt-1">
+                    <i class="fas fa-info-circle"></i> Masukkan NIS (Nomor Induk Siswa) yang terdaftar
                 </div>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Password</label>
-                <div class="input-group">
-                    <i class="fas fa-lock input-icon"></i>
+                <label class="form-label">
+                    <i class="fas fa-lock me-1"></i> 
+                    Password <span class="required">*</span>
+                </label>
+                <div class="input-group-custom">
+                    <i class="fas fa-key input-icon"></i>
                     <input type="password" 
-                           class="form-control" 
+                           class="form-control-custom <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                            name="password" 
                            id="passwordSiswa"
-                           placeholder="Masukkan password">
+                           placeholder="Masukkan password"
+                           required>
                     <button type="button" class="password-toggle" onclick="togglePassword('passwordSiswa', this)">
                         <i class="far fa-eye"></i>
                     </button>
                 </div>
                 <div class="password-hint" id="siswaHint">
                     <i class="fas fa-info-circle me-1"></i>
-                    Format password: <code>simdu#4</code> + <strong>4 digit terakhir NIS</strong>
-                    <br>Contoh: Jika NIS = <strong>1234567890</strong>, password = <strong>simdu#47890</strong>
+                    Format password: <code>simdu#<span class="role-number">4</span></code> + <strong class="highlight">4 digit terakhir NIS</strong>
+                    <br>
+                    <span class="badge bg-danger">#4</span> Siswa
+                    <br>Contoh: Jika NIS = <strong>1234567890</strong>, password = <strong><code>simdu#47890</code></strong>
                 </div>
             </div>
             
@@ -408,9 +666,9 @@
                 <label for="remember_siswa">Ingat saya</label>
             </div>
             
-            <button type="submit" class="btn-login">
-                <i class="fas fa-sign-in-alt me-2"></i>
-                Login sebagai Siswa
+            <button type="submit" class="btn-login" id="btnLoginSiswa">
+                <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login sebagai Siswa</span>
+                <span class="spinner"><i class="fas fa-spinner fa-spin me-2"></i>Memproses...</span>
             </button>
         </form>
         
@@ -419,37 +677,50 @@
             <h6>🔑 Informasi Login</h6>
             <div class="demo-grid">
                 <div class="demo-item">
-                    <strong>👨‍🏫 Guru (Kepala Sekolah)</strong>
-                    NUPTK: 195875365530062
-                    <span>Password: simdu#40062</span>
+                    <strong>👨‍🏫 Kepala Sekolah</strong>
+                    <span class="label">NUPTK:</span>
+                    <span class="value">195875365530062</span>
+                    <span class="pass">simdu#10062</span>
+                    <span class="role-badge ks">Kepsek</span>
+                    <span class="role-badge guru">Guru</span>
                 </div>
                 <div class="demo-item">
-                    <strong>👨‍🏫 Guru (WAKABIDKUR)</strong>
-                    NUPTK: 623775065320013
-                    <span>Password: simdu#4013</span>
+                    <strong>👨‍🏫 Admin</strong>
+                    <span class="label">NUPTK:</span>
+                    <span class="value">604074464420003</span>
+                    <span class="pass">simdu#20003</span>
+                    <span class="role-badge admin">Admin</span>
                 </div>
                 <div class="demo-item">
-                    <strong>👨‍🏫 Guru (KESISWAAN)</strong>
-                    NUPTK: 405276066030003
-                    <span>Password: simdu#4003</span>
+                    <strong>👨‍🏫 Guru</strong>
+                    <span class="label">NUPTK:</span>
+                    <span class="value">623775065320013</span>
+                    <span class="pass">simdu#30013</span>
+                    <span class="role-badge guru">Guru</span>
                 </div>
                 <div class="demo-item">
-                    <strong>👨‍🎓 Siswa (Contoh)</strong>
-                    NIS: 1234567890
-                    <span>Password: simdu#47890</span>
+                    <strong>👨‍🎓 Siswa</strong>
+                    <span class="label">NIS:</span>
+                    <span class="value">1234567890</span>
+                    <span class="pass">simdu#47890</span>
+                    <span class="role-badge siswa">Siswa</span>
                 </div>
+            </div>
+            <div class="mt-2 text-center">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Multi-Role:</strong> Kepala Sekolah bisa login sebagai Guru dengan <code>simdu#30062</code>
+                </small>
             </div>
         </div>
         
-        <div class="text-center mt-3">
-            <small class="text-muted">
-                &copy; <?php echo e(date('Y')); ?> Sistem Informasi Sekolah
-            </small>
+        <div class="footer-text">
+            &copy; <?php echo e(date('Y')); ?> SMK Bisa - Sistem Informasi Sekolah
         </div>
     </div>
     
     <script>
-        // Toggle Password Visibility Function
+        // Toggle Password Visibility
         function togglePassword(inputId, buttonElement) {
             const passwordInput = document.getElementById(inputId);
             const icon = buttonElement.querySelector('i');
@@ -465,6 +736,7 @@
             }
         }
         
+        // Set Role
         function setRole(role) {
             const formGuru = document.getElementById('loginFormGuru');
             const formSiswa = document.getElementById('loginFormSiswa');
@@ -493,36 +765,79 @@
                     }
                 });
             }
+            
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+        }
+        
+        // Handle form submit - loading state
+        function handleSubmit(form) {
+            const btn = form.querySelector('.btn-login');
+            btn.classList.add('loading');
+            btn.disabled = true;
+            return true;
         }
         
         // Auto-generate password hint based on NUPTK input
         document.getElementById('nuptk')?.addEventListener('input', function(e) {
-            const nuptk = e.target.value;
+            const nuptk = e.target.value.replace(/\s/g, '');
             const hintDiv = document.getElementById('guruHint');
             const passwordInput = document.getElementById('passwordGuru');
             
             if (nuptk.length >= 4) {
                 const last4 = nuptk.slice(-4);
-                hintDiv.innerHTML = '<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#4</code> + <strong>4 digit terakhir NUPTK</strong><br>✅ Password Anda = <strong><code>simdu#4' + last4 + '</code></strong>';
-                passwordInput.placeholder = 'simdu#4' + last4;
+                hintDiv.innerHTML = `
+                    <i class="fas fa-info-circle me-1"></i>
+                    Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                    <br>
+                    <span class="badge bg-success me-1">#1</span> Kepala Sekolah &nbsp;
+                    <span class="badge bg-primary me-1">#2</span> Admin &nbsp;
+                    <span class="badge bg-warning text-dark me-1">#3</span> Guru
+                    <br>✅ Password Anda:
+                    <br><code>simdu#1` + last4 + `</code> (Kepsek) 
+                    <br><code>simdu#2` + last4 + `</code> (Admin) 
+                    <br><code>simdu#3` + last4 + `</code> (Guru)
+                `;
+                passwordInput.placeholder = 'simdu#3' + last4;
             } else {
-                hintDiv.innerHTML = '<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#4</code> + <strong>4 digit terakhir NUPTK</strong><br>Contoh: Jika NUPTK = <strong>195875365530062</strong>, password = <strong>simdu#40062</strong>';
+                hintDiv.innerHTML = `
+                    <i class="fas fa-info-circle me-1"></i>
+                    Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                    <br>
+                    <span class="badge bg-success me-1">#1</span> Kepala Sekolah &nbsp;
+                    <span class="badge bg-primary me-1">#2</span> Admin &nbsp;
+                    <span class="badge bg-warning text-dark me-1">#3</span> Guru
+                    <br>Contoh: NUPTK = <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek) / <code>simdu#30062</code> (Guru)
+                `;
                 passwordInput.placeholder = 'Masukkan password';
             }
         });
         
         // Auto-generate password hint based on NIS input
         document.getElementById('nis')?.addEventListener('input', function(e) {
-            const nis = e.target.value;
+            const nis = e.target.value.replace(/\s/g, '');
             const hintDiv = document.getElementById('siswaHint');
             const passwordInput = document.getElementById('passwordSiswa');
             
             if (nis.length >= 4) {
                 const last4 = nis.slice(-4);
-                hintDiv.innerHTML = '<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#4</code> + <strong>4 digit terakhir NIS</strong><br>✅ Password Anda = <strong><code>simdu#4' + last4 + '</code></strong>';
+                hintDiv.innerHTML = `
+                    <i class="fas fa-info-circle me-1"></i>
+                    Format password: <code>simdu#<span class="role-number">4</span></code> + <strong class="highlight">4 digit terakhir NIS</strong>
+                    <br>
+                    <span class="badge bg-danger">#4</span> Siswa
+                    <br>✅ Password Anda = <strong><code>simdu#4` + last4 + `</code></strong>
+                `;
                 passwordInput.placeholder = 'simdu#4' + last4;
             } else {
-                hintDiv.innerHTML = '<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#4</code> + <strong>4 digit terakhir NIS</strong><br>Contoh: Jika NIS = <strong>1234567890</strong>, password = <strong>simdu#47890</strong>';
+                hintDiv.innerHTML = `
+                    <i class="fas fa-info-circle me-1"></i>
+                    Format password: <code>simdu#<span class="role-number">4</span></code> + <strong class="highlight">4 digit terakhir NIS</strong>
+                    <br>
+                    <span class="badge bg-danger">#4</span> Siswa
+                    <br>Contoh: Jika NIS = <strong>1234567890</strong>, password = <strong><code>simdu#47890</code></strong>
+                `;
                 passwordInput.placeholder = 'Masukkan password';
             }
         });
@@ -535,7 +850,6 @@
         <?php endif; ?>
     </script>
     
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html><?php /**PATH C:\php\SIMDU\resources\views/auth/login.blade.php ENDPATH**/ ?>

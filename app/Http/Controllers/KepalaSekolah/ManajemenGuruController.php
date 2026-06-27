@@ -5,8 +5,13 @@ namespace App\Http\Controllers\KepalaSekolah;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\Absensi;
+use App\Models\User;
+use App\Models\Jabatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class ManajemenGuruController extends Controller
@@ -17,9 +22,8 @@ class ManajemenGuruController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Guru::with('user');
+            $query = Guru::with(['user', 'jabatan']);
             
-            // Pencarian
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
@@ -30,14 +34,12 @@ class ManajemenGuruController extends Controller
                 });
             }
             
-            // Filter status
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
             
             $guru = $query->orderBy('nama_lengkap')->paginate(10);
             
-            // Statistik
             $totalGuru = Guru::count();
             $guruAktif = Guru::where('status', 'aktif')->count();
             $guruPNS = Guru::where('status_kepegawaian', 'pns')->count();
@@ -48,6 +50,7 @@ class ManajemenGuruController extends Controller
                 'guru', 'totalGuru', 'guruAktif', 'guruPNS', 'guruHonorer', 'guruKontrak'
             ));
         } catch (\Exception $e) {
+            Log::error('Error in manajemen guru index: ' . $e->getMessage());
             return back()->with('error', 'Gagal memuat data: ' . $e->getMessage());
         }
     }
@@ -57,7 +60,33 @@ class ManajemenGuruController extends Controller
      */
     public function create()
     {
-        return view('kepala-sekolah.manajemen-guru.create');
+        try {
+            $jabatan = Jabatan::all();
+            
+            if ($jabatan->isEmpty()) {
+                $defaultJabatan = [
+                    ['nama' => 'Guru Mapel', 'keterangan' => 'Guru Mata Pelajaran'],
+                    ['nama' => 'Wali Kelas', 'keterangan' => 'Wali Kelas'],
+                    ['nama' => 'Kepala Program', 'keterangan' => 'Kepala Program Keahlian'],
+                    ['nama' => 'Guru BK', 'keterangan' => 'Guru Bimbingan Konseling'],
+                    ['nama' => 'Staf TU', 'keterangan' => 'Staf Tata Usaha'],
+                    ['nama' => 'Kepala Sekolah', 'keterangan' => 'Kepala Sekolah'],
+                    ['nama' => 'Wakil Kepala Sekolah', 'keterangan' => 'Wakil Kepala Sekolah'],
+                ];
+                
+                foreach ($defaultJabatan as $data) {
+                    Jabatan::create($data);
+                }
+                
+                $jabatan = Jabatan::all();
+            }
+            
+            return view('kepala-sekolah.manajemen-guru.create', compact('jabatan'));
+        } catch (\Exception $e) {
+            Log::error('Error in manajemen guru create: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('error', 'Gagal memuat form tambah guru: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -65,7 +94,81 @@ class ManajemenGuruController extends Controller
      */
     public function store(Request $request)
     {
-        // ... kode store ...
+        try {
+            $request->validate([
+                'nama_lengkap' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'nip' => 'required|string|max:50|unique:gurus,nip',
+                'nuptk' => 'nullable|string|max:50|unique:gurus,nuptk',
+                'jenis_kelamin' => 'required|in:L,P',
+                'tempat_lahir' => 'required|string|max:100',
+                'tanggal_lahir' => 'required|date',
+                'alamat' => 'required|string',
+                'no_telepon' => 'nullable|string|max:20',
+                'pendidikan_terakhir' => 'required|string|max:100',
+                'jurusan_pendidikan' => 'required|string|max:100',
+                'universitas' => 'nullable|string|max:100',
+                'tahun_lulus' => 'nullable|string|max:10',
+                'tmt_masuk' => 'required|date',
+                'status_kepegawaian' => 'required|string|max:50',
+                'golongan' => 'nullable|string|max:20',
+                'mata_pelajaran_utama' => 'nullable|string|max:100',
+                'keahlian_khusus' => 'nullable|string|max:100',
+                'jabatan_id' => 'nullable|exists:jabatans,id',
+                'status' => 'nullable|in:aktif,nonaktif',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            DB::beginTransaction();
+
+            $fotoPath = null;
+            if ($request->hasFile('foto')) {
+                $foto = $request->file('foto');
+                $fotoName = time() . '_' . $foto->getClientOriginalName();
+                $fotoPath = $foto->storeAs('guru/foto', $fotoName, 'public');
+            }
+
+            $user = User::create([
+                'name' => $request->nama_lengkap,
+                'email' => $request->email,
+                'password' => Hash::make('password123'),
+                'role' => 'guru',
+                'foto' => $fotoPath,
+            ]);
+
+            $guru = Guru::create([
+                'user_id' => $user->id,
+                'nama_lengkap' => $request->nama_lengkap,
+                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'no_telepon' => $request->no_telepon,
+                'pendidikan_terakhir' => $request->pendidikan_terakhir,
+                'jurusan_pendidikan' => $request->jurusan_pendidikan,
+                'universitas' => $request->universitas,
+                'tahun_lulus' => $request->tahun_lulus,
+                'tmt_masuk' => $request->tmt_masuk,
+                'status_kepegawaian' => $request->status_kepegawaian,
+                'golongan' => $request->golongan,
+                'mata_pelajaran_utama' => $request->mata_pelajaran_utama,
+                'keahlian_khusus' => $request->keahlian_khusus,
+                'jabatan_id' => $request->jabatan_id,
+                'status' => $request->status ?? 'aktif',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('success', 'Guru berhasil ditambahkan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in manajemen guru store: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menambahkan guru: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
@@ -73,7 +176,16 @@ class ManajemenGuruController extends Controller
      */
     public function show($id)
     {
-        // ... kode show ...
+        try {
+            $guru = Guru::with(['user', 'jabatan'])->findOrFail($id);
+            
+            return view('kepala-sekolah.manajemen-guru.show', compact('guru'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in manajemen guru show: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('error', 'Data guru tidak ditemukan');
+        }
     }
 
     /**
@@ -81,7 +193,16 @@ class ManajemenGuruController extends Controller
      */
     public function edit($id)
     {
-        // ... kode edit ...
+        try {
+            $guru = Guru::with(['user', 'jabatan'])->findOrFail($id);
+            $jabatan = Jabatan::all();
+            
+            return view('kepala-sekolah.manajemen-guru.edit', compact('guru', 'jabatan'));
+        } catch (\Exception $e) {
+            Log::error('Error in manajemen guru edit: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('error', 'Data guru tidak ditemukan');
+        }
     }
 
     /**
@@ -89,7 +210,86 @@ class ManajemenGuruController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // ... kode update ...
+        try {
+            $guru = Guru::with('user')->findOrFail($id);
+            
+            $request->validate([
+                'nama_lengkap' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . ($guru->user_id ?? 0),
+                'nip' => 'required|string|max:50|unique:gurus,nip,' . $id,
+                'nuptk' => 'nullable|string|max:50|unique:gurus,nuptk,' . $id,
+                'jenis_kelamin' => 'required|in:L,P',
+                'tempat_lahir' => 'required|string|max:100',
+                'tanggal_lahir' => 'required|date',
+                'alamat' => 'required|string',
+                'no_telepon' => 'nullable|string|max:20',
+                'pendidikan_terakhir' => 'required|string|max:100',
+                'jurusan_pendidikan' => 'required|string|max:100',
+                'universitas' => 'nullable|string|max:100',
+                'tahun_lulus' => 'nullable|string|max:10',
+                'tmt_masuk' => 'required|date',
+                'status_kepegawaian' => 'required|string|max:50',
+                'golongan' => 'nullable|string|max:20',
+                'mata_pelajaran_utama' => 'nullable|string|max:100',
+                'keahlian_khusus' => 'nullable|string|max:100',
+                'jabatan_id' => 'nullable|exists:jabatans,id',
+                'status' => 'nullable|in:aktif,nonaktif',
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            DB::beginTransaction();
+
+            $fotoPath = $guru->user->foto ?? null;
+            if ($request->hasFile('foto')) {
+                if ($fotoPath && Storage::disk('public')->exists($fotoPath)) {
+                    Storage::disk('public')->delete($fotoPath);
+                }
+                
+                $foto = $request->file('foto');
+                $fotoName = time() . '_' . $foto->getClientOriginalName();
+                $fotoPath = $foto->storeAs('guru/foto', $fotoName, 'public');
+            }
+
+            if ($guru->user) {
+                $guru->user->update([
+                    'name' => $request->nama_lengkap,
+                    'email' => $request->email,
+                    'foto' => $fotoPath,
+                ]);
+            }
+
+            $guru->update([
+                'nama_lengkap' => $request->nama_lengkap,
+                'nip' => $request->nip,
+                'nuptk' => $request->nuptk,
+                'jenis_kelamin' => $request->jenis_kelamin,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'no_telepon' => $request->no_telepon,
+                'pendidikan_terakhir' => $request->pendidikan_terakhir,
+                'jurusan_pendidikan' => $request->jurusan_pendidikan,
+                'universitas' => $request->universitas,
+                'tahun_lulus' => $request->tahun_lulus,
+                'tmt_masuk' => $request->tmt_masuk,
+                'status_kepegawaian' => $request->status_kepegawaian,
+                'golongan' => $request->golongan,
+                'mata_pelajaran_utama' => $request->mata_pelajaran_utama,
+                'keahlian_khusus' => $request->keahlian_khusus,
+                'jabatan_id' => $request->jabatan_id,
+                'status' => $request->status ?? 'aktif',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('success', 'Data guru berhasil diupdate');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in manajemen guru update: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupdate guru: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
@@ -97,16 +297,43 @@ class ManajemenGuruController extends Controller
      */
     public function destroy($id)
     {
-        // ... kode destroy ...
+        try {
+            $guru = Guru::with('user')->findOrFail($id);
+            
+            DB::beginTransaction();
+            
+            if ($guru->user && $guru->user->foto) {
+                if (Storage::disk('public')->exists($guru->user->foto)) {
+                    Storage::disk('public')->delete($guru->user->foto);
+                }
+            }
+            
+            if ($guru->user) {
+                $guru->user->delete();
+            }
+            
+            $guru->delete();
+            
+            DB::commit();
+
+            return redirect()->route('kepala-sekolah.manajemen-guru.index')
+                ->with('success', 'Guru berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error in manajemen guru destroy: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus guru: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Halaman absensi guru
+     * Halaman Rekap Absensi Guru - FIXED
      */
     public function absensi(Request $request)
     {
         try {
-            $tanggal = $request->tanggal ?? Carbon::now()->toDateString();
+            $bulan = $request->bulan ?? Carbon::now()->month;
+            $tahun = $request->tahun ?? Carbon::now()->year;
             
             // Ambil semua guru aktif
             $guru = Guru::with('user')
@@ -114,27 +341,110 @@ class ManajemenGuruController extends Controller
                 ->orderBy('nama_lengkap')
                 ->get();
             
-            // Ambil absensi untuk tanggal tersebut
-            foreach ($guru as $g) {
-                $g->absensi_hari_ini = DB::table('absensi')
-                    ->where('absensi_type', 'guru')
-                    ->where('guru_id', $g->id)
-                    ->whereDate('tanggal', $tanggal)
-                    ->first();
+            // Jika tidak ada guru
+            if ($guru->isEmpty()) {
+                $bulanList = $this->getBulanList();
+                $tahunList = range(date('Y') - 2, date('Y') + 1);
+                
+                return view('kepala-sekolah.manajemen-guru.absensi', [
+                    'rekapData' => [],
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                    'bulanList' => $bulanList,
+                    'tahunList' => $tahunList,
+                    'statistik' => [
+                        'total_guru' => 0,
+                        'total_hadir' => 0,
+                        'total_sakit' => 0,
+                        'total_izin' => 0,
+                        'total_alfa' => 0,
+                        'total_terlambat' => 0,
+                        'total_absensi' => 0,
+                        'rata_persentase' => 0
+                    ],
+                    'error' => 'Belum ada data guru'
+                ]);
             }
             
-            $statusList = [
-                'hadir' => 'Hadir',
-                'sakit' => 'Sakit',
-                'izin' => 'Izin',
-                'alfa' => 'Alfa',
-                'terlambat' => 'Terlambat'
+            // Proses rekap per guru - QUERY MANUAL (TANPA SCOPE)
+            $rekapData = [];
+            foreach ($guru as $g) {
+                // Query manual untuk absensi
+                $absensi = Absensi::where('absensi_type', 'guru')
+                    ->where('guru_id', $g->id)
+                    ->whereMonth('tanggal', $bulan)
+                    ->whereYear('tanggal', $tahun)
+                    ->get();
+                
+                $hadir = $absensi->where('status', 'hadir')->count();
+                $total = $absensi->count();
+                
+                $rekapData[] = [
+                    'id' => $g->id,
+                    'nama' => $g->nama_lengkap ?? $g->user->name ?? '-',
+                    'nip' => $g->nip ?? '-',
+                    'nuptk' => $g->nuptk ?? '-',
+                    'hadir' => $hadir,
+                    'sakit' => $absensi->where('status', 'sakit')->count(),
+                    'izin' => $absensi->where('status', 'izin')->count(),
+                    'alfa' => $absensi->where('status', 'alfa')->count(),
+                    'terlambat' => $absensi->where('status', 'terlambat')->count(),
+                    'total' => $total,
+                    'persentase' => $total > 0 ? round(($hadir / $total) * 100, 2) : 0
+                ];
+            }
+            
+            $bulanList = $this->getBulanList();
+            $tahunList = range(date('Y') - 2, date('Y') + 1);
+            
+            // Statistik ringkasan
+            $statistik = [
+                'total_guru' => count($rekapData),
+                'total_hadir' => array_sum(array_column($rekapData, 'hadir')),
+                'total_sakit' => array_sum(array_column($rekapData, 'sakit')),
+                'total_izin' => array_sum(array_column($rekapData, 'izin')),
+                'total_alfa' => array_sum(array_column($rekapData, 'alfa')),
+                'total_terlambat' => array_sum(array_column($rekapData, 'terlambat')),
+                'total_absensi' => array_sum(array_column($rekapData, 'total')),
+                'rata_persentase' => count($rekapData) > 0 ? round(array_sum(array_column($rekapData, 'persentase')) / count($rekapData), 2) : 0
             ];
             
-            return view('kepala-sekolah.manajemen-guru.absensi', compact('guru', 'tanggal', 'statusList'));
+            // DEBUG: Log untuk memastikan data ada
+            \Log::info('=== REKAP ABSENSI ===');
+            \Log::info('Bulan: ' . $bulan . ', Tahun: ' . $tahun);
+            \Log::info('Total guru: ' . $guru->count());
+            \Log::info('Total rekapData: ' . count($rekapData));
+            \Log::info('Total absensi: ' . $statistik['total_absensi']);
+            
+            return view('kepala-sekolah.manajemen-guru.absensi', compact(
+                'rekapData', 'bulan', 'tahun', 'bulanList', 'tahunList', 'statistik'
+            ));
             
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memuat data absensi: ' . $e->getMessage());
+            Log::error('Error in manajemen guru absensi: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            $bulanList = $this->getBulanList();
+            $tahunList = range(date('Y') - 2, date('Y') + 1);
+            
+            return view('kepala-sekolah.manajemen-guru.absensi', [
+                'rekapData' => [],
+                'bulan' => $request->bulan ?? date('m'),
+                'tahun' => $request->tahun ?? date('Y'),
+                'bulanList' => $bulanList,
+                'tahunList' => $tahunList,
+                'statistik' => [
+                    'total_guru' => 0,
+                    'total_hadir' => 0,
+                    'total_sakit' => 0,
+                    'total_izin' => 0,
+                    'total_alfa' => 0,
+                    'total_terlambat' => 0,
+                    'total_absensi' => 0,
+                    'rata_persentase' => 0
+                ],
+                'error' => 'Error: ' . $e->getMessage()
+            ]);
         }
     }
 
@@ -155,29 +465,34 @@ class ManajemenGuruController extends Controller
             $savedCount = 0;
             foreach ($request->absensi as $id => $data) {
                 if (isset($data['status']) && !empty($data['status'])) {
-                    // Cek apakah sudah ada absensi hari ini
-                    $existing = DB::table('absensi')
-                        ->where('absensi_type', 'guru')
+                    $guru = Guru::find($id);
+                    if (!$guru) {
+                        continue;
+                    }
+                    
+                    $existing = Absensi::where('absensi_type', 'guru')
                         ->where('guru_id', $id)
                         ->whereDate('tanggal', $request->tanggal)
                         ->first();
                     
-                    $absensiData = [
-                        'absensi_type' => 'guru',
-                        'guru_id' => $id,
-                        'tanggal' => $request->tanggal,
-                        'status' => $data['status'],
-                        'keterangan' => $data['keterangan'] ?? null,
-                        'diinput_oleh' => auth()->id(),
-                        'waktu_masuk' => $data['status'] === 'hadir' ? ($data['waktu_masuk'] ?? now()->toTimeString()) : null,
-                        'updated_at' => now(),
-                    ];
-                    
                     if ($existing) {
-                        DB::table('absensi')->where('id', $existing->id)->update($absensiData);
+                        $existing->update([
+                            'status' => $data['status'],
+                            'keterangan' => $data['keterangan'] ?? null,
+                            'waktu_masuk' => $data['status'] === 'hadir' ? ($data['waktu_masuk'] ?? now()->toTimeString()) : null,
+                            'waktu_keluar' => $data['waktu_keluar'] ?? null,
+                        ]);
                     } else {
-                        $absensiData['created_at'] = now();
-                        DB::table('absensi')->insert($absensiData);
+                        Absensi::create([
+                            'absensi_type' => 'guru',
+                            'guru_id' => $id,
+                            'tanggal' => $request->tanggal,
+                            'status' => $data['status'],
+                            'keterangan' => $data['keterangan'] ?? null,
+                            'waktu_masuk' => $data['status'] === 'hadir' ? ($data['waktu_masuk'] ?? now()->toTimeString()) : null,
+                            'waktu_keluar' => $data['waktu_keluar'] ?? null,
+                            'diinput_oleh' => auth()->id(),
+                        ]);
                     }
                     $savedCount++;
                 }
@@ -189,66 +504,48 @@ class ManajemenGuruController extends Controller
                 return redirect()->back()->with('warning', 'Tidak ada data absensi yang dipilih');
             }
             
-            return redirect()->back()->with('success', 'Absensi guru berhasil disimpan');
+            return redirect()->back()->with('success', 'Absensi guru berhasil disimpan untuk ' . $savedCount . ' guru');
             
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+            Log::error('Error in manajemen guru storeAbsensi: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal menyimpan absensi: ' . $e->getMessage());
         }
     }
 
     /**
-     * Rekap absensi guru
+     * Reset password guru
      */
-    public function rekapAbsensi(Request $request)
+    public function resetPassword($id)
     {
         try {
-            $bulan = $request->bulan ?? Carbon::now()->month;
-            $tahun = $request->tahun ?? Carbon::now()->year;
+            $guru = Guru::with('user')->findOrFail($id);
             
-            $guru = Guru::where('status', 'aktif')
-                ->orderBy('nama_lengkap')
-                ->get();
-            
-            $rekap = [];
-            foreach ($guru as $g) {
-                $absensi = DB::table('absensi')
-                    ->where('absensi_type', 'guru')
-                    ->where('guru_id', $g->id)
-                    ->whereMonth('tanggal', $bulan)
-                    ->whereYear('tanggal', $tahun)
-                    ->get();
-                
-                $hadir = $absensi->where('status', 'hadir')->count();
-                $total = $absensi->count();
-                
-                $rekap[] = [
-                    'id' => $g->id,
-                    'nama' => $g->nama_lengkap,
-                    'nuptk' => $g->nuptk,
-                    'nip' => $g->nip,
-                    'hadir' => $hadir,
-                    'sakit' => $absensi->where('status', 'sakit')->count(),
-                    'izin' => $absensi->where('status', 'izin')->count(),
-                    'alfa' => $absensi->where('status', 'alfa')->count(),
-                    'terlambat' => $absensi->where('status', 'terlambat')->count(),
-                    'total' => $total,
-                    'persentase' => $total > 0 ? round(($hadir / $total) * 100, 2) : 0
-                ];
+            if (!$guru->user) {
+                return back()->with('error', 'User account tidak ditemukan');
             }
             
-            $bulanList = [
-                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-            ];
+            $guru->user->update([
+                'password' => Hash::make('password123')
+            ]);
             
-            $tahunList = range(date('Y') - 2, date('Y') + 1);
-            
-            return view('kepala-sekolah.manajemen-guru.rekap-absensi', compact('rekap', 'bulan', 'tahun', 'bulanList', 'tahunList'));
+            return back()->with('success', 'Password berhasil direset ke: password123');
             
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memuat rekap absensi: ' . $e->getMessage());
+            Log::error('Error in manajemen guru resetPassword: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mereset password: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get list of months
+     */
+    private function getBulanList()
+    {
+        return [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
     }
 }

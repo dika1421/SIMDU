@@ -47,43 +47,57 @@ class Guru extends Model
         'deleted_at' => 'datetime',
     ];
     
+    /**
+     * Relasi ke User
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
     
+    /**
+     * Relasi ke Jabatan
+     */
     public function jabatan(): BelongsTo
     {
         return $this->belongsTo(Jabatan::class, 'jabatan_id');
     }
     
+    /**
+     * Relasi ke Jadwal
+     */
     public function jadwal(): HasMany
     {
         return $this->hasMany(Jadwal::class, 'guru_id');
     }
     
+    /**
+     * Relasi ke Nilai
+     */
     public function nilai(): HasMany
     {
         return $this->hasMany(Nilai::class, 'guru_id');
     }
     
+    /**
+     * Relasi ke Kelas (sebagai wali kelas)
+     */
     public function kelasWali(): HasMany
     {
         return $this->hasMany(Kelas::class, 'wali_kelas_id', 'id');
     }
     
-    // HAPUS method ini jika ada (polymorphic)
-    // public function absensi()
-    // {
-    //     return $this->morphMany(Absensi::class, 'absensi');
-    // }
+    /**
+     * Relasi ke Absensi (menggunakan guru_id)
+     */
+    public function absensi(): HasMany
+    {
+        return $this->hasMany(Absensi::class, 'guru_id')->where('absensi_type', 'guru');
+    }
     
-    // HAPUS atau COMMENT method ini
-    // public function absensi(): HasMany
-    // {
-    //     return $this->hasMany(Absensi::class, 'guru_id', 'id');
-    // }
-    
+    /**
+     * Relasi ke Mapel melalui tabel jadwal (guru mengajar mapel)
+     */
     public function mataPelajaran(): BelongsToMany
     {
         return $this->belongsToMany(Mapel::class, 'jadwal', 'guru_id', 'mapel_id')
@@ -91,21 +105,41 @@ class Guru extends Model
                     ->withTimestamps();
     }
     
+    /**
+     * Alias untuk mataPelajaran (untuk kemudahan)
+     */
+    public function mapel(): BelongsToMany
+    {
+        return $this->mataPelajaran();
+    }
+    
+    /**
+     * Get daftar mata pelajaran yang diajar
+     */
     public function getMataPelajaranListAttribute(): string
     {
         return $this->mataPelajaran->pluck('nama_mapel')->implode(', ');
     }
     
+    /**
+     * Get jumlah mata pelajaran yang diajar
+     */
     public function getMataPelajaranCountAttribute(): int
     {
         return $this->mataPelajaran->count();
     }
     
+    /**
+     * Get nama lengkap
+     */
     public function getNameAttribute(): string
     {
         return $this->nama_lengkap;
     }
     
+    /**
+     * Get nama jabatan
+     */
     public function getNamaJabatanAttribute(): string
     {
         if ($this->jabatan) {
@@ -114,6 +148,9 @@ class Guru extends Model
         return $this->status_kepegawaian ?? '-';
     }
     
+    /**
+     * Get umur
+     */
     public function getUmurAttribute(): ?int
     {
         if ($this->tanggal_lahir) {
@@ -122,11 +159,17 @@ class Guru extends Model
         return null;
     }
     
+    /**
+     * Scope untuk guru aktif
+     */
     public function scopeActive($query)
     {
         return $query->where('status', 'aktif');
     }
     
+    /**
+     * Scope untuk pencarian
+     */
     public function scopeSearch($query, $search)
     {
         if ($search) {
