@@ -26,31 +26,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(145deg, #f0f4ff 0%, #e8edf5 100%);
+            background: linear-gradient(145deg, #f0f4ff 0%, #d9e2ef 100%);
             padding: 20px;
         }
 
         .login-wrapper {
             width: 100%;
-            max-width: 480px;
+            max-width: 460px;
             background: #ffffff;
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            padding: 40px 36px;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.20);
+            padding: 40px 34px;
             transition: all 0.3s ease;
         }
 
         @media (max-width: 480px) {
             .login-wrapper {
-                padding: 28px 20px;
+                padding: 28px 18px;
                 border-radius: 24px;
             }
         }
 
-        /* Header */
+        /* HEADER */
         .login-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 30px;
         }
 
         .login-header .logo-icon {
@@ -63,43 +63,44 @@
             justify-content: center;
             font-size: 2rem;
             color: white;
-            margin: 0 auto 16px;
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+            margin: 0 auto 14px;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.30);
         }
 
         .login-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: #0f172a;
             letter-spacing: -0.01em;
+            margin-bottom: 2px;
         }
 
         .login-header p {
             color: #64748b;
-            font-size: 0.9rem;
-            margin-top: 4px;
+            font-size: 0.85rem;
             font-weight: 400;
+            margin: 0;
         }
 
-        /* Role Selector */
+        /* ROLE SELECTOR */
         .role-selector {
             display: flex;
             gap: 8px;
             background: #f1f5f9;
-            padding: 6px;
-            border-radius: 16px;
-            margin-bottom: 28px;
-            border: 1px solid #e9edf2;
+            padding: 5px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
         }
 
         .role-btn {
             flex: 1;
-            padding: 10px 8px;
+            padding: 10px 6px;
             border: none;
             background: transparent;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #64748b;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -123,17 +124,17 @@
             color: #0f172a;
         }
 
-        /* Form */
+        /* FORM */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .form-label .required {
@@ -151,7 +152,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #94a3b8;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .form-control-custom {
@@ -159,8 +160,8 @@
             height: 48px;
             padding: 0 44px 0 44px;
             border: 1.5px solid #e2e8f0;
-            border-radius: 14px;
-            font-size: 0.95rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
             background: #fafcff;
             transition: all 0.2s ease;
             color: #0f172a;
@@ -186,7 +187,7 @@
             background: none;
             border: none;
             color: #94a3b8;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             padding: 4px;
         }
@@ -197,20 +198,20 @@
 
         .password-hint {
             background: #f8fafc;
-            padding: 12px 14px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.72rem;
             color: #475569;
-            margin-top: 10px;
+            margin-top: 8px;
             border: 1px solid #e9edf2;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
         .password-hint code {
             background: #e9edf2;
             padding: 2px 8px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: #0f172a;
         }
@@ -226,39 +227,39 @@
             padding: 0 6px;
             border-radius: 4px;
             font-weight: 700;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
 
         .remember-me {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 6px 0 20px;
+            margin: 4px 0 18px;
         }
 
         .remember-me input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             accent-color: #4f46e5;
             cursor: pointer;
         }
 
         .remember-me label {
             color: #475569;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             margin: 0;
         }
 
         .btn-login {
             width: 100%;
-            height: 50px;
+            height: 48px;
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
             color: white;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.25s ease;
             display: flex;
@@ -269,7 +270,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.30);
         }
 
         .btn-login:disabled {
@@ -290,16 +291,16 @@
             display: none;
         }
 
-        /* Alert */
+        /* ALERT */
         .alert {
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
             border: none;
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 0.9rem;
+            gap: 10px;
+            font-size: 0.85rem;
         }
 
         .alert-danger {
@@ -315,30 +316,30 @@
         }
 
         .alert i {
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
-        /* Demo Accounts */
+        /* DEMO ACCOUNTS */
         .demo-accounts {
-            margin-top: 28px;
-            padding-top: 24px;
+            margin-top: 26px;
+            padding-top: 20px;
             border-top: 1.5px solid #e9edf2;
         }
 
         .demo-accounts h6 {
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #94a3b8;
             font-weight: 600;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .demo-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
         @media (max-width: 400px) {
@@ -349,10 +350,10 @@
 
         .demo-item {
             background: #f8fafc;
-            padding: 12px 14px;
-            border-radius: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
             border: 1px solid #e9edf2;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #334155;
         }
 
@@ -360,45 +361,45 @@
             display: block;
             font-weight: 600;
             color: #0f172a;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin-bottom: 2px;
         }
 
         .demo-item .label {
             color: #94a3b8;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
         }
 
         .demo-item .value {
             font-weight: 600;
             color: #4f46e5;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             word-break: break-all;
         }
 
         .demo-item .pass {
             display: inline-block;
-            margin-top: 4px;
+            margin-top: 3px;
             background: #e9edf2;
             padding: 2px 8px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-family: monospace;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #0f172a;
         }
 
         .footer-text {
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #94a3b8;
-            margin-top: 20px;
+            margin-top: 18px;
         }
 
         .badge-role {
             display: inline-block;
             padding: 1px 8px;
             border-radius: 20px;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
             margin-top: 2px;
         }
@@ -455,11 +456,12 @@
             </div>
             <div class="password-hint" id="guruHint">
                 <i class="fas fa-info-circle me-1"></i>
-                Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong><br>
+                Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                <br>
                 <span class="badge-role ks">#1 Kepsek</span>
                 <span class="badge-role admin">#2 Admin</span>
                 <span class="badge-role guru">#3 Guru</span>
-                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek) / <code>simdu#30062</code> (Guru)
+                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek)
             </div>
         </div>
 
@@ -502,7 +504,8 @@
                 <button type="button" class="password-toggle" onclick="togglePassword('passwordSiswa', this)"><i class="far fa-eye"></i></button>
             </div>
             <div class="password-hint" id="siswaHint">
-                <i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong><br>
+                <i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong>
+                <br>
                 <span class="badge-role siswa">#4 Siswa</span>
                 <br>Contoh: NIS <strong>1234567890</strong> → <code>simdu#47890</code>
             </div>
@@ -581,13 +584,13 @@
         const hint = document.getElementById('guruHint');
         if (val.length >= 4) {
             const last4 = val.slice(-4);
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong><br>
-                <span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
+            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
                 <br>✅ Password: <code>simdu#1${last4}</code> (Kepsek) · <code>simdu#2${last4}</code> (Admin) · <code>simdu#3${last4}</code> (Guru)`;
         } else {
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong><br>
-                <span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
-                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek) / <code>simdu#30062</code> (Guru)`;
+            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
+                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek)`;
         }
     });
 
