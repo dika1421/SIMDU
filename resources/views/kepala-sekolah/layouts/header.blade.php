@@ -52,6 +52,7 @@
             transition: transform 0.3s ease-in-out;
             overflow: hidden;
             box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
         
         .sidebar.hidden {
@@ -179,11 +180,14 @@
             min-height: 100vh;
             background: #f8f9fa;
             transition: margin-left 0.3s ease-in-out;
+            width: calc(100% - 260px);
+            max-width: 100%;
+            overflow-x: hidden;
         }
         
         /* ========== NAVBAR ========== */
         .navbar-top {
-            padding: 10px 18px;
+            padding: 10px 20px;
             background: white;
             border-bottom: 1px solid #e9ecef;
             display: flex;
@@ -192,6 +196,7 @@
             flex-shrink: 0;
             flex-wrap: wrap;
             gap: 8px;
+            width: 100%;
         }
         
         .navbar-left {
@@ -219,13 +224,13 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 180px;
+            max-width: 200px;
         }
         
         .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-shrink: 0;
         }
         
@@ -272,14 +277,20 @@
         /* ========== PAGE CONTENT ========== */
         .page-content {
             flex: 1;
-            padding: 16px;
+            padding: 20px 24px;
             overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
         }
         
         /* ========== RESPONSIVE ========== */
         @media (max-width: 992px) {
             .sidebar { width: 240px; }
-            .main-content { margin-left: 240px; }
+            .main-content { 
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
             .navbar-left .greeting { max-width: 140px; }
         }
         
@@ -288,14 +299,17 @@
             .sidebar.hidden { transform: translateX(-100%); }
             .sidebar:not(.hidden) { transform: translateX(0); }
             
-            .main-content { margin-left: 0 !important; }
+            .main-content { 
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
             .sidebar-toggle { display: block; }
             
             .navbar-top { padding: 8px 12px; }
             .navbar-left .greeting { font-size: 0.7rem; max-width: 100px; }
             .user-dropdown .user-name { display: none; }
             
-            .page-content { padding: 10px; }
+            .page-content { padding: 10px 12px; }
             
             .sidebar-header i { font-size: 1.6rem; }
             .sidebar-header h5 { font-size: 0.85rem; }
@@ -306,12 +320,18 @@
         @media (max-width: 480px) {
             .navbar-top { padding: 6px 10px; }
             .navbar-left .greeting { font-size: 0.6rem; max-width: 70px; }
-            .page-content { padding: 6px; }
+            .page-content { padding: 6px 8px; }
             .sidebar { width: 240px; }
             
             .card { margin-bottom: 8px; }
             .card-header { padding: 8px 12px; font-size: 0.75rem; }
             .card-body { padding: 8px 12px; }
+        }
+        
+        /* ========== UNTUK TABEL ========== */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         /* ========== ALERT ========== */
@@ -366,6 +386,35 @@
             font-size: 0.8rem;
         }
         .btn-primary:hover { background: #2980b9; }
+        
+        /* ========== UNTUK STAT CARD DI DASHBOARD ========== */
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px 20px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+        }
+        .stat-card .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        /* ========== UNTUK KONTEN ========== */
+        .container-fluid {
+            padding-right: 0;
+            padding-left: 0;
+            width: 100%;
+        }
+        .row {
+            margin-right: 0;
+            margin-left: 0;
+        }
     </style>
     
     @stack('styles')
