@@ -55,8 +55,19 @@
             flex-shrink: 0;
         }
         
+        /* Sidebar di HP: disembunyikan */
         .sidebar.hidden {
             transform: translateX(-100%);
+        }
+        
+        /* Sidebar di laptop: selalu muncul */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+            .sidebar-backdrop {
+                display: none !important;
+            }
         }
         
         .sidebar-header {
@@ -631,16 +642,18 @@
             backdrop.classList.toggle('show');
         }
         
-        // Tutup sidebar jika klik di luar
+        // Tutup sidebar jika klik di luar (HP)
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
             const toggleBtn = document.querySelector('.sidebar-toggle');
             
-            if (!sidebar.classList.contains('hidden') && 
-                !sidebar.contains(event.target) && 
-                !toggleBtn.contains(event.target)) {
-                toggleSidebar();
+            if (window.innerWidth <= 768) {
+                if (!sidebar.classList.contains('hidden') && 
+                    !sidebar.contains(event.target) && 
+                    !toggleBtn.contains(event.target)) {
+                    toggleSidebar();
+                }
             }
         });
         
@@ -648,7 +661,6 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const sidebar = document.getElementById('sidebar');
-                const backdrop = document.getElementById('sidebarBackdrop');
                 if (!sidebar.classList.contains('hidden')) {
                     toggleSidebar();
                 }
