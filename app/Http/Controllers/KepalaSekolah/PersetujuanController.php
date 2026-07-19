@@ -3,20 +3,26 @@
 namespace App\Http\Controllers\KepalaSekolah;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pengajuan;  // PASTIKAN USE STATEMENT INI ADA
+use App\Models\Pengajuan;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PersetujuanController extends Controller
 {
+    /**
+     * Menampilkan daftar pengajuan dengan filter
+     */
     public function index(Request $request)
     {
-        $query = Pengajuan::with('pengaju');  // <-- SUDAH BENAR
+        $query = Pengajuan::with('pengaju');
 
+        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
+        // Filter berdasarkan tipe
         if ($request->filled('tipe')) {
             $query->where('tipe', $request->tipe);
         }
@@ -26,49 +32,71 @@ class PersetujuanController extends Controller
         return view('kepala-sekolah.persetujuan.index', compact('pengajuan'));
     }
 
+    /**
+     * Menampilkan detail pengajuan
+     */
     public function show($id)
     {
         $pengajuan = Pengajuan::with('pengaju')->findOrFail($id);
         return view('kepala-sekolah.persetujuan.show', compact('pengajuan'));
     }
 
+    /**
+     * Menyetujui pengajuan
+     */
     public function approve(Request $request, $id)
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya yang status 'menunggu' yang bisa disetujui
+        if ($pengajuan->status !== 'menunggu') {
+            return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
+        }
+
         $request->validate([
-            'catatan' => 'nullable',
+            'catatan' => 'nullable|string|max:1000',
         ]);
 
         $pengajuan->update([
             'status' => 'disetujui',
             'catatan' => $request->catatan,
-            'disetujui_oleh' => auth()->id(),
+            'disetujui_oleh' => Auth::id(),
             'tanggal_disetujui' => now(),
         ]);
 
         return redirect()->route('kepala-sekolah.persetujuan.index')
-            ->with('success', 'Pengajuan berhasil disetujui');
+            ->with('success', '✅ Pengajuan berhasil disetujui');
     }
 
+    /**
+     * Menolak pengajuan
+     */
     public function reject(Request $request, $id)
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya yang status 'menunggu' yang bisa ditolak
+        if ($pengajuan->status !== 'menunggu') {
+            return back()->with('error', 'Pengajuan ini sudah diproses sebelumnya.');
+        }
+
         $request->validate([
-            'catatan' => 'required',
+            'catatan' => 'required|string|max:1000',
         ]);
 
         $pengajuan->update([
             'status' => 'ditolak',
             'catatan' => $request->catatan,
-            'disetujui_oleh' => auth()->id(),
+            'disetujui_oleh' => Auth::id(),
         ]);
 
         return redirect()->route('kepala-sekolah.persetujuan.index')
-            ->with('success', 'Pengajuan ditolak');
+            ->with('success', '❌ Pengajuan ditolak');
     }
 
+    /**
+     * Dashboard statistik persetujuan
+     */
     public function dashboard()
     {
         $statistik = [
