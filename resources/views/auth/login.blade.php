@@ -14,11 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -27,383 +23,217 @@
             align-items: center;
             justify-content: center;
             background: linear-gradient(145deg, #f0f4ff 0%, #d9e2ef 100%);
-            padding: 20px;
+            padding: 16px;
         }
 
         .login-wrapper {
             width: 100%;
-            max-width: 460px;
+            max-width: 440px;
             background: #ffffff;
-            border-radius: 28px;
-            box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.20);
-            padding: 40px 34px;
-            transition: all 0.3s ease;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.18);
+            padding: 32px 28px;
         }
 
         @media (max-width: 480px) {
             .login-wrapper {
-                padding: 28px 18px;
-                border-radius: 24px;
+                padding: 24px 16px;
+                border-radius: 20px;
+                max-width: 100%;
             }
         }
 
         /* HEADER */
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        .login-header { text-align: center; margin-bottom: 24px; }
         .login-header .logo-icon {
-            width: 72px;
-            height: 72px;
+            width: 64px; height: 64px;
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
-            margin: 0 auto 14px;
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.30);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; color: white;
+            margin: 0 auto 12px;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
         }
-
-        .login-header h2 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #0f172a;
-            letter-spacing: -0.01em;
-            margin-bottom: 2px;
-        }
-
-        .login-header p {
-            color: #64748b;
-            font-size: 0.85rem;
-            font-weight: 400;
-            margin: 0;
-        }
+        .login-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+        .login-header p { color: #64748b; font-size: 0.8rem; margin: 0; }
 
         /* ROLE SELECTOR */
         .role-selector {
-            display: flex;
-            gap: 8px;
-            background: #f1f5f9;
-            padding: 5px;
-            border-radius: 14px;
-            margin-bottom: 24px;
+            display: flex; gap: 6px;
+            background: #f1f5f9; padding: 4px;
+            border-radius: 12px; margin-bottom: 20px;
             border: 1px solid #e2e8f0;
         }
-
         .role-btn {
-            flex: 1;
-            padding: 10px 6px;
-            border: none;
-            background: transparent;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.78rem;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
+            flex: 1; padding: 8px 4px; border: none;
+            background: transparent; border-radius: 10px;
+            font-weight: 600; font-size: 0.7rem; color: #64748b;
+            cursor: pointer; transition: all 0.25s ease;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
         }
-
-        .role-btn i {
-            font-size: 1.2rem;
-        }
-
+        .role-btn i { font-size: 1.1rem; }
         .role-btn.active {
-            background: #ffffff;
-            color: #1e293b;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            background: #ffffff; color: #1e293b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-
-        .role-btn:hover:not(.active) {
-            color: #0f172a;
-        }
+        .role-btn:hover:not(.active) { color: #0f172a; }
 
         /* FORM */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
+        .form-group { margin-bottom: 14px; }
         .form-label {
-            display: block;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 5px;
+            display: block; font-size: 0.75rem; font-weight: 600;
+            color: #1e293b; margin-bottom: 4px;
         }
+        .form-label .required { color: #ef4444; margin-left: 2px; }
 
-        .form-label .required {
-            color: #ef4444;
-            margin-left: 2px;
-        }
-
-        .input-group-custom {
-            position: relative;
-        }
-
+        .input-group-custom { position: relative; }
         .input-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
+            position: absolute; left: 12px; top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.95rem;
+            color: #94a3b8; font-size: 0.85rem;
         }
-
         .form-control-custom {
-            width: 100%;
-            height: 48px;
-            padding: 0 44px 0 44px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            background: #fafcff;
-            transition: all 0.2s ease;
-            color: #0f172a;
+            width: 100%; height: 44px;
+            padding: 0 40px 0 40px;
+            border: 1.5px solid #e2e8f0; border-radius: 10px;
+            font-size: 0.85rem; background: #fafcff;
+            transition: all 0.2s ease; color: #0f172a;
         }
-
         .form-control-custom:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+            outline: none; border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
             background: #ffffff;
         }
-
         .form-control-custom.is-invalid {
             border-color: #ef4444;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.08);
+            box-shadow: 0 0 0 4px rgba(239,68,68,0.08);
         }
 
         .password-toggle {
-            position: absolute;
-            right: 14px;
-            top: 50%;
+            position: absolute; right: 12px; top: 50%;
             transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 0.95rem;
-            cursor: pointer;
-            padding: 4px;
+            background: none; border: none;
+            color: #94a3b8; font-size: 0.85rem;
+            cursor: pointer; padding: 4px;
         }
-
-        .password-toggle:hover {
-            color: #4f46e5;
-        }
+        .password-toggle:hover { color: #4f46e5; }
 
         .password-hint {
-            background: #f8fafc;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 0.72rem;
-            color: #475569;
-            margin-top: 8px;
-            border: 1px solid #e9edf2;
-            line-height: 1.7;
+            background: #f8fafc; padding: 8px 12px;
+            border-radius: 8px; font-size: 0.65rem;
+            color: #475569; margin-top: 6px;
+            border: 1px solid #e9edf2; line-height: 1.6;
         }
-
         .password-hint code {
-            background: #e9edf2;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #0f172a;
+            background: #e9edf2; padding: 1px 6px;
+            border-radius: 4px; font-size: 0.6rem;
+            font-weight: 600; color: #0f172a;
         }
-
-        .password-hint .highlight {
-            color: #4f46e5;
-            font-weight: 600;
-        }
-
+        .password-hint .highlight { color: #4f46e5; font-weight: 600; }
         .password-hint .role-number {
-            background: #4f46e5;
-            color: white;
-            padding: 0 6px;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.65rem;
+            background: #4f46e5; color: white;
+            padding: 0 5px; border-radius: 4px;
+            font-weight: 700; font-size: 0.6rem;
         }
 
         .remember-me {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 4px 0 18px;
+            display: flex; align-items: center; gap: 8px;
+            margin: 2px 0 14px;
         }
-
         .remember-me input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            accent-color: #4f46e5;
-            cursor: pointer;
+            width: 16px; height: 16px;
+            accent-color: #4f46e5; cursor: pointer;
         }
-
         .remember-me label {
-            color: #475569;
-            font-size: 0.82rem;
-            cursor: pointer;
-            margin: 0;
+            color: #475569; font-size: 0.75rem;
+            cursor: pointer; margin: 0;
         }
 
         .btn-login {
-            width: 100%;
-            height: 48px;
+            width: 100%; height: 44px;
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            color: white; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.25s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.30);
+            box-shadow: 0 8px 24px rgba(79,70,229,0.30);
         }
-
-        .btn-login:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-login .spinner {
-            display: none;
-        }
-
-        .btn-login.loading .spinner {
-            display: inline-block;
-        }
-
-        .btn-login.loading .btn-text {
-            display: none;
-        }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-login .spinner { display: none; }
+        .btn-login.loading .spinner { display: inline-block; }
+        .btn-login.loading .btn-text { display: none; }
 
         /* ALERT */
         .alert {
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 18px;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
+            border-radius: 10px; padding: 10px 14px;
+            margin-bottom: 14px; border: none;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem;
         }
-
         .alert-danger {
-            background: #fef2f2;
-            color: #b91c1c;
+            background: #fef2f2; color: #b91c1c;
             border-left: 4px solid #ef4444;
         }
-
         .alert-success {
-            background: #f0fdf4;
-            color: #15803d;
+            background: #f0fdf4; color: #15803d;
             border-left: 4px solid #22c55e;
         }
-
-        .alert i {
-            font-size: 1rem;
-        }
+        .alert i { font-size: 0.9rem; }
 
         /* DEMO ACCOUNTS */
         .demo-accounts {
-            margin-top: 26px;
-            padding-top: 20px;
+            margin-top: 20px; padding-top: 16px;
             border-top: 1.5px solid #e9edf2;
         }
-
         .demo-accounts h6 {
-            text-align: center;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: #94a3b8;
-            font-weight: 600;
-            margin-bottom: 12px;
+            text-align: center; font-size: 0.6rem;
+            text-transform: uppercase; letter-spacing: 0.6px;
+            color: #94a3b8; font-weight: 600;
+            margin-bottom: 10px;
         }
-
         .demo-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
         }
-
-        @media (max-width: 400px) {
-            .demo-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 480px) {
+            .demo-grid { grid-template-columns: 1fr; }
         }
-
         .demo-item {
-            background: #f8fafc;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid #e9edf2;
-            font-size: 0.7rem;
-            color: #334155;
+            background: #f8fafc; padding: 8px 10px;
+            border-radius: 8px; border: 1px solid #e9edf2;
+            font-size: 0.65rem; color: #334155;
         }
-
         .demo-item strong {
-            display: block;
-            font-weight: 600;
-            color: #0f172a;
-            font-size: 0.75rem;
+            display: block; font-weight: 600;
+            color: #0f172a; font-size: 0.7rem;
             margin-bottom: 2px;
         }
-
-        .demo-item .label {
-            color: #94a3b8;
-            font-size: 0.6rem;
-        }
-
+        .demo-item .label { color: #94a3b8; font-size: 0.55rem; }
         .demo-item .value {
-            font-weight: 600;
-            color: #4f46e5;
-            font-size: 0.7rem;
-            word-break: break-all;
+            font-weight: 600; color: #4f46e5;
+            font-size: 0.65rem; word-break: break-all;
         }
-
         .demo-item .pass {
-            display: inline-block;
-            margin-top: 3px;
-            background: #e9edf2;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.65rem;
-            color: #0f172a;
+            display: inline-block; margin-top: 2px;
+            background: #e9edf2; padding: 1px 6px;
+            border-radius: 4px; font-family: monospace;
+            font-size: 0.6rem; color: #0f172a;
         }
 
         .footer-text {
-            text-align: center;
-            font-size: 0.65rem;
-            color: #94a3b8;
-            margin-top: 18px;
+            text-align: center; font-size: 0.6rem;
+            color: #94a3b8; margin-top: 14px;
         }
 
         .badge-role {
-            display: inline-block;
-            padding: 1px 8px;
-            border-radius: 20px;
-            font-size: 0.55rem;
-            font-weight: 600;
-            margin-top: 2px;
+            display: inline-block; padding: 1px 6px;
+            border-radius: 12px; font-size: 0.5rem;
+            font-weight: 600; margin-top: 1px;
         }
-
         .badge-role.ks { background: #dbeafe; color: #1d4ed8; }
         .badge-role.admin { background: #e0e7ff; color: #4338ca; }
         .badge-role.guru { background: #fef3c7; color: #b45309; }
@@ -416,9 +246,7 @@
 
     {{-- HEADER --}}
     <div class="login-header">
-        <div class="logo-icon">
-            <i class="fas fa-graduation-cap"></i>
-        </div>
+        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
         <h2>Sistem Informasi Sekolah</h2>
         <p>SMK Bisa</p>
     </div>
@@ -452,16 +280,16 @@
             <div class="input-group-custom">
                 <i class="fas fa-user input-icon"></i>
                 <input type="text" class="form-control-custom @error('nuptk') is-invalid @enderror" name="nuptk" id="nuptk"
-                       placeholder="Masukkan NUPTK (16 digit)" value="{{ old('nuptk') }}" autofocus maxlength="20" required>
+                       placeholder="Masukkan NUPTK" value="{{ old('nuptk') }}" autofocus maxlength="20" required>
             </div>
             <div class="password-hint" id="guruHint">
                 <i class="fas fa-info-circle me-1"></i>
-                Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+                Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
                 <br>
                 <span class="badge-role ks">#1 Kepsek</span>
                 <span class="badge-role admin">#2 Admin</span>
                 <span class="badge-role guru">#3 Guru</span>
-                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek)
+                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code>
             </div>
         </div>
 
@@ -480,7 +308,7 @@
         </div>
 
         <button type="submit" class="btn-login" id="btnLoginGuru">
-            <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login sebagai Guru / Staf</span>
+            <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login</span>
             <span class="spinner"><i class="fas fa-spinner fa-spin me-2"></i>Memproses...</span>
         </button>
     </form>
@@ -505,8 +333,7 @@
             </div>
             <div class="password-hint" id="siswaHint">
                 <i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong>
-                <br>
-                <span class="badge-role siswa">#4 Siswa</span>
+                <br><span class="badge-role siswa">#4 Siswa</span>
                 <br>Contoh: NIS <strong>1234567890</strong> → <code>simdu#47890</code>
             </div>
         </div>
@@ -517,7 +344,7 @@
         </div>
 
         <button type="submit" class="btn-login" id="btnLoginSiswa">
-            <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login sebagai Siswa</span>
+            <span class="btn-text"><i class="fas fa-sign-in-alt me-2"></i>Login</span>
             <span class="spinner"><i class="fas fa-spinner fa-spin me-2"></i>Memproses...</span>
         </button>
     </form>
@@ -584,11 +411,11 @@
         const hint = document.getElementById('guruHint');
         if (val.length >= 4) {
             const last4 = val.slice(-4);
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
                 <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
                 <br>✅ Password: <code>simdu#1${last4}</code> (Kepsek) · <code>simdu#2${last4}</code> (Admin) · <code>simdu#3${last4}</code> (Guru)`;
         } else {
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format password: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
+            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
                 <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
                 <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek)`;
         }
@@ -609,7 +436,6 @@
         }
     });
 
-    // Initial role
     @if(old('nis')) setRole('siswa'); @else setRole('guru'); @endif
 </script>
 

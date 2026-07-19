@@ -47,7 +47,8 @@ class LoginController extends Controller
     }
 
     /**
-     * Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
+     * ✅ FIX: Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
+     * Mencari NUPTK langsung di tabel users
      */
     public function loginNuptk(Request $request)
     {
@@ -59,32 +60,75 @@ class LoginController extends Controller
         $nuptk = trim($request->nuptk);
         $password = $request->password;
         
-        // Cari guru berdasarkan NUPTK
-        $guru = Guru::where('nuptk', $nuptk)->first();
+        // 🔍 LOG: Catat data yang masuk
+        Log::info('🔍 LOGIN NUPTK - Step 1: Data masuk:', [
+            'nuptk' => $nuptk,
+            'password' => $password,
+            'ip' => $request->ip(),
+        ]);
         
-        if (!$guru) {
+        // Cari user berdasarkan NUPTK di tabel users
+        $user = User::where('nuptk', $nuptk)->first();
+        
+        // 🔍 LOG: Catat hasil query
+        Log::info('🔍 LOGIN NUPTK - Step 2: Hasil query:', [
+            'nuptk' => $nuptk,
+            'user_found' => $user ? 'YES' : 'NO',
+            'user_data' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'nuptk' => $user->nuptk,
+            ] : null,
+        ]);
+        
+        if (!$user) {
+            Log::warning('🔍 LOGIN NUPTK - Step 3: User TIDAK ditemukan!', [
+                'nuptk' => $nuptk,
+            ]);
             return back()->withErrors(['nuptk' => 'NUPTK tidak ditemukan'])->withInput();
         }
         
-        $user = $guru->user;
+        // 🔍 LOG: Cek password
+        $passwordMatch = Hash::check($password, $user->password);
+        Log::info('🔍 LOGIN NUPTK - Step 4: Password check:', [
+            'password_match' => $passwordMatch ? '✅ YES' : '❌ NO',
+            'password_hash_db' => $user->password,
+            'expected_password' => $this->generatePasswordByRole($user, $user->role),
+        ]);
         
-        if (!$user) {
-            return back()->withErrors(['nuptk' => 'User tidak ditemukan'])->withInput();
-        }
-        
-        // Validasi password berdasarkan role
-        if ($this->validateNuptkPassword($user, $password)) {
+        if ($passwordMatch) {
+            Log::info('🔍 LOGIN NUPTK - Step 5: ✅ LOGIN BERHASIL!', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'role' => $user->role,
+            ]);
             Auth::login($user, $request->has('remember'));
-            
-            // Simpan role yang digunakan untuk login ke session
             session(['login_role' => $user->role]);
-            
             return $this->redirectBasedOnRole($user);
         }
         
+        $expectedPassword = $this->generatePasswordByRole($user, $user->role);
+        if ($password === $expectedPassword) {
+            Log::info('🔍 LOGIN NUPTK - Step 5b: Password default cocok!', [
+                'user_id' => $user->id,
+                'expected_password' => $expectedPassword,
+            ]);
+            $user->password = Hash::make($password);
+            $user->save();
+            Auth::login($user, $request->has('remember'));
+            session(['login_role' => $user->role]);
+            return $this->redirectBasedOnRole($user);
+        }
+        
+        Log::warning('🔍 LOGIN NUPTK - Step 6: ❌ Password SALAH!', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+        ]);
         return back()->withErrors(['password' => 'Password salah'])->withInput();
     }
-
+    
     /**
      * Login khusus Guru (legacy - untuk kompatibilitas)
      */
@@ -118,73 +162,23 @@ class LoginController extends Controller
             return back()->withErrors(['nis' => 'User tidak ditemukan'])->withInput();
         }
         
-        // Validasi password untuk siswa
-        if ($this->validateSiswaPassword($user, $password)) {
+        if (Hash::check($password, $user->password)) {
+            Auth::login($user, $request->has('remember_siswa'));
+            session(['login_role' => 'siswa']);
+            return redirect()->route('siswa.dashboard');
+        }
+        
+        $expectedPassword = $this->generatePasswordByRole($user, 'siswa');
+        if ($password === $expectedPassword) {
+            $user->password = Hash::make($password);
+            $user->save();
+            
             Auth::login($user, $request->has('remember_siswa'));
             session(['login_role' => 'siswa']);
             return redirect()->route('siswa.dashboard');
         }
         
         return back()->withErrors(['password' => 'Password salah'])->withInput();
-    }
-
-    /**
-     * Validasi password untuk login NUPTK
-     */
-    private function validateNuptkPassword($user, $password)
-    {
-        // 1. Cek dengan password hash (jika sudah di-hash)
-        if (Hash::check($password, $user->password)) {
-            return true;
-        }
-        
-        // 2. Cek dengan MD5 (untuk kompatibilitas)
-        if (md5($password) === $user->password) {
-            $user->password = Hash::make($password);
-            $user->save();
-            return true;
-        }
-        
-        // 3. Cek dengan password default berdasarkan role
-        $expectedPassword = $this->generatePasswordByRole($user, $user->role);
-        
-        if ($password === $expectedPassword) {
-            // Hash password untuk next login
-            $user->password = Hash::make($password);
-            $user->save();
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Validasi password untuk login Siswa
-     */
-    private function validateSiswaPassword($user, $password)
-    {
-        // 1. Cek dengan password hash
-        if (Hash::check($password, $user->password)) {
-            return true;
-        }
-        
-        // 2. Cek dengan MD5
-        if (md5($password) === $user->password) {
-            $user->password = Hash::make($password);
-            $user->save();
-            return true;
-        }
-        
-        // 3. Cek dengan password default siswa
-        $expectedPassword = $this->generatePasswordByRole($user, 'siswa');
-        
-        if ($password === $expectedPassword) {
-            $user->password = Hash::make($password);
-            $user->save();
-            return true;
-        }
-        
-        return false;
     }
 
     /**
@@ -219,19 +213,24 @@ class LoginController extends Controller
         $prefix = 'simdu#';
         $roleNumber = $this->getRoleNumber($role);
         
-        // Untuk user dengan NUPTK (Guru, Kepala Sekolah, Administrasi)
+        // ✅ PRIORITAS 1: Cek NUPTK langsung dari tabel users
+        if (!empty($user->nuptk)) {
+            return $prefix . $roleNumber . substr($user->nuptk, -4);
+        }
+        
+        // ✅ PRIORITAS 2: Cek NUPTK dari relasi guru (jika ada)
         $guru = Guru::where('user_id', $user->id)->first();
-        if ($guru && $guru->nuptk) {
+        if ($guru && !empty($guru->nuptk)) {
             return $prefix . $roleNumber . substr($guru->nuptk, -4);
         }
         
-        // Untuk user dengan NIS (Siswa)
+        // ✅ PRIORITAS 3: Cek NIS dari relasi siswa (jika ada)
         $siswa = Siswa::where('user_id', $user->id)->first();
-        if ($siswa && $siswa->nis) {
+        if ($siswa && !empty($siswa->nis)) {
             return $prefix . $roleNumber . substr($siswa->nis, -4);
         }
         
-        // Fallback menggunakan ID
+        // ✅ FALLBACK: Gunakan 4 digit terakhir ID
         return $prefix . $roleNumber . substr((string)$user->id, -4);
     }
 

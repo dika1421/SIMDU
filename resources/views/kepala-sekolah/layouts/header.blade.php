@@ -2,9 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard Kepala Sekolah') - SIM Sekolah</title>
+    <title>@yield('title', 'Dashboard') - SIM Sekolah</title>
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,212 +19,236 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* RESET & BASE */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ========== RESET ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            font-size: .875rem;
             background-color: #f8f9fa;
+            overflow-x: hidden;
         }
         
-        /* LAYOUT WRAPPER */
+        /* ========== WRAPPER ========== */
         .wrapper {
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             width: 100%;
         }
         
-        /* SIDEBAR */
+        /* ========== SIDEBAR ========== */
         .sidebar {
-            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
             background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
             color: white;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            z-index: 1050;
+            transition: transform 0.3s ease-in-out;
             overflow: hidden;
-            flex-shrink: 0;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
         }
         
-        /* HEADER SIDEBAR */
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+        
         .sidebar-header {
-            padding: 30px 20px 20px;
+            padding: 16px 14px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             flex-shrink: 0;
         }
         
         .sidebar-header i {
-            font-size: 3rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
             color: #fff;
+            display: block;
+            margin-bottom: 4px;
         }
         
         .sidebar-header h5 {
-            margin: 10px 0 5px;
             color: white;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
         }
         
         .sidebar-header small {
             color: #bdc3c7;
-            font-size: 0.85rem;
+            font-size: 0.65rem;
         }
         
-        /* KONTEN SIDEBAR - BISA SCROLL */
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 15px 15px 30px 15px;
+            padding: 8px 10px 20px 10px;
         }
         
-        /* Styling scrollbar */
-        .sidebar-content::-webkit-scrollbar {
-            width: 6px;
-        }
+        .sidebar-content::-webkit-scrollbar { width: 3px; }
+        .sidebar-content::-webkit-scrollbar-track { background: #34495e; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #7f8c8d; border-radius: 3px; }
         
-        .sidebar-content::-webkit-scrollbar-track {
-            background: #34495e;
-        }
-        
-        .sidebar-content::-webkit-scrollbar-thumb {
-            background: #7f8c8d;
-            border-radius: 3px;
-        }
-        
-        .sidebar-content::-webkit-scrollbar-thumb:hover {
-            background: #95a5a6;
-        }
-        
-        /* MENU SIDEBAR */
         .sidebar-menu {
             list-style: none;
             padding: 0;
             margin: 0;
         }
         
-        .sidebar-menu li {
-            margin-bottom: 5px;
-        }
+        .sidebar-menu li { margin-bottom: 2px; }
         
         .sidebar-menu .menu-section {
             color: #bdc3c7;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.55rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 20px 10px 5px 10px;
+            padding: 12px 8px 4px 8px;
         }
         
         .sidebar-menu .menu-item {
             display: block;
-            padding: 12px 15px;
+            padding: 7px 12px;
             color: #ecf0f1;
             text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s;
+            border-radius: 6px;
+            transition: all 0.2s;
             font-weight: 500;
+            font-size: 0.78rem;
         }
         
         .sidebar-menu .menu-item i {
-            width: 24px;
-            margin-right: 10px;
+            width: 20px;
+            margin-right: 8px;
             text-align: center;
+            font-size: 0.8rem;
         }
         
         .sidebar-menu .menu-item:hover {
-            background-color: #34495e;
-            transform: translateX(5px);
+            background: rgba(255,255,255,0.08);
             color: white;
         }
         
         .sidebar-menu .menu-item.active {
-            background-color: #3498db;
+            background: #3498db;
             color: white;
         }
         
         .sidebar-menu .badge {
             float: right;
-            background-color: #dc3545;
+            background: #dc3545;
             color: white;
-            padding: 3px 7px;
+            padding: 1px 6px;
             border-radius: 10px;
-            font-size: 0.75rem;
+            font-size: 0.55rem;
         }
         
-        /* LOGOUT BUTTON */
         .menu-item.logout {
-            margin-top: 20px;
+            margin-top: 10px;
             color: #ff6b6b;
         }
+        .menu-item.logout:hover { background: #c0392b; color: white; }
         
-        .menu-item.logout:hover {
-            background-color: #c0392b;
-            color: white;
+        hr { border-color: rgba(255,255,255,0.06); margin: 8px 0; }
+        
+        /* ========== BACKDROP ========== */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 1040;
         }
+        .sidebar-backdrop.show { display: block; }
         
-        hr {
-            border-color: rgba(255,255,255,0.1);
-            margin: 15px 0;
-        }
-        
-        /* MAIN CONTENT */
+        /* ========== MAIN CONTENT ========== */
         .main-content {
             flex: 1;
+            margin-left: 260px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            background-color: #f8f9fa;
+            min-height: 100vh;
+            background: #f8f9fa;
+            transition: margin-left 0.3s ease-in-out;
         }
         
-        /* NAVBAR */
+        /* ========== NAVBAR ========== */
         .navbar-top {
-            padding: 15px 25px;
-            background-color: white;
+            padding: 10px 18px;
+            background: white;
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            cursor: pointer;
+            padding: 4px 6px;
+        }
+        
+        .navbar-left .greeting {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
         }
         
         .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
+            flex-shrink: 0;
         }
         
         .btn-notification {
             background: none;
             border: none;
             position: relative;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
+            color: #6c757d;
+            padding: 4px 6px;
         }
         
         .badge-notification {
             position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #dc3545;
+            top: -2px;
+            right: -2px;
+            background: #dc3545;
             color: white;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.7rem;
+            width: 14px;
+            height: 14px;
+            font-size: 0.45rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -233,228 +257,180 @@
         .user-dropdown {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 8px;
-            transition: all 0.3s;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #2c3e50;
+            transition: background 0.2s;
         }
+        .user-dropdown:hover { background: #f8f9fa; }
+        .user-dropdown i { font-size: 1.1rem; color: #6c757d; }
+        .user-dropdown .user-name { display: inline; }
         
-        .user-dropdown:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .user-dropdown i {
-            font-size: 1.5rem;
-            color: #6c757d;
-        }
-        
-        /* PAGE CONTENT - BISA SCROLL */
+        /* ========== PAGE CONTENT ========== */
         .page-content {
             flex: 1;
+            padding: 16px;
             overflow-y: auto;
-            padding: 25px;
         }
         
-        /* ALERTS */
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 992px) {
+            .sidebar { width: 240px; }
+            .main-content { margin-left: 240px; }
+            .navbar-left .greeting { max-width: 140px; }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 260px; }
+            .sidebar.hidden { transform: translateX(-100%); }
+            .sidebar:not(.hidden) { transform: translateX(0); }
+            
+            .main-content { margin-left: 0 !important; }
+            .sidebar-toggle { display: block; }
+            
+            .navbar-top { padding: 8px 12px; }
+            .navbar-left .greeting { font-size: 0.7rem; max-width: 100px; }
+            .user-dropdown .user-name { display: none; }
+            
+            .page-content { padding: 10px; }
+            
+            .sidebar-header i { font-size: 1.6rem; }
+            .sidebar-header h5 { font-size: 0.85rem; }
+            .sidebar-menu .menu-item { font-size: 0.72rem; padding: 6px 10px; }
+            .sidebar-menu .menu-section { font-size: 0.5rem; padding: 10px 8px 2px 8px; }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar-top { padding: 6px 10px; }
+            .navbar-left .greeting { font-size: 0.6rem; max-width: 70px; }
+            .page-content { padding: 6px; }
+            .sidebar { width: 240px; }
+            
+            .card { margin-bottom: 8px; }
+            .card-header { padding: 8px 12px; font-size: 0.75rem; }
+            .card-body { padding: 8px 12px; }
+        }
+        
+        /* ========== ALERT ========== */
         .alert {
-            padding: 15px 20px;
+            padding: 10px 14px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             border: none;
+            font-size: 0.8rem;
         }
+        .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .alert-warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
         
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-        
-        /* CARDS */
+        /* ========== CARD ========== */
         .card {
             border: none;
-            border-radius: 1rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
         }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.12);
-        }
-        
         .card-header {
-            background-color: white;
+            background: white;
             border-bottom: 1px solid #e9ecef;
-            padding: 1rem 1.5rem;
+            padding: 10px 14px;
             font-weight: 600;
+            font-size: 0.85rem;
         }
+        .card-body { padding: 12px 14px; }
         
-        /* STAT CARD */
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-        
-        .stat-card h2 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 0;
-        }
-        
-        .stat-card p {
-            margin-bottom: 0;
-            opacity: 0.9;
-        }
-        
-        /* TABLE */
+        /* ========== TABLE ========== */
         .table thead th {
             border-top: none;
-            background-color: #f8f9fa;
-            color: #495057;
+            background: #f8f9fa;
             font-weight: 600;
+            font-size: 0.7rem;
         }
+        .table td { font-size: 0.78rem; vertical-align: middle; }
         
-        .btn-action {
-            padding: 0.25rem 0.5rem;
-            margin: 0 0.2rem;
-            border-radius: 0.5rem;
-        }
-        
-        /* FORM STYLES */
-        .form-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        
+        /* ========== FORM ========== */
+        .form-label { font-weight: 600; font-size: 0.8rem; }
         .form-control, .form-select {
-            border-radius: 0.5rem;
-            border: 1px solid #e9ecef;
-            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            padding: 0.4rem 0.7rem;
+            font-size: 0.8rem;
         }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-        }
-        
         .btn-primary {
-            background-color: #3498db;
+            background: #3498db;
             border: none;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
         }
-        
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-        
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .wrapper {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 300px;
-            }
-            
-            .sidebar-content {
-                max-height: 250px;
-            }
-        }
+        .btn-primary:hover { background: #2980b9; }
     </style>
     
     @stack('styles')
 </head>
 <body>
     <div class="wrapper">
+        <!-- SIDEBAR BACKDROP -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+        
         <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <!-- Header -->
+        <aside class="sidebar hidden" id="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-school"></i>
                 <h5>SIM Sekolah</h5>
                 <small>Kepala Sekolah</small>
             </div>
             
-            <!-- Konten Sidebar -->
             <div class="sidebar-content">
                 <ul class="sidebar-menu">
-                    <!-- Dashboard -->
                     <li>
                         <a href="{{ route('kepala-sekolah.dashboard') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.dashboard') ? 'active' : '' }}">
-                            <i class="fas fa-tachometer-alt"></i>
-                            Dashboard
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN SEKOLAH -->
                     <li class="menu-section">MANAJEMEN SEKOLAH</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen.struktur') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen.struktur*') ? 'active' : '' }}">
-                            <i class="fas fa-sitemap"></i>
-                            Struktur Organisasi
+                            <i class="fas fa-sitemap"></i> Struktur Organisasi
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen.jurusan') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen.jurusan*') ? 'active' : '' }}">
-                            <i class="fas fa-code-branch"></i>
-                            Jurusan
+                            <i class="fas fa-code-branch"></i> Jurusan
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen.tahun-ajaran') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen.tahun-ajaran*') ? 'active' : '' }}">
-                            <i class="fas fa-calendar-alt"></i>
-                            Tahun Ajaran
+                            <i class="fas fa-calendar-alt"></i> Tahun Ajaran
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN GURU -->
                     <li class="menu-section">MANAJEMEN GURU</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen-guru.index') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen-guru.index') ? 'active' : '' }}">
-                            <i class="fas fa-chalkboard-teacher"></i>
-                            Data Guru
+                            <i class="fas fa-chalkboard-teacher"></i> Data Guru
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('kepala-sekolah.manajemen-guru.absensi') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.manajemen-guru.absensi') ? 'active' : '' }}">
-                            <i class="fas fa-chart-bar"></i>
-                            Rekap Absensi
+                            <i class="fas fa-chart-bar"></i> Rekap Absensi
                         </a>
                     </li>
                     
-                    <!-- PERSETUJUAN -->
                     <li class="menu-section">PERSETUJUAN</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.persetujuan.index') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.persetujuan.*') ? 'active' : '' }}">
-                            <i class="fas fa-clipboard-list"></i>
-                            Daftar Pengajuan
+                            <i class="fas fa-clipboard-list"></i> Daftar Pengajuan
                             @php
                                 try {
                                     if (class_exists('App\\Models\\Pengajuan')) {
@@ -472,111 +448,87 @@
                         </a>
                     </li>
                     
-                    <!-- LAPORAN -->
                     <li class="menu-section">LAPORAN</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.laporan.absensi') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.laporan.absensi') ? 'active' : '' }}">
-                            <i class="fas fa-chart-line"></i>
-                            Absensi
+                            <i class="fas fa-chart-line"></i> Absensi
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('kepala-sekolah.laporan.kinerja-guru') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.laporan.kinerja-guru') ? 'active' : '' }}">
-                            <i class="fas fa-star"></i>
-                            Kinerja Guru
+                            <i class="fas fa-star"></i> Kinerja Guru
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('kepala-sekolah.laporan.statistik-siswa') }}" 
                            class="menu-item {{ request()->routeIs('kepala-sekolah.laporan.statistik-siswa') ? 'active' : '' }}">
-                            <i class="fas fa-users"></i>
-                            Statistik Siswa
+                            <i class="fas fa-users"></i> Statistik Siswa
                         </a>
                     </li>
-                    
-                    <!-- ========== MENU PENGATURAN DIHAPUS DARI SIDEBAR ========== -->
-                    <!-- 
-                    <li class="menu-section">PENGATURAN</li>
-                    <li>
-                        <a href="{{ route('kepala-sekolah.profil.index') }}" 
-                           class="menu-item {{ request()->routeIs('kepala-sekolah.profil.*') ? 'active' : '' }}">
-                            <i class="fas fa-user-circle"></i>
-                            Profil
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('kepala-sekolah.pengaturan') }}" 
-                           class="menu-item {{ request()->routeIs('kepala-sekolah.pengaturan') ? 'active' : '' }}">
-                            <i class="fas fa-cog"></i>
-                            Pengaturan Sistem
-                        </a>
-                    </li>
-                    -->
                     
                     <li><hr></li>
                     
-                    <!-- LOGOUT -->
                     <li>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: inline;">
                             @csrf
                             <a href="#" class="menu-item logout" 
                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                <i class="fas fa-sign-out-alt"></i>
-                                Logout
+                                <i class="fas fa-sign-out-alt"></i> Logout
                             </a>
                         </form>
                     </li>
                     
-                    <!-- SPACER -->
-                    <li style="height: 30px;"></li>
+                    <li style="height: 20px;"></li>
                 </ul>
             </div>
         </aside>
         
         <!-- MAIN CONTENT -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
             <!-- Navbar -->
             <div class="navbar-top">
-                <div>
-                    <span class="h5 mb-0">Selamat Datang, {{ Auth::user()->name }}</span>
+                <div class="navbar-left">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="greeting">👋 Selamat Datang, {{ Auth::user()->name ?? 'User' }}</span>
                 </div>
                 
                 <div class="navbar-actions">
                     <div class="dropdown">
-                        <button class="btn-notification" data-bs-toggle="dropdown">
+                        <button class="btn-notification" data-bs-toggle="dropdown" aria-label="Notifikasi">
                             <i class="fas fa-bell"></i>
                             <span class="badge-notification">3</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Notifikasi 1</a></li>
-                            <li><a class="dropdown-item" href="#">Notifikasi 2</a></li>
-                            <li><a class="dropdown-item" href="#">Notifikasi 3</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.8rem; min-width: 180px;">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle me-2"></i>Notifikasi 1</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle me-2"></i>Notifikasi 2</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle me-2"></i>Notifikasi 3</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-primary" href="#">Lihat semua</a></li>
                         </ul>
                     </div>
                     
-                    <!-- USER DROPDOWN - MENU PROFIL & PENGATURAN ADA DI SINI -->
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle"></i>
-                            <span>{{ Auth::user()->name }}</span>
+                            <span class="user-name">{{ Auth::user()->name ?? 'User' }}</span>
+                            <i class="fas fa-chevron-down ms-1" style="font-size: 0.6rem; color: #aaa;"></i>
                         </div>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <!-- Profil -->
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.8rem; min-width: 170px;">
                             <li>
                                 <a class="dropdown-item" href="{{ route('kepala-sekolah.profil.index') }}">
                                     <i class="fas fa-user me-2"></i> Profil
                                 </a>
                             </li>
-                            <!-- Pengaturan Sistem -->
                             <li>
                                 <a class="dropdown-item" href="{{ route('kepala-sekolah.pengaturan') }}">
                                     <i class="fas fa-cog me-2"></i> Pengaturan
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            <!-- Logout -->
                             <li>
                                 <a class="dropdown-item text-danger" href="#" 
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -590,32 +542,27 @@
             
             <!-- Page Content -->
             <div class="page-content">
-                <!-- Alert Messages -->
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show">
-                        <i class="fas fa-check-circle me-2"></i>
-                        {{ session('success') }}
+                        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
                         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
                 @if(session('error'))
                     <div class="alert alert-danger alert-dismissible fade show">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        {{ session('error') }}
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
                         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
                 @if(session('warning'))
                     <div class="alert alert-warning alert-dismissible fade show">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        {{ session('warning') }}
+                        <i class="fas fa-exclamation-triangle me-2"></i> {{ session('warning') }}
                         <button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
-                <!-- Content -->
                 @yield('content')
             </div>
         </main>
@@ -628,12 +575,43 @@
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     
     <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.toggle('hidden');
+            backdrop.classList.toggle('show');
+        }
+        
+        // Tutup sidebar jika klik di luar
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const toggleBtn = document.querySelector('.sidebar-toggle');
+            
+            if (!sidebar.classList.contains('hidden') && 
+                !sidebar.contains(event.target) && 
+                !toggleBtn.contains(event.target)) {
+                toggleSidebar();
+            }
+        });
+        
+        // Tutup sidebar dengan tombol ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
+                if (!sidebar.classList.contains('hidden')) {
+                    toggleSidebar();
+                }
+            }
+        });
+        
         // Inisialisasi DataTables
         $(document).ready(function() {
             $('.datatable').DataTable({
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
-                }
+                language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
+                responsive: true,
+                autoWidth: false
             });
         });
     </script>

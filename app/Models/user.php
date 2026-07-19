@@ -1,169 +1,174 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers\Auth;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\Guru;
+use App\Models\Siswa;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
-class User extends Authenticatable
+class LoginController extends Controller
 {
-    use HasFactory, Notifiable;
-
-    protected $fillable = [
-        'name', 
-        'email', 
-        'password', 
-        'role', 
-        'status', 
-        'nuptk',
-        'no_telepon',
-        'foto',
-        'last_login'
-    ];
-
-    protected $hidden = [
-        'password', 
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'last_login' => 'datetime',
-    ];
-
     /**
-     * Relasi ke Guru
+     * Tampilkan halaman login
      */
-    public function guru()
+    public function showLoginForm()
     {
-        return $this->hasOne(Guru::class, 'user_id');
+        return view('auth.login');
     }
 
     /**
-     * Relasi ke Siswa
+     * Login dengan email (untuk semua role)
      */
-    public function siswa()
+    public function login(Request $request)
     {
-        return $this->hasOne(Siswa::class, 'user_id');
-    }
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-    /**
-     * Generate password berdasarkan role (4 digit terakhir)
-     */
-    public function generatePassword()
-    {
-        $prefix = 'simdu#';
+        $user = User::where('email', $request->email)->first();
         
-        switch ($this->role) {
-            case 'kepala_sekolah':
-                return $this->getKepalaSekolahPassword($prefix);
-            case 'administrasi':
-                return $this->getAdminPassword($prefix);
-            case 'guru':
-                return $this->getGuruPassword($prefix);
-            case 'siswa':
-                return $this->getSiswaPassword($prefix);
-            default:
-                return $prefix . 'default' . substr((string)$this->id, -4);
-        }
-    }
-
-    /**
-     * Generate password untuk Kepala Sekolah (angka 1)
-     */
-    private function getKepalaSekolahPassword($prefix)
-    {
-        $guru = $this->guru;
-        
-        if ($guru && $guru->nuptk) {
-            return $prefix . '1' . substr($guru->nuptk, -4);
-        } elseif ($guru && $guru->nip) {
-            return $prefix . '1' . substr($guru->nip, -4);
+        if (!$user) {
+            return back()->withErrors(['email' => 'Email tidak ditemukan'])->withInput();
         }
         
-        return $prefix . '1' . substr((string)$this->id, -4);
-    }
-
-    /**
-     * Generate password untuk Admin (angka 2)
-     */
-    private function getAdminPassword($prefix)
-    {
-        $guru = $this->guru;
-        
-        if ($guru && $guru->nuptk) {
-            return $prefix . '2' . substr($guru->nuptk, -4);
-        } elseif ($guru && $guru->nip) {
-            return $prefix . '2' . substr($guru->nip, -4);
+        if ($this->validatePassword($user, $request->password)) {
+            Auth::login($user, $request->has('remember'));
+            session()->forget('login_role');
+            return $this->redirectBasedOnRole($user);
         }
         
-        // Jika admin tidak punya data guru, gunakan 4 digit dari email
-        $emailClean = preg_replace('/[^a-zA-Z0-9]/', '', $this->email);
-        return $prefix . '2' . substr($emailClean, 0, 4);
+        return back()->withErrors(['email' => 'Email atau password salah'])->withInput();
     }
 
     /**
-     * Generate password untuk Guru (angka 3)
+     * Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
+     * 🔍 DENGAN DEBUG UNTUK MENCARI MASALAH
      */
-    private function getGuruPassword($prefix)
+    public function loginNuptk(Request $request)
     {
-        $guru = $this->guru;
+        $request->validate([
+            'nuptk' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $nuptk = trim($request->nuptk);
+        $password = $request->password;
         
-        if ($guru && $guru->nuptk) {
-            return $prefix . '3' . substr($guru->nuptk, -4);
-        } elseif ($guru && $guru->nip) {
-            return $prefix . '3' . substr($guru->nip, -4);
+        // 🔍 DEBUG 1: Cek apakah NUPTK dan Password terbaca
+        dd('🔍 DEBUG 1 - DATA DITERIMA:', [
+            'NUPTK' => $nuptk,
+            'Password' => $password,
+            'Method' => $request->method(),
+            'URL' => $request->fullUrl(),
+        ]);
+        
+        // 🔍 DEBUG 2: Cari user berdasarkan NUPTK di tabel users
+        $user = User::where('nuptk', $nuptk)->first();
+        
+        // 🔍 DEBUG 3: Cek apakah user ditemukan
+        dd('🔍 DEBUG 3 - HASIL QUERY:', [
+            'NUPTK yang dicari' => $nuptk,
+            'User ditemukan' => $user ? $user->name : 'TIDAK DITEMUKAN',
+            'Data User' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'nuptk' => $user->nuptk,
+            ] : null,
+        ]);
+        
+        if (!$user) {
+            return back()->withErrors(['nuptk' => 'NUPTK tidak ditemukan'])->withInput();
         }
         
-        return $prefix . '3' . substr((string)$this->id, -4);
-    }
-
-    /**
-     * Generate password untuk Siswa (angka 4)
-     */
-    private function getSiswaPassword($prefix)
-    {
-        $siswa = $this->siswa;
+        // 🔍 DEBUG 4: Cek password
+        $isPasswordMatch = Hash::check($password, $user->password);
+        dd('🔍 DEBUG 4 - PASSWORD CHECK:', [
+            'Password input' => $password,
+            'Password hash di DB' => $user->password,
+            'Password cocok?' => $isPasswordMatch ? '✅ YA' : '❌ TIDAK',
+            'Expected password' => $this->generatePasswordByRole($user, $user->role),
+        ]);
         
-        if ($siswa && $siswa->nis) {
-            return $prefix . '4' . substr($siswa->nis, -4);
+        // Validasi password
+        if ($this->validateNuptkPassword($user, $password)) {
+            Auth::login($user, $request->has('remember'));
+            session(['login_role' => $user->role]);
+            return $this->redirectBasedOnRole($user);
         }
         
-        return $prefix . '4' . substr((string)$this->id, -4);
+        return back()->withErrors(['password' => 'Password salah'])->withInput();
     }
 
     /**
-     * Validate password (support multi-role)
+     * Login khusus Guru (legacy - untuk kompatibilitas)
      */
-    public function validatePassword($password)
+    public function loginGuru(Request $request)
     {
-        // 1. Cek dengan Hash::check (Bcrypt)
-        if (Hash::check($password, $this->password)) {
+        return $this->loginNuptk($request);
+    }
+
+    /**
+     * Login dengan NIS (untuk Siswa)
+     */
+    public function loginSiswa(Request $request)
+    {
+        $request->validate([
+            'nis' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $nis = trim($request->nis);
+        $password = $request->password;
+        
+        $siswa = Siswa::where('nis', $nis)->first();
+        
+        if (!$siswa) {
+            return back()->withErrors(['nis' => 'NIS tidak ditemukan'])->withInput();
+        }
+        
+        $user = $siswa->user;
+        
+        if (!$user) {
+            return back()->withErrors(['nis' => 'User tidak ditemukan'])->withInput();
+        }
+        
+        if ($this->validateSiswaPassword($user, $password)) {
+            Auth::login($user, $request->has('remember_siswa'));
+            session(['login_role' => 'siswa']);
+            return redirect()->route('siswa.dashboard');
+        }
+        
+        return back()->withErrors(['password' => 'Password salah'])->withInput();
+    }
+
+    /**
+     * Validasi password untuk login NUPTK
+     */
+    private function validateNuptkPassword($user, $password)
+    {
+        if (Hash::check($password, $user->password)) {
             return true;
         }
         
-        // 2. Cek apakah password masih MD5 (untuk kompatibilitas)
-        if (md5($password) === $this->password) {
-            // Update ke Bcrypt
-            $this->password = Hash::make($password);
-            $this->save();
+        if (md5($password) === $user->password) {
+            $user->password = Hash::make($password);
+            $user->save();
             return true;
         }
         
-        // 3. Generate expected password berdasarkan role
-        $expectedPassword = $this->generatePassword();
+        $expectedPassword = $this->generatePasswordByRole($user, $user->role);
         
-        // 4. Cek apakah password sesuai dengan expected (plain text)
         if ($password === $expectedPassword) {
-            // Hash password untuk下次 login
-            if (!Hash::needsRehash($this->password) && !Hash::check($password, $this->password)) {
-                $this->password = Hash::make($password);
-                $this->save();
-            }
+            $user->password = Hash::make($password);
+            $user->save();
             return true;
         }
         
@@ -171,118 +176,139 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user memiliki multi-role (Kepala Sekolah + Guru)
+     * Validasi password untuk login Siswa
      */
-    public function hasMultipleRoles()
+    private function validateSiswaPassword($user, $password)
     {
-        if ($this->role !== 'kepala_sekolah') {
-            return false;
+        if (Hash::check($password, $user->password)) {
+            return true;
         }
         
-        $guru = $this->guru;
-        if (!$guru) {
-            return false;
+        if (md5($password) === $user->password) {
+            $user->password = Hash::make($password);
+            $user->save();
+            return true;
         }
         
-        // Cek apakah user ini juga memiliki data guru
-        return $guru->exists();
+        $expectedPassword = $this->generatePasswordByRole($user, 'siswa');
+        
+        if ($password === $expectedPassword) {
+            $user->password = Hash::make($password);
+            $user->save();
+            return true;
+        }
+        
+        return false;
     }
 
     /**
-     * Get all roles for this user (for multi-role)
+     * Validasi password umum (untuk login email)
      */
-    public function getAvailableRoles()
+    private function validatePassword($user, $password)
     {
-        $roles = [$this->role];
-        
-        if ($this->hasMultipleRoles()) {
-            $roles[] = 'guru';
+        if (Hash::check($password, $user->password)) {
+            return true;
         }
         
-        return $roles;
-    }
-
-    /**
-     * Login sebagai role tertentu (untuk multi-role)
-     */
-    public function loginAs($role)
-    {
-        if (!in_array($role, $this->getAvailableRoles())) {
-            throw new \Exception("Role {$role} tidak tersedia untuk user ini");
+        if (md5($password) === $user->password) {
+            $user->password = Hash::make($password);
+            $user->save();
+            return true;
         }
         
-        session(['login_role' => $role]);
-        return $this;
+        $expectedPassword = $this->generatePasswordByRole($user, $user->role);
+        
+        if ($password === $expectedPassword || Hash::check($expectedPassword, $user->password)) {
+            return true;
+        }
+        
+        return false;
     }
 
     /**
-     * Get current login role
+     * Generate password default berdasarkan role
      */
-    public function getCurrentLoginRole()
+    private function generatePasswordByRole($user, $role)
     {
-        return session('login_role', $this->role);
+        $prefix = 'simdu#';
+        $roleNumber = $this->getRoleNumber($role);
+        
+        // ✅ Cek NUPTK langsung dari tabel users
+        if ($user->nuptk) {
+            return $prefix . $roleNumber . substr($user->nuptk, -4);
+        }
+        
+        $guru = Guru::where('user_id', $user->id)->first();
+        if ($guru && $guru->nuptk) {
+            return $prefix . $roleNumber . substr($guru->nuptk, -4);
+        }
+        
+        $siswa = Siswa::where('user_id', $user->id)->first();
+        if ($siswa && $siswa->nis) {
+            return $prefix . $roleNumber . substr($siswa->nis, -4);
+        }
+        
+        return $prefix . $roleNumber . substr((string)$user->id, -4);
     }
 
     /**
-     * Accessor untuk role label
+     * Get role number for password generation
      */
-    public function getRoleLabelAttribute()
+    private function getRoleNumber($role)
     {
-        $labels = [
-            'kepala_sekolah' => 'Kepala Sekolah',
-            'administrasi' => 'Administrasi',
-            'guru' => 'Guru',
-            'siswa' => 'Siswa',
+        $roles = [
+            'kepala_sekolah' => '1',
+            'administrasi' => '2',
+            'guru' => '3',
+            'siswa' => '4',
         ];
         
-        return $labels[$this->role] ?? ucfirst($this->role);
+        return $roles[$role] ?? '0';
     }
 
     /**
-     * Accessor untuk status badge
+     * Redirect berdasarkan role user
      */
-    public function getStatusBadgeAttribute()
+    private function redirectBasedOnRole($user)
     {
-        $badges = [
-            'aktif' => 'success',
-            'nonaktif' => 'danger',
-            'pending' => 'warning',
+        $routes = [
+            'kepala_sekolah' => 'kepala-sekolah.dashboard',
+            'administrasi' => 'administrasi.dashboard',
+            'guru' => 'guru.dashboard',
+            'siswa' => 'siswa.dashboard',
         ];
         
-        $color = $badges[$this->status ?? 'aktif'] ?? 'secondary';
-        $label = ucfirst($this->status ?? 'Aktif');
+        $route = $routes[$user->role] ?? 'home';
         
-        return "<span class='badge bg-{$color}'>{$label}</span>";
-    }
-
-    /**
-     * Scope untuk user aktif
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'aktif');
-    }
-
-    /**
-     * Scope untuk user berdasarkan role
-     */
-    public function scopeRole($query, $role)
-    {
-        return $query->where('role', $role);
-    }
-
-    /**
-     * Scope untuk pencarian
-     */
-    public function scopeSearch($query, $search)
-    {
-        if ($search) {
-            return $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('nuptk', 'LIKE', "%{$search}%");
-            });
+        if (!route_exists($route)) {
+            Log::warning('Route not found: ' . $route . ' for role: ' . $user->role);
+            return redirect()->route('home');
         }
-        return $query;
+        
+        return redirect()->route($route);
+    }
+
+    /**
+     * Logout user
+     */
+    public function logout(Request $request)
+    {
+        session()->forget('login_role');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/login')->with('success', 'Berhasil logout.');
+    }
+}
+
+// Helper function untuk cek route exists
+if (!function_exists('route_exists')) {
+    function route_exists($name)
+    {
+        try {
+            return app('router')->has($name);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
