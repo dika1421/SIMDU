@@ -32,8 +32,23 @@ class GuruImport implements ToCollection, WithHeadingRow
                 // ========== AMBIL DATA DARI EXCEL ==========
                 $nama = trim($row['nama_guru'] ?? '');
                 $jk = trim($row['jk'] ?? '');
+                
+                // 🔥 PERBAIKAN: Cek kolom 'tempat_tanggal_lahir' (gabungan) atau kolom terpisah
                 $tempatLahir = trim($row['tempat_lahir'] ?? '');
                 $tanggalLahir = trim($row['tanggal_lahir'] ?? '');
+                
+                // Jika kolom terpisah kosong, coba dari kolom gabungan
+                if (empty($tempatLahir) && empty($tanggalLahir)) {
+                    $tempatTanggalLahir = trim($row['tempat_tanggal_lahir'] ?? '');
+                    if (!empty($tempatTanggalLahir) && strpos($tempatTanggalLahir, ',') !== false) {
+                        $parts = explode(',', $tempatTanggalLahir, 2);
+                        $tempatLahir = trim($parts[0]);
+                        $tanggalLahir = trim($parts[1]);
+                    } else {
+                        $tempatLahir = $tempatTanggalLahir;
+                    }
+                }
+                
                 $alamat = trim($row['alamat_lengkap'] ?? '');
                 $nuptk = trim(str_replace(' ', '', $row['nuptk'] ?? ''));
                 $jabatan = trim($row['jabatan'] ?? '');
@@ -41,6 +56,7 @@ class GuruImport implements ToCollection, WithHeadingRow
                 $jurusan = trim($row['jurusan'] ?? '');
                 $tahunLulus = trim($row['tahun_lulus'] ?? '');
                 $tmt = trim($row['tmt_smk_darul_ulum'] ?? '');
+                $noTelepon = trim($row['no_telepon'] ?? '');
                 
                 // ========== VALIDASI ==========
                 if (empty($nama) || empty($nuptk)) {
@@ -79,6 +95,11 @@ class GuruImport implements ToCollection, WithHeadingRow
                 $tanggalLahirFormatted = null;
                 if (!empty($tanggalLahir)) {
                     $tanggalLahirFormatted = $this->parseTanggal($tanggalLahir);
+                    if (!$tanggalLahirFormatted) {
+                        $this->failedCount++;
+                        $this->errors[] = "Baris {$rowNumber}: Format TANGGAL LAHIR tidak valid (gunakan: Tempat, 26 Juni 1975).";
+                        continue;
+                    }
                 }
                 
                 $tmtFormatted = null;
@@ -86,40 +107,44 @@ class GuruImport implements ToCollection, WithHeadingRow
                     $tmtFormatted = $this->parseTanggal($tmt);
                 }
                 
+                // ========== CEK DUPLIKAT NUPTK ==========
+                $existingUser = User::where('nuptk', $nuptk)->first();
+                if ($existingUser) {
+                    $this->failedCount++;
+                    $this->errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah terdaftar.";
+                    continue;
+                }
+                
                 // ========== BUAT USER ==========
                 try {
                     $password = 'simdu#' . $roleNumber . substr($nuptk, -4);
                     
-                    $user = User::updateOrCreate(
-                        ['nuptk' => $nuptk],
-                        [
-                            'name' => $nama,
-                            'email' => $email,
-                            'password' => Hash::make($password),
-                            'role' => $role,
-                            'status' => 'aktif'
-                        ]
-                    );
+                    $user = User::create([
+                        'name' => $nama,
+                        'email' => $email,
+                        'password' => Hash::make($password),
+                        'role' => $role,
+                        'nuptk' => $nuptk,
+                        'status' => 'aktif'
+                    ]);
                     
                     // ========== BUAT GURU ==========
-                    Guru::updateOrCreate(
-                        ['nuptk' => $nuptk],
-                        [
-                            'user_id' => $user->id,
-                            'nama_lengkap' => $nama,
-                            'jenis_kelamin' => $jk,
-                            'tempat_lahir' => $tempatLahir,
-                            'tanggal_lahir' => $tanggalLahirFormatted,
-                            'alamat_lengkap' => $alamat,
-                            'nuptk' => $nuptk,
-                            'jabatan' => $jabatan,
-                            'nama_universitas' => $universitas,
-                            'jurusan_pendidikan' => $jurusan,
-                            'tahun_lulus' => $tahunLulus,
-                            'tmt' => $tmtFormatted,
-                            'status' => 'aktif'
-                        ]
-                    );
+                    Guru::create([
+                        'user_id' => $user->id,
+                        'nama_lengkap' => $nama,
+                        'jenis_kelamin' => $jk,
+                        'tempat_lahir' => $tempatLahir,
+                        'tanggal_lahir' => $tanggalLahirFormatted,
+                        'alamat_lengkap' => $alamat,
+                        'nuptk' => $nuptk,
+                        'jabatan' => $jabatan,
+                        'nama_universitas' => $universitas,
+                        'jurusan_pendidikan' => $jurusan,
+                        'tahun_lulus' => $tahunLulus,
+                        'tmt' => $tmtFormatted,
+                        'no_telepon' => $noTelepon,
+                        'status' => 'aktif'
+                    ]);
                     
                     $this->successCount++;
                     
@@ -181,7 +206,6 @@ class GuruImport implements ToCollection, WithHeadingRow
         try {
             return Carbon::parse($dateString)->format('Y-m-d');
         } catch (\Exception $e) {
-            // Jika masih gagal, return null
             return null;
         }
     }
