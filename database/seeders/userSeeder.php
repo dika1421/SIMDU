@@ -25,7 +25,25 @@ class UserSeeder extends Seeder
                 'name' => 'Hj. Jubaedah, SE',
                 'email' => 'jubaedah@guru.sch.id',
                 'role' => 'kepala_sekolah',
-                'password' => Hash::make('simdu#40062'), // Akan diupdate nanti
+                'password' => Hash::make('simdu#10062'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Admin Tata Usaha (role: administrasi)
+            [
+                'name' => 'Nata Wijaya, S. Pd. I',
+                'email' => 'nata.wijaya@guru.sch.id',
+                'role' => 'administrasi',
+                'password' => Hash::make('simdu#20003'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Operator (role: administrasi) - SYARIPUDIN
+            [
+                'name' => 'Syaripudin, S.Pd.I.,M.Ag.,Gr',
+                'email' => 'syaripudin.operator@guru.sch.id',
+                'role' => 'administrasi',
+                'password' => Hash::make('simdu#20060'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -34,16 +52,25 @@ class UserSeeder extends Seeder
                 'name' => 'H. Rojudin, S.Pd',
                 'email' => 'rojudin@guru.sch.id',
                 'role' => 'guru',
-                'password' => Hash::make('simdu#4013'),
+                'password' => Hash::make('simdu#30013'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Guru 2 (contoh tambahan)
+            // Guru 2
             [
                 'name' => 'Siti Sopiah, S. Pd',
                 'email' => 'siti.sopiah@guru.sch.id',
                 'role' => 'guru',
-                'password' => Hash::make('simdu#4003'),
+                'password' => Hash::make('simdu#30003'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // Guru 3 - Nurlailah
+            [
+                'name' => 'Nurlailah Qadariah, S. Pd',
+                'email' => 'nurlailah.qadariah@guru.sch.id',
+                'role' => 'guru',
+                'password' => Hash::make('simdu#30022'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -71,6 +98,7 @@ class UserSeeder extends Seeder
             $exists = DB::table('users')->where('email', $user['email'])->exists();
             if (!$exists) {
                 DB::table('users')->insert($user);
+                $this->command->info("✅ User {$user['name']} berhasil dibuat!");
             } else {
                 $this->command->warn("⚠️ User dengan email {$user['email']} sudah ada, dilewati.");
             }
