@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - SIMDU</title>
 
@@ -28,7 +28,7 @@
 
         .login-wrapper {
             width: 100%;
-            max-width: 440px;
+            max-width: 420px;
             background: #ffffff;
             border-radius: 24px;
             box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.18);
@@ -45,17 +45,34 @@
 
         /* HEADER */
         .login-header { text-align: center; margin-bottom: 24px; }
-        .login-header .logo-icon {
-            width: 64px; height: 64px;
+        .login-header .logo-text {
+            display: inline-block;
             background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem; color: white;
-            margin: 0 auto 12px;
+            line-height: 80px;
+            text-align: center;
+            margin-bottom: 12px;
             box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+            letter-spacing: 1px;
         }
-        .login-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-        .login-header p { color: #64748b; font-size: 0.8rem; margin: 0; }
+        .login-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .login-header .sub-title {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 1px;
+        }
 
         /* ROLE SELECTOR */
         .role-selector {
@@ -118,24 +135,6 @@
         }
         .password-toggle:hover { color: #4f46e5; }
 
-        .password-hint {
-            background: #f8fafc; padding: 8px 12px;
-            border-radius: 8px; font-size: 0.65rem;
-            color: #475569; margin-top: 6px;
-            border: 1px solid #e9edf2; line-height: 1.6;
-        }
-        .password-hint code {
-            background: #e9edf2; padding: 1px 6px;
-            border-radius: 4px; font-size: 0.6rem;
-            font-weight: 600; color: #0f172a;
-        }
-        .password-hint .highlight { color: #4f46e5; font-weight: 600; }
-        .password-hint .role-number {
-            background: #4f46e5; color: white;
-            padding: 0 5px; border-radius: 4px;
-            font-weight: 700; font-size: 0.6rem;
-        }
-
         .remember-me {
             display: flex; align-items: center; gap: 8px;
             margin: 2px 0 14px;
@@ -183,61 +182,17 @@
         }
         .alert i { font-size: 0.9rem; }
 
-        /* DEMO ACCOUNTS */
-        .demo-accounts {
-            margin-top: 20px; padding-top: 16px;
-            border-top: 1.5px solid #e9edf2;
-        }
-        .demo-accounts h6 {
-            text-align: center; font-size: 0.6rem;
-            text-transform: uppercase; letter-spacing: 0.6px;
-            color: #94a3b8; font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .demo-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-        }
-        @media (max-width: 480px) {
-            .demo-grid { grid-template-columns: 1fr; }
-        }
-        .demo-item {
-            background: #f8fafc; padding: 8px 10px;
-            border-radius: 8px; border: 1px solid #e9edf2;
-            font-size: 0.65rem; color: #334155;
-        }
-        .demo-item strong {
-            display: block; font-weight: 600;
-            color: #0f172a; font-size: 0.7rem;
-            margin-bottom: 2px;
-        }
-        .demo-item .label { color: #94a3b8; font-size: 0.55rem; }
-        .demo-item .value {
-            font-weight: 600; color: #4f46e5;
-            font-size: 0.65rem; word-break: break-all;
-        }
-        .demo-item .pass {
-            display: inline-block; margin-top: 2px;
-            background: #e9edf2; padding: 1px 6px;
-            border-radius: 4px; font-family: monospace;
-            font-size: 0.6rem; color: #0f172a;
-        }
-
         .footer-text {
-            text-align: center; font-size: 0.6rem;
-            color: #94a3b8; margin-top: 14px;
+            text-align: center;
+            font-size: 0.6rem;
+            color: #94a3b8;
+            margin-top: 18px;
+            border-top: 1px solid #e9edf2;
+            padding-top: 14px;
         }
-
-        .badge-role {
-            display: inline-block; padding: 1px 6px;
-            border-radius: 12px; font-size: 0.5rem;
-            font-weight: 600; margin-top: 1px;
+        .footer-text strong {
+            color: #4f46e5;
         }
-        .badge-role.ks { background: #dbeafe; color: #1d4ed8; }
-        .badge-role.admin { background: #e0e7ff; color: #4338ca; }
-        .badge-role.guru { background: #fef3c7; color: #b45309; }
-        .badge-role.siswa { background: #fce7f3; color: #be185d; }
     </style>
 </head>
 <body>
@@ -246,9 +201,9 @@
 
     {{-- HEADER --}}
     <div class="login-header">
-        <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+        <div class="logo-text">DU</div>
         <h2>Sistem Informasi Sekolah</h2>
-        <p>SMK Bisa</p>
+        <p class="sub-title">SMK DARUL ULUM</p>
     </div>
 
     {{-- ROLE SELECTOR --}}
@@ -281,15 +236,6 @@
                 <i class="fas fa-user input-icon"></i>
                 <input type="text" class="form-control-custom @error('nuptk') is-invalid @enderror" name="nuptk" id="nuptk"
                        placeholder="Masukkan NUPTK" value="{{ old('nuptk') }}" autofocus maxlength="20" required>
-            </div>
-            <div class="password-hint" id="guruHint">
-                <i class="fas fa-info-circle me-1"></i>
-                Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
-                <br>
-                <span class="badge-role ks">#1 Kepsek</span>
-                <span class="badge-role admin">#2 Admin</span>
-                <span class="badge-role guru">#3 Guru</span>
-                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code>
             </div>
         </div>
 
@@ -331,11 +277,6 @@
                 <input type="password" class="form-control-custom @error('password') is-invalid @enderror" name="password" id="passwordSiswa" placeholder="Masukkan password" required>
                 <button type="button" class="password-toggle" onclick="togglePassword('passwordSiswa', this)"><i class="far fa-eye"></i></button>
             </div>
-            <div class="password-hint" id="siswaHint">
-                <i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong>
-                <br><span class="badge-role siswa">#4 Siswa</span>
-                <br>Contoh: NIS <strong>1234567890</strong> → <code>simdu#47890</code>
-            </div>
         </div>
 
         <div class="remember-me">
@@ -349,39 +290,9 @@
         </button>
     </form>
 
-    {{-- DEMO ACCOUNTS --}}
-    <div class="demo-accounts">
-        <h6>🔑 Informasi Login</h6>
-        <div class="demo-grid">
-            <div class="demo-item">
-                <strong>👨‍🏫 Kepala Sekolah</strong>
-                <span class="label">NUPTK:</span> <span class="value">195875365530062</span>
-                <span class="pass">simdu#10062</span>
-                <span class="badge-role ks">Kepsek</span>
-            </div>
-            <div class="demo-item">
-                <strong>👨‍🏫 Admin</strong>
-                <span class="label">NUPTK:</span> <span class="value">604074464420003</span>
-                <span class="pass">simdu#20003</span>
-                <span class="badge-role admin">Admin</span>
-            </div>
-            <div class="demo-item">
-                <strong>👨‍🏫 Guru</strong>
-                <span class="label">NUPTK:</span> <span class="value">623775065320013</span>
-                <span class="pass">simdu#30013</span>
-                <span class="badge-role guru">Guru</span>
-            </div>
-            <div class="demo-item">
-                <strong>👨‍🎓 Siswa</strong>
-                <span class="label">NIS:</span> <span class="value">1234567890</span>
-                <span class="pass">simdu#47890</span>
-                <span class="badge-role siswa">Siswa</span>
-            </div>
-        </div>
-        <div class="mt-2 text-center"><small class="text-muted"><i class="fas fa-info-circle"></i> <strong>Multi-Role:</strong> Kepsek bisa login sebagai Guru dengan <code>simdu#30062</code></small></div>
+    <div class="footer-text">
+        &copy; {{ date('Y') }} <strong>SMK Darul Ulum</strong> - Sistem Informasi Sekolah
     </div>
-
-    <div class="footer-text">&copy; {{ date('Y') }} SMK Bisa - Sistem Informasi Sekolah</div>
 </div>
 
 <script>
@@ -405,36 +316,6 @@
         btn.disabled = true;
         return true;
     }
-
-    document.getElementById('nuptk')?.addEventListener('input', function(e) {
-        const val = e.target.value.replace(/\s/g, '');
-        const hint = document.getElementById('guruHint');
-        if (val.length >= 4) {
-            const last4 = val.slice(-4);
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
-                <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
-                <br>✅ Password: <code>simdu#1${last4}</code> (Kepsek) · <code>simdu#2${last4}</code> (Admin) · <code>simdu#3${last4}</code> (Guru)`;
-        } else {
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#<span class="role-number">1/2/3</span></code> + <strong class="highlight">4 digit terakhir NUPTK</strong>
-                <br><span class="badge-role ks">#1 Kepsek</span> <span class="badge-role admin">#2 Admin</span> <span class="badge-role guru">#3 Guru</span>
-                <br>Contoh: NUPTK <strong>195875365530062</strong> → <code>simdu#10062</code> (Kepsek)`;
-        }
-    });
-
-    document.getElementById('nis')?.addEventListener('input', function(e) {
-        const val = e.target.value.replace(/\s/g, '');
-        const hint = document.getElementById('siswaHint');
-        if (val.length >= 4) {
-            const last4 = val.slice(-4);
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong>
-                <br><span class="badge-role siswa">#4 Siswa</span>
-                <br>✅ Password = <strong><code>simdu#4${last4}</code></strong>`;
-        } else {
-            hint.innerHTML = `<i class="fas fa-info-circle me-1"></i> Format: <code>simdu#4</code> + <strong class="highlight">4 digit terakhir NIS</strong>
-                <br><span class="badge-role siswa">#4 Siswa</span>
-                <br>Contoh: NIS <strong>1234567890</strong> → <code>simdu#47890</code>`;
-        }
-    });
 
     @if(old('nis')) setRole('siswa'); @else setRole('guru'); @endif
 </script>
