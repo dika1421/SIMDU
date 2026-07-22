@@ -37,7 +37,7 @@ class GuruImport implements ToCollection, WithHeadingRow
                 $tahunLulus = trim($row['TAHUN LULUS'] ?? '');
                 $tmt = trim($row['TMT SMK DARUL  ULUM'] ?? '');
                 
-                // ========== VALIDASI MINIMAL ==========
+                // ========== VALIDASI (HANYA NAMA & NUPTK) ==========
                 if (empty($nama) || empty($nuptk)) {
                     $this->failedCount++;
                     $this->errors[] = "Baris {$rowNumber}: Nama dan NUPTK wajib diisi.";
