@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class GuruImport implements ToCollection, WithHeadingRow
 {
@@ -25,22 +26,30 @@ class GuruImport implements ToCollection, WithHeadingRow
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
                 
-                // ========== AMBIL DATA ==========
-                $nama = trim($row['NAMA GURU'] ?? $row['nama_guru'] ?? '');
-                $jk = trim($row['JK'] ?? $row['jk'] ?? '');
-                $tempatTanggalLahir = trim($row['TEMPAT TANGGAL LAHIR'] ?? $row['tempat_tanggal_lahir'] ?? '');
-                $alamat = trim($row['ALAMAT LENGKAP'] ?? $row['alamat_lengkap'] ?? '');
-                $nuptk = trim(str_replace(' ', '', $row['NUPTK'] ?? $row['nuptk'] ?? ''));
-                $jabatan = trim($row['JABATAN'] ?? $row['jabatan'] ?? '');
-                $universitas = trim($row['NAMA UNIVERSITAS'] ?? $row['nama_universitas'] ?? '');
-                $jurusan = trim($row['JURUSAN'] ?? $row['jurusan'] ?? '');
-                $tahunLulus = trim($row['TAHUN LULUS'] ?? $row['tahun_lulus'] ?? '');
-                $tmt = trim($row['TMT SMK DARUL ULUM'] ?? $row['tmt_smk_darul_ulum'] ?? '');
+                // ========== AMBIL DATA (SESUAI HEADER CSV) ==========
+                $nama = trim($row['NAMA GURU'] ?? '');
+                $jk = trim($row['JK'] ?? '');
+                $tempatTanggalLahir = trim($row['TEMPAT TANGGAL LAHIR'] ?? '');
+                $alamat = trim($row['ALAMAT LENGKAP'] ?? '');
+                $nuptk = trim(str_replace(' ', '', $row['NUPTK'] ?? ''));
+                $jabatan = trim($row['JABATAN'] ?? '');
+                $universitas = trim($row['NAMA UNIVERSITAS'] ?? '');
+                $jurusan = trim($row['JURUSAN'] ?? '');
+                $tahunLulus = trim($row['TAHUN LULUS'] ?? '');
+                $tmt = trim($row['TMT SMK DARUL  ULUM'] ?? '');
                 
-                // ========== VALIDASI MINIMAL ==========
+                // ========== VALIDASI ==========
                 if (empty($nama) || empty($nuptk)) {
                     $this->failedCount++;
                     $this->errors[] = "Baris {$rowNumber}: Nama dan NUPTK wajib diisi.";
+                    continue;
+                }
+                
+                // Validasi JK
+                $jk = strtoupper($jk);
+                if (!in_array($jk, ['L', 'P'])) {
+                    $this->failedCount++;
+                    $this->errors[] = "Baris {$rowNumber}: JK harus 'L' atau 'P'.";
                     continue;
                 }
                 
@@ -61,30 +70,43 @@ class GuruImport implements ToCollection, WithHeadingRow
                 $email = preg_replace('/[^a-zA-Z0-9.@]/', '', $email);
                 $email = $this->generateUniqueEmail($email);
                 
+                // ========== PARSE TANGGAL LAHIR ==========
+                $tempatLahir = '';
+                $tanggalLahirFormatted = null;
+                
+                if (!empty($tempatTanggalLahir)) {
+                    // Coba pisahkan dengan koma: "Bogor, 26 Juni 1975"
+                    if (strpos($tempatTanggalLahir, ',') !== false) {
+                        $parts = explode(',', $tempatTanggalLahir, 2);
+                        $tempatLahir = trim($parts[0]);
+                        $tanggalLahir = trim($parts[1]);
+                        
+                        // Parse tanggal ke format YYYY-MM-DD
+                        $tanggalLahirFormatted = $this->parseTanggal($tanggalLahir);
+                        
+                        // Jika gagal, simpan sebagai string asli
+                        if (!$tanggalLahirFormatted) {
+                            $tanggalLahirFormatted = $tanggalLahir;
+                        }
+                    } else {
+                        $tempatLahir = $tempatTanggalLahir;
+                    }
+                }
+                
+                // ========== PARSE TMT ==========
+                $tmtFormatted = null;
+                if (!empty($tmt)) {
+                    $tmtFormatted = $this->parseTanggal($tmt);
+                    if (!$tmtFormatted) {
+                        $tmtFormatted = $tmt;
+                    }
+                }
+                
                 // ========== CEK DUPLIKAT ==========
                 if (User::where('nuptk', $nuptk)->exists()) {
                     $this->failedCount++;
                     $this->errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah terdaftar.";
                     continue;
-                }
-                
-                // ========== SIMPAN TANGGAL APA ADANYA (TANPA VALIDASI) ==========
-                // Tanggal lahir disimpan sebagai string (tanpa konversi)
-                // Jika format tidak sesuai, simpan null atau string asli
-                $tanggalLahirFormatted = null;
-                if (!empty($tempatTanggalLahir)) {
-                    // Pisahkan tempat dan tanggal
-                    if (strpos($tempatTanggalLahir, ',') !== false) {
-                        $parts = explode(',', $tempatTanggalLahir, 2);
-                        $tempatLahir = trim($parts[0]);
-                        $tanggalLahir = trim($parts[1]);
-                        // Simpan tanggal sebagai string (tanpa validasi)
-                        $tanggalLahirFormatted = $tanggalLahir;
-                    } else {
-                        $tempatLahir = $tempatTanggalLahir;
-                    }
-                } else {
-                    $tempatLahir = '';
                 }
                 
                 // ========== BUAT USER ==========
@@ -104,7 +126,7 @@ class GuruImport implements ToCollection, WithHeadingRow
                         'user_id' => $user->id,
                         'nama_lengkap' => $nama,
                         'jenis_kelamin' => $jk,
-                        'tempat_lahir' => $tempatLahir ?? '',
+                        'tempat_lahir' => $tempatLahir,
                         'tanggal_lahir' => $tanggalLahirFormatted,
                         'alamat_lengkap' => $alamat,
                         'nuptk' => $nuptk,
@@ -112,7 +134,7 @@ class GuruImport implements ToCollection, WithHeadingRow
                         'nama_universitas' => $universitas,
                         'jurusan_pendidikan' => $jurusan,
                         'tahun_lulus' => $tahunLulus,
-                        'tmt' => $tmt,
+                        'tmt' => $tmtFormatted,
                         'status' => 'aktif'
                     ]);
                     
@@ -131,6 +153,58 @@ class GuruImport implements ToCollection, WithHeadingRow
             DB::rollBack();
             $this->errors[] = "Error: " . $e->getMessage();
             Log::error('Import Error: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Parse tanggal dari format "26 Juni 1975" menjadi "1975-06-26"
+     */
+    private function parseTanggal($tanggal)
+    {
+        if (empty($tanggal)) return null;
+        
+        $tanggal = trim($tanggal);
+        
+        // Mapping bulan Indonesia ke angka
+        $bulan = [
+            'Januari' => '01', 'Jan' => '01',
+            'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
+            'Maret' => '03', 'Mar' => '03',
+            'April' => '04', 'Apr' => '04',
+            'Mei' => '05',
+            'Juni' => '06', 'Jun' => '06',
+            'Juli' => '07', 'Jul' => '07',
+            'Agustus' => '08', 'Ags' => '08',
+            'September' => '09', 'Sep' => '09',
+            'Oktober' => '10', 'Okt' => '10',
+            'November' => '11', 'Nov' => '11', 'Nopember' => '11',
+            'Desember' => '12', 'Des' => '12'
+        ];
+        
+        // Coba format: 26 Juni 1975
+        foreach ($bulan as $namaBulan => $angkaBulan) {
+            if (stripos($tanggal, $namaBulan) !== false) {
+                $parts = explode($namaBulan, $tanggal);
+                $hari = trim($parts[0]);
+                $tahun = trim($parts[1] ?? '');
+                
+                // Bersihkan dari karakter non-angka
+                $hari = preg_replace('/[^0-9]/', '', $hari);
+                $tahun = preg_replace('/[^0-9]/', '', $tahun);
+                
+                if (!empty($hari) && !empty($tahun) && strlen($tahun) == 4) {
+                    $hari = str_pad($hari, 2, '0', STR_PAD_LEFT);
+                    return $tahun . '-' . $angkaBulan . '-' . $hari;
+                }
+                break;
+            }
+        }
+        
+        // Fallback: coba Carbon
+        try {
+            return Carbon::parse($tanggal)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
         }
     }
     
