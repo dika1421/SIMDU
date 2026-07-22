@@ -574,7 +574,7 @@ class GuruController extends Controller
                     'tahun_lulus' => !empty($tahunLulus) && is_numeric($tahunLulus) ? (int)$tahunLulus : null,
                     'tmt_masuk' => !empty($tmt) ? date('Y-m-d', strtotime($tmt)) : date('Y-m-d'),
                     'tmt' => !empty($tmt) ? date('Y-m-d', strtotime($tmt)) : null,
-                    'status_kepegawaian' => aktif,
+                    'status_kepegawaian' => 'aktif',
                     'agama' => 'Islam',
                     'status' => 'aktif'
                 ]);
