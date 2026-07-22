@@ -37,13 +37,7 @@
         }
 
         .login-header { text-align: center; margin-bottom: 24px; }
-        .login-header .logo-img { 
-            max-width: 120px; 
-            height: auto; 
-            margin: 0 auto 10px; 
-            display: block; 
-            border-radius: 12px;
-        }
+        .login-header .logo-img { max-width: 130px; height: auto; margin: 0 auto 10px; display: block; border-radius: 12px; }
         .login-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
         .login-header .sub-title { color: #64748b; font-size: 0.8rem; font-weight: 600; margin: 0; letter-spacing: 1px; }
 
@@ -114,8 +108,7 @@
 <div class="login-wrapper">
 
     <div class="login-header">
-        <!-- Logo dari Imgur -->
-        <img src="https://i.imgur.com/h61CIWN.png" alt="SMK Darul Ulum" class="logo-img" onerror="this.style.display='none'">
+        <img src="{{ asset('images/logo_smk.jpg') }}" alt="SMK Darul Ulum" class="logo-img">
         <h2>Sistem Informasi Sekolah</h2>
         <p class="sub-title">SMK DARUL ULUM</p>
     </div>
