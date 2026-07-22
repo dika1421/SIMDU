@@ -6,11 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - SIMDU</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 
     <style>
@@ -36,45 +33,20 @@
         }
 
         @media (max-width: 480px) {
-            .login-wrapper {
-                padding: 24px 16px;
-                border-radius: 20px;
-                max-width: 100%;
-            }
+            .login-wrapper { padding: 24px 16px; border-radius: 20px; max-width: 100%; }
         }
 
-        /* HEADER */
         .login-header { text-align: center; margin-bottom: 24px; }
-        .login-header .logo-text {
-            display: inline-block;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            font-size: 1.8rem;
-            font-weight: 800;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            line-height: 80px;
-            text-align: center;
-            margin-bottom: 12px;
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
-            letter-spacing: 1px;
+        .login-header .logo-img { 
+            max-width: 120px; 
+            height: auto; 
+            margin: 0 auto 10px; 
+            display: block; 
+            border-radius: 12px;
         }
-        .login-header h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 2px;
-        }
-        .login-header .sub-title {
-            color: #64748b;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin: 0;
-            letter-spacing: 1px;
-        }
+        .login-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+        .login-header .sub-title { color: #64748b; font-size: 0.8rem; font-weight: 600; margin: 0; letter-spacing: 1px; }
 
-        /* ROLE SELECTOR */
         .role-selector {
             display: flex; gap: 6px;
             background: #f1f5f9; padding: 4px;
@@ -89,64 +61,30 @@
             display: flex; flex-direction: column; align-items: center; gap: 2px;
         }
         .role-btn i { font-size: 1.1rem; }
-        .role-btn.active {
-            background: #ffffff; color: #1e293b;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+        .role-btn.active { background: #ffffff; color: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .role-btn:hover:not(.active) { color: #0f172a; }
 
-        /* FORM */
         .form-group { margin-bottom: 14px; }
-        .form-label {
-            display: block; font-size: 0.75rem; font-weight: 600;
-            color: #1e293b; margin-bottom: 4px;
-        }
+        .form-label { display: block; font-size: 0.75rem; font-weight: 600; color: #1e293b; margin-bottom: 4px; }
         .form-label .required { color: #ef4444; margin-left: 2px; }
 
         .input-group-custom { position: relative; }
-        .input-icon {
-            position: absolute; left: 12px; top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8; font-size: 0.85rem;
-        }
+        .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem; }
         .form-control-custom {
-            width: 100%; height: 44px;
-            padding: 0 40px 0 40px;
+            width: 100%; height: 44px; padding: 0 40px 0 40px;
             border: 1.5px solid #e2e8f0; border-radius: 10px;
             font-size: 0.85rem; background: #fafcff;
             transition: all 0.2s ease; color: #0f172a;
         }
-        .form-control-custom:focus {
-            outline: none; border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
-            background: #ffffff;
-        }
-        .form-control-custom.is-invalid {
-            border-color: #ef4444;
-            box-shadow: 0 0 0 4px rgba(239,68,68,0.08);
-        }
+        .form-control-custom:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79,70,229,0.08); background: #ffffff; }
+        .form-control-custom.is-invalid { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,0.08); }
 
-        .password-toggle {
-            position: absolute; right: 12px; top: 50%;
-            transform: translateY(-50%);
-            background: none; border: none;
-            color: #94a3b8; font-size: 0.85rem;
-            cursor: pointer; padding: 4px;
-        }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; font-size: 0.85rem; cursor: pointer; padding: 4px; }
         .password-toggle:hover { color: #4f46e5; }
 
-        .remember-me {
-            display: flex; align-items: center; gap: 8px;
-            margin: 2px 0 14px;
-        }
-        .remember-me input[type="checkbox"] {
-            width: 16px; height: 16px;
-            accent-color: #4f46e5; cursor: pointer;
-        }
-        .remember-me label {
-            color: #475569; font-size: 0.75rem;
-            cursor: pointer; margin: 0;
-        }
+        .remember-me { display: flex; align-items: center; gap: 8px; margin: 2px 0 14px; }
+        .remember-me input[type="checkbox"] { width: 16px; height: 16px; accent-color: #4f46e5; cursor: pointer; }
+        .remember-me label { color: #475569; font-size: 0.75rem; cursor: pointer; margin: 0; }
 
         .btn-login {
             width: 100%; height: 44px;
@@ -156,57 +94,32 @@
             cursor: pointer; transition: all 0.25s ease;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(79,70,229,0.30);
-        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,70,229,0.30); }
         .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .btn-login .spinner { display: none; }
         .btn-login.loading .spinner { display: inline-block; }
         .btn-login.loading .btn-text { display: none; }
 
-        /* ALERT */
-        .alert {
-            border-radius: 10px; padding: 10px 14px;
-            margin-bottom: 14px; border: none;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.8rem;
-        }
-        .alert-danger {
-            background: #fef2f2; color: #b91c1c;
-            border-left: 4px solid #ef4444;
-        }
-        .alert-success {
-            background: #f0fdf4; color: #15803d;
-            border-left: 4px solid #22c55e;
-        }
+        .alert { border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; border: none; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+        .alert-danger { background: #fef2f2; color: #b91c1c; border-left: 4px solid #ef4444; }
+        .alert-success { background: #f0fdf4; color: #15803d; border-left: 4px solid #22c55e; }
         .alert i { font-size: 0.9rem; }
 
-        .footer-text {
-            text-align: center;
-            font-size: 0.6rem;
-            color: #94a3b8;
-            margin-top: 18px;
-            border-top: 1px solid #e9edf2;
-            padding-top: 14px;
-        }
-        .footer-text strong {
-            color: #4f46e5;
-        }
+        .footer-text { text-align: center; font-size: 0.6rem; color: #94a3b8; margin-top: 18px; border-top: 1px solid #e9edf2; padding-top: 14px; }
+        .footer-text strong { color: #4f46e5; }
     </style>
 </head>
 <body>
 
 <div class="login-wrapper">
 
-    {{-- HEADER --}}
     <div class="login-header">
-        <div class="logo-text">DU</div>
+        <!-- Logo dari Imgur -->
+        <img src="https://i.imgur.com/h61CIWN.png" alt="SMK Darul Ulum" class="logo-img" onerror="this.style.display='none'">
         <h2>Sistem Informasi Sekolah</h2>
         <p class="sub-title">SMK DARUL ULUM</p>
     </div>
 
-    {{-- ROLE SELECTOR --}}
     <div class="role-selector">
         <button type="button" class="role-btn active" data-role="guru" onclick="setRole('guru')">
             <i class="fas fa-chalkboard-user"></i> Guru / Staf
@@ -216,7 +129,6 @@
         </button>
     </div>
 
-    {{-- ALERT --}}
     @if(session('error'))
         <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ session('error') }}</div>
     @endif
@@ -227,7 +139,6 @@
         <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
     @endif
 
-    {{-- FORM GURU / STAF --}}
     <form id="loginFormGuru" method="POST" action="{{ route('login.guru') }}" style="display: block;" onsubmit="return handleSubmit(this)">
         @csrf
         <div class="form-group">
@@ -259,7 +170,6 @@
         </button>
     </form>
 
-    {{-- FORM SISWA --}}
     <form id="loginFormSiswa" method="POST" action="{{ route('login.siswa') }}" style="display: none;" onsubmit="return handleSubmit(this)">
         @csrf
         <div class="form-group">
