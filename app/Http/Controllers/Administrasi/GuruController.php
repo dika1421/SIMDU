@@ -455,6 +455,7 @@ class GuruController extends Controller
 
     /**
      * Import data guru from CSV
+     * ✅ DIPERBAIKI: Tanpa validasi tanggal
      */
     public function import(Request $request)
     {
@@ -516,15 +517,17 @@ class GuruController extends Controller
                     continue;
                 }
                 
-                // Parse tempat dan tanggal lahir
-                $parts = explode(',', $tempatTanggalLahir, 2);
-                $tempatLahir = trim($parts[0]);
-                $tanggalLahir = isset($parts[1]) ? $this->parseIndonesianDate(trim($parts[1])) : null;
-                
-                if (empty($tanggalLahir)) {
-                    $failedCount++;
-                    $errors[] = "Baris {$rowNumber}: Format TANGGAL LAHIR tidak valid. Gunakan format: Tempat, 15 Mei 1980";
-                    continue;
+                // ✅ PERBAIKAN: Parse tempat dan tanggal lahir TANPA VALIDASI
+                $tempatLahir = '';
+                $tanggalLahir = '';
+                if (!empty($tempatTanggalLahir)) {
+                    if (strpos($tempatTanggalLahir, ',') !== false) {
+                        $parts = explode(',', $tempatTanggalLahir, 2);
+                        $tempatLahir = trim($parts[0]);
+                        $tanggalLahir = trim($parts[1]);
+                    } else {
+                        $tempatLahir = $tempatTanggalLahir;
+                    }
                 }
                 
                 // Cek duplikat NUPTK
@@ -535,11 +538,11 @@ class GuruController extends Controller
                 }
                 
                 // Generate NIP
-                $nip = $this->generateNIP($tanggalLahir, $rowNumber);
+                $nip = $this->generateNIP($tanggalLahir ?: date('Y-m-d'), $rowNumber);
                 
                 // Cek duplikat NIP
                 while (Guru::where('nip', $nip)->exists()) {
-                    $nip = $this->generateNIP($tanggalLahir, $rowNumber . rand(1, 999));
+                    $nip = $this->generateNIP($tanggalLahir ?: date('Y-m-d'), $rowNumber . rand(1, 999));
                 }
                 
                 // Generate email
