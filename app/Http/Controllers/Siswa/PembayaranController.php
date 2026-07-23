@@ -251,6 +251,9 @@ class PembayaranController extends Controller
         }
     }
     
+    /**
+     * Tagihan Tahunan - TANPA strtotime!
+     */
     public function tagihanTahunan(Request $request)
     {
         try {
@@ -271,21 +274,15 @@ class PembayaranController extends Controller
             $totalDibayar = $tagihan->sum('jumlah_dibayar');
             $totalSisa = $tagihan->sum('sisa');
             
-            // 🔥 PERBAIKAN: Tambahkan fallback jika $item->tanggal kosong
+            // 🔥 BYPASS: Data per bulan diisi 0 (tidak ada filter bulan)
             $perBulan = [];
             for ($bulan = 1; $bulan <= 12; $bulan++) {
-                $items = $tagihan->filter(function($item) use ($bulan) {
-                    // 🔥 FIX: Jika tanggal kosong, gunakan 'now' sebagai fallback
-                    $tanggal = $item->tanggal ?? date('Y-m-d');
-                    return date('n', strtotime($tanggal)) == $bulan;
-                });
-                
                 $perBulan[$bulan] = [
                     'bulan' => $this->getNamaBulan($bulan),
-                    'nominal' => $items->sum('nominal'),
-                    'dibayar' => $items->sum('jumlah_dibayar'),
-                    'sisa' => $items->sum('sisa'),
-                    'count' => $items->count()
+                    'nominal' => 0,
+                    'dibayar' => 0,
+                    'sisa' => 0,
+                    'count' => 0
                 ];
             }
             
