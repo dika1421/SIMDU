@@ -74,16 +74,8 @@ class SiswaImport implements ToCollection, WithHeadingRow
                     continue;
                 }
                 
-                // Validasi tanggal lahir
-                $tanggalLahirFormatted = null;
-                if (!empty($tanggalLahir)) {
-                    if (!strtotime($tanggalLahir)) {
-                        $this->failedCount++;
-                        $this->errors[] = "Baris {$rowNumber}: Format TANGGAL LAHIR tidak valid (gunakan YYYY-MM-DD).";
-                        continue;
-                    }
-                    $tanggalLahirFormatted = date('Y-m-d', strtotime($tanggalLahir));
-                }
+                // ========== 🔥 PERBAIKAN: SIMPAN TANGGAL APA ADANYA (TANPA VALIDASI) ==========
+                $tanggalLahirFormatted = !empty($tanggalLahir) ? $tanggalLahir : null;
                 
                 // Cari kelas berdasarkan nama
                 $kelasId = null;
