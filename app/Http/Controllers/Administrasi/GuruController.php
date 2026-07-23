@@ -23,7 +23,6 @@ class GuruController extends Controller
         try {
             $query = Guru::with(['user', 'mataPelajaran']);
             
-            // Pencarian
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
@@ -40,11 +39,9 @@ class GuruController extends Controller
             
             $guru = $query->orderBy('created_at', 'desc')->paginate(10);
             
-            // Statistik untuk card
             $guruLaki = Guru::where('jenis_kelamin', 'L')->count();
             $guruPerempuan = Guru::where('jenis_kelamin', 'P')->count();
             
-            // Hitung rata-rata usia
             $rataUsia = Guru::whereNotNull('tanggal_lahir')->get()
                 ->map(function($g) {
                     return Carbon::parse($g->tanggal_lahir)->age;
@@ -59,9 +56,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $mataPelajaran = Mapel::where('status', 'aktif')
@@ -70,9 +64,6 @@ class GuruController extends Controller
         return view('administrasi.guru.create', compact('mataPelajaran'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -99,17 +90,14 @@ class GuruController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate NIP jika tidak diisi
             $nip = $request->nip;
             if (empty($nip)) {
                 $nip = $this->generateNIP($request->tanggal_lahir, $this->getNextGuruId());
             }
 
-            // Generate email dari nama
             $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $request->nama_guru)) . '@guru.sch.id';
             $email = $this->generateUniqueEmail($email);
 
-            // Buat user
             $user = User::create([
                 'name' => $request->nama_guru,
                 'email' => $email,
@@ -118,7 +106,6 @@ class GuruController extends Controller
                 'status' => 'aktif'
             ]);
 
-            // Buat guru
             $guru = Guru::create([
                 'user_id' => $user->id,
                 'nip' => $nip,
@@ -140,7 +127,6 @@ class GuruController extends Controller
                 'status' => 'aktif'
             ]);
 
-            // Attach mata pelajaran melalui relasi many-to-many
             if ($request->has('mata_pelajaran') && !empty($request->mata_pelajaran)) {
                 $guru->mataPelajaran()->sync($request->mata_pelajaran);
             }
@@ -163,9 +149,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show($id)
     {
         try {
@@ -177,9 +160,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         try {
@@ -196,9 +176,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -228,7 +205,6 @@ class GuruController extends Controller
 
             $guru = Guru::findOrFail($id);
             
-            // Update data guru
             $guru->update([
                 'nama_lengkap' => $request->nama_lengkap,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -249,14 +225,12 @@ class GuruController extends Controller
                 'status' => $request->status ?? 'aktif'
             ]);
 
-            // Update user name jika ada
             if ($guru->user) {
                 $guru->user->update([
                     'name' => $request->nama_lengkap
                 ]);
             }
 
-            // Sync mata pelajaran
             if ($request->has('mata_pelajaran')) {
                 $guru->mataPelajaran()->sync($request->mata_pelajaran);
             } else {
@@ -281,9 +255,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         try {
@@ -291,18 +262,13 @@ class GuruController extends Controller
 
             $guru = Guru::with(['user', 'mataPelajaran'])->findOrFail($id);
             
-            // Hapus relasi mata pelajaran
             $guru->mataPelajaran()->detach();
-            
-            // Hapus relasi wali kelas jika ada
             Kelas::where('wali_kelas_id', $guru->id)->update(['wali_kelas_id' => null]);
             
-            // Hapus user jika ada
             if ($guru->user) {
                 $guru->user->delete();
             }
             
-            // Hapus guru
             $guru->delete();
 
             DB::commit();
@@ -317,9 +283,6 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Export data guru to CSV
-     */
     public function export(Request $request)
     {
         try {
@@ -337,25 +300,10 @@ class GuruController extends Controller
             $guru = $query->orderBy('created_at', 'desc')->get();
             
             $headers = [
-                'NO',
-                'NAMA GURU',
-                'JK',
-                'TEMPAT LAHIR',
-                'TANGGAL LAHIR',
-                'ALAMAT',
-                'NUPTK',
-                'NIP',
-                'JABATAN',
-                'MATA PELAJARAN',
-                'PENDIDIKAN TERAKHIR',
-                'JURUSAN',
-                'UNIVERSITAS',
-                'TAHUN LULUS',
-                'TMT MASUK',
-                'TMT DARUL ULUM',
-                'AGAMA',
-                'NO TELEPON',
-                'STATUS'
+                'NO', 'NAMA GURU', 'JK', 'TEMPAT LAHIR', 'TANGGAL LAHIR',
+                'ALAMAT', 'NUPTK', 'NIP', 'JABATAN', 'MATA PELAJARAN',
+                'PENDIDIKAN TERAKHIR', 'JURUSAN', 'UNIVERSITAS', 'TAHUN LULUS',
+                'TMT MASUK', 'TMT DARUL ULUM', 'AGAMA', 'NO TELEPON', 'STATUS'
             ];
             
             $callback = function() use ($headers, $guru) {
@@ -406,24 +354,13 @@ class GuruController extends Controller
         }
     }
 
-    /**
-     * Download template CSV
-     */
     public function downloadTemplate()
     {
         try {
             $headers = [
-                'NO',
-                'NAMA GURU',
-                'JK',
-                'TEMPAT TANGGAL LAHIR',
-                'ALAMAT LENGKAP',
-                'NUPTK',
-                'JABATAN',
-                'NAMA UNIVERSITAS',
-                'JURUSAN',
-                'TAHUN LULUS',
-                'TMT SMK DARUL ULUM',
+                'NO', 'NAMA GURU', 'JK', 'TEMPAT TANGGAL LAHIR',
+                'ALAMAT LENGKAP', 'NUPTK', 'JABATAN', 'NAMA UNIVERSITAS',
+                'JURUSAN', 'TAHUN LULUS', 'TMT SMK DARUL ULUM',
                 'MATA PELAJARAN (pisahkan dengan koma)'
             ];
             
@@ -474,7 +411,6 @@ class GuruController extends Controller
                 throw new \Exception('Tidak dapat membaca file.');
             }
             
-            // Baca header
             $headers = fgetcsv($handle, 0, ',');
             DB::beginTransaction();
             
@@ -498,7 +434,6 @@ class GuruController extends Controller
                 $tmt = trim($row[10] ?? '');
                 $mataPelajaranList = trim($row[11] ?? '');
                 
-                // Validasi
                 if (empty($namaGuru)) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NAMA GURU tidak boleh kosong.";
@@ -517,7 +452,7 @@ class GuruController extends Controller
                     continue;
                 }
                 
-                // ✅ PERBAIKAN: Parse tempat dan tanggal lahir TANPA VALIDASI
+                // Parse tempat dan tanggal lahir (TANPA VALIDASI)
                 $tempatLahir = '';
                 $tanggalLahir = '';
                 if (!empty($tempatTanggalLahir)) {
@@ -530,26 +465,20 @@ class GuruController extends Controller
                     }
                 }
                 
-                // Cek duplikat NUPTK
                 if (!empty($nuptk) && Guru::where('nuptk', $nuptk)->exists()) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah terdaftar.";
                     continue;
                 }
                 
-                // Generate NIP
-                $nip = $this->generateNIP($tanggalLahir ?: date('Y-m-d'), $rowNumber);
-                
-                // Cek duplikat NIP
+                $nip = $this->generateNIP($tempatTanggalLahir ?: date('Y-m-d'), $rowNumber);
                 while (Guru::where('nip', $nip)->exists()) {
-                    $nip = $this->generateNIP($tanggalLahir ?: date('Y-m-d'), $rowNumber . rand(1, 999));
+                    $nip = $this->generateNIP($tempatTanggalLahir ?: date('Y-m-d'), $rowNumber . rand(1, 999));
                 }
                 
-                // Generate email
                 $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $namaGuru)) . '@guru.sch.id';
                 $email = $this->generateUniqueEmail($email);
                 
-                // Buat user
                 $user = User::create([
                     'name' => $namaGuru,
                     'email' => $email,
@@ -558,7 +487,6 @@ class GuruController extends Controller
                     'status' => 'aktif'
                 ]);
                 
-                // Buat guru
                 $guru = Guru::create([
                     'user_id' => $user->id,
                     'nip' => $nip,
@@ -572,13 +500,13 @@ class GuruController extends Controller
                     'jurusan_pendidikan' => !empty($jurusan) ? $jurusan : 'Pendidikan',
                     'universitas' => !empty($universitas) ? $universitas : null,
                     'tahun_lulus' => !empty($tahunLulus) && is_numeric($tahunLulus) ? (int)$tahunLulus : null,
-                    'tmt_masuk' => !empty($tmt) ? $this->parseIndonesianDate($tmt) : date('Y-m-d'),                    'tmt' => !empty($tmt) ? date('Y-m-d', strtotime($tmt)) : null,
+                    'tmt_masuk' => !empty($tmt) ? ($this->parseIndonesianDate($tmt) ?? date('Y-m-d')) : date('Y-m-d'),
+                    'tmt' => !empty($tmt) ? ($this->parseIndonesianDate($tmt) ?? null) : null,
                     'status_kepegawaian' => 'aktif',
                     'agama' => 'Islam',
                     'status' => 'aktif'
                 ]);
                 
-                // Proses mata pelajaran
                 if (!empty($mataPelajaranList)) {
                     $mapelNames = array_map('trim', explode(',', $mataPelajaranList));
                     $mapelIds = [];
@@ -588,7 +516,7 @@ class GuruController extends Controller
                         if ($mapel) {
                             $mapelIds[] = $mapel->id;
                         } else {
-                            $errors[] = "Baris {$rowNumber}: Mata Pelajaran '{$mapelName}' tidak ditemukan di database.";
+                            $errors[] = "Baris {$rowNumber}: Mata Pelajaran '{$mapelName}' tidak ditemukan.";
                         }
                     }
                     
@@ -625,18 +553,12 @@ class GuruController extends Controller
         }
     }
     
-    /**
-     * Get next guru ID for NIP generation
-     */
     private function getNextGuruId()
     {
         $lastGuru = Guru::orderBy('id', 'desc')->first();
         return ($lastGuru ? $lastGuru->id : 0) + 1;
     }
 
-    /**
-     * Generate unique email
-     */
     private function generateUniqueEmail($email)
     {
         $original = $email;
@@ -661,80 +583,82 @@ class GuruController extends Controller
      * Generate NIP (Nomor Induk Pegawai)
      * Format: TGL LAHIR (YYYYMMDD) + TAHUN REGISTRASI + 01 + NOMOR URUT
      */
-        private function generateNIP($tanggalLahir, $rowNumber)
+    private function generateNIP($tanggalLahir, $rowNumber)
     {
-        // ✅ Parse tanggal dengan parseIndonesianDate
+        // Parse tanggal dengan parseIndonesianDate
         $tanggalLahirFormatted = $this->parseIndonesianDate($tanggalLahir) ?? date('Y-m-d');
         $date = date('Ymd', strtotime($tanggalLahirFormatted));
         $year = date('Y');
         $random = str_pad($rowNumber, 3, '0', STR_PAD_LEFT);
         return $date . $year . '01' . $random;
     }
-        /**
-         * Parse Indonesian date format to Y-m-d
-         * Mendukung: "15 Agustus 1973", "Bogor, 15 Agustus 1973"
-         */
-        private function parseIndonesianDate($dateStr)
-        {
-            if (empty($dateStr)) return null;
-            
-            $dateStr = trim($dateStr);
-            
-            // Mapping bulan Indonesia ke angka
-            $months = [
-                'Januari' => '01', 'Jan' => '01',
-                'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
-                'Maret' => '03', 'Mar' => '03',
-                'April' => '04', 'Apr' => '04',
-                'Mei' => '05',
-                'Juni' => '06', 'Jun' => '06',
-                'Juli' => '07', 'Jul' => '07',
-                'Agustus' => '08', 'Ags' => '08',
-                'September' => '09', 'Sep' => '09',
-                'Oktober' => '10', 'Okt' => '10',
-                'November' => '11', 'Nov' => '11', 'Nopember' => '11',
-                'Desember' => '12', 'Des' => '12'
-            ];
-            
-            // ========== FORMAT 1: "15 Agustus 1973" ==========
-            foreach ($months as $namaBulan => $angkaBulan) {
-                if (stripos($dateStr, $namaBulan) !== false) {
-                    $parts = explode($namaBulan, $dateStr);
-                    $hari = trim($parts[0]);
-                    $tahun = trim($parts[1] ?? '');
-                    
-                    // Ambil angka dari string
-                    $hari = preg_replace('/[^0-9]/', '', $hari);
-                    $tahun = preg_replace('/[^0-9]/', '', $tahun);
-                    
-                    if (!empty($hari) && !empty($tahun) && strlen($tahun) == 4) {
-                        $hari = str_pad($hari, 2, '0', STR_PAD_LEFT);
-                        return $tahun . '-' . $angkaBulan . '-' . $hari;
-                    }
-                    break;
-                }
-            }
-            
-            // ========== FORMAT 2: "Bogor, 15 Agustus 1973" ==========
-            if (strpos($dateStr, ',') !== false) {
-                $parts = explode(',', $dateStr, 2);
-                $datePart = trim($parts[1]);
-                return $this->parseIndonesianDate($datePart);
-            }
-            
-            // ========== FORMAT 3: "1973-08-15" ==========
-            try {
-                return Carbon::parse($dateStr)->format('Y-m-d');
-            } catch (\Exception $e) {
-                return null;
-            }
-        } 
-   /**
-     * Get Pendidikan Terakhir based on tahun lulus
+    
+    /**
+     * Parse Indonesian date format to Y-m-d
+     * Mendukung: "15 Agustus 1973", "Bogor, 15 Agustus 1973"
      */
+    private function parseIndonesianDate($dateStr)
+    {
+        if (empty($dateStr)) {
+            return null;
+        }
+        
+        $dateStr = trim($dateStr);
+        
+        // Mapping bulan Indonesia ke angka
+        $months = [
+            'Januari' => '01', 'Jan' => '01',
+            'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
+            'Maret' => '03', 'Mar' => '03',
+            'April' => '04', 'Apr' => '04',
+            'Mei' => '05',
+            'Juni' => '06', 'Jun' => '06',
+            'Juli' => '07', 'Jul' => '07',
+            'Agustus' => '08', 'Ags' => '08',
+            'September' => '09', 'Sep' => '09',
+            'Oktober' => '10', 'Okt' => '10',
+            'November' => '11', 'Nov' => '11', 'Nopember' => '11',
+            'Desember' => '12', 'Des' => '12'
+        ];
+        
+        // FORMAT 1: "15 Agustus 1973"
+        foreach ($months as $namaBulan => $angkaBulan) {
+            if (stripos($dateStr, $namaBulan) !== false) {
+                $parts = explode($namaBulan, $dateStr, 2);
+                $hari = trim($parts[0]);
+                $tahun = trim($parts[1] ?? '');
+                
+                $hari = preg_replace('/[^0-9]/', '', $hari);
+                $tahun = preg_replace('/[^0-9]/', '', $tahun);
+                
+                if (!empty($hari) && !empty($tahun) && strlen($tahun) == 4) {
+                    $hari = str_pad($hari, 2, '0', STR_PAD_LEFT);
+                    return $tahun . '-' . $angkaBulan . '-' . $hari;
+                }
+                break;
+            }
+        }
+        
+        // FORMAT 2: "Bogor, 15 Agustus 1973"
+        if (strpos($dateStr, ',') !== false) {
+            $parts = explode(',', $dateStr, 2);
+            $datePart = trim($parts[1]);
+            return $this->parseIndonesianDate($datePart);
+        }
+        
+        // FORMAT 3: "1973-08-15"
+        try {
+            return Carbon::parse($dateStr)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    
     private function getPendidikanTerakhir($tahunLulus)
     {
-        if (empty($tahunLulus)) return 'S1';
+        if (empty($tahunLulus)) {
+            return 'S1';
+        }
         
         $tahun = (int)$tahunLulus;
         if ($tahun >= 2020) return 'S2';
