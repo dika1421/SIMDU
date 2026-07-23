@@ -15,9 +15,6 @@ use Carbon\Carbon;
 
 class GuruController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try {
@@ -433,7 +430,6 @@ class GuruController extends Controller
                 $tmt = trim($row[10] ?? '');
                 $mataPelajaranList = trim($row[11] ?? '');
                 
-                // ========== VALIDASI DASAR ==========
                 if (empty($namaGuru)) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NAMA GURU tidak boleh kosong.";
@@ -452,7 +448,7 @@ class GuruController extends Controller
                     continue;
                 }
                 
-                // ========== PARSE TEMPAT & TANGGAL (TANPA VALIDASI) ==========
+                // ========== PARSE TEMPAT & TANGGAL (LANGSUNG DISIMPAN) ==========
                 $tempatLahir = '';
                 $tanggalLahir = '';
                 if (!empty($tempatTanggalLahir)) {
@@ -465,24 +461,21 @@ class GuruController extends Controller
                     }
                 }
                 
-                // ========== CEK DUPLIKAT ==========
                 if (!empty($nuptk) && Guru::where('nuptk', $nuptk)->exists()) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah terdaftar.";
                     continue;
                 }
                 
-                // ========== GENERATE NIP (BY PASS TANGGAL) ==========
-                $nip = $this->generateNIP(date('Y-m-d'), $rowNumber);
+                // ========== GENERATE NIP (TANPA PARSE TANGGAL) ==========
+                $nip = 'NIP' . date('Ymd') . str_pad($rowNumber, 4, '0', STR_PAD_LEFT);
                 while (Guru::where('nip', $nip)->exists()) {
-                    $nip = $this->generateNIP(date('Y-m-d'), $rowNumber . rand(1, 999));
+                    $nip = 'NIP' . date('Ymd') . str_pad($rowNumber . rand(1, 99), 4, '0', STR_PAD_LEFT);
                 }
                 
-                // ========== GENERATE EMAIL ==========
                 $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $namaGuru)) . '@guru.sch.id';
                 $email = $this->generateUniqueEmail($email);
                 
-                // ========== BUAT USER ==========
                 $user = User::create([
                     'name' => $namaGuru,
                     'email' => $email,
@@ -491,7 +484,7 @@ class GuruController extends Controller
                     'status' => 'aktif'
                 ]);
                 
-                // ========== BUAT GURU ==========
+                // ========== BUAT GURU (TANPA PARSE TANGGAL) ==========
                 $guru = Guru::create([
                     'user_id' => $user->id,
                     'nip' => $nip,
@@ -505,14 +498,13 @@ class GuruController extends Controller
                     'jurusan_pendidikan' => !empty($jurusan) ? $jurusan : 'Pendidikan',
                     'universitas' => !empty($universitas) ? $universitas : null,
                     'tahun_lulus' => !empty($tahunLulus) && is_numeric($tahunLulus) ? (int)$tahunLulus : null,
-                    'tmt_masuk' => !empty($tmt) ? ($this->parseIndonesianDate($tmt) ?? date('Y-m-d')) : date('Y-m-d'),
-                    'tmt' => !empty($tmt) ? ($this->parseIndonesianDate($tmt) ?? null) : null,
+                    'tmt_masuk' => !empty($tmt) ? $tmt : date('Y-m-d'),
+                    'tmt' => !empty($tmt) ? $tmt : null,
                     'status_kepegawaian' => 'aktif',
                     'agama' => 'Islam',
                     'status' => 'aktif'
                 ]);
                 
-                // ========== PROSES MATA PELAJARAN ==========
                 if (!empty($mataPelajaranList)) {
                     $mapelNames = array_map('trim', explode(',', $mataPelajaranList));
                     $mapelIds = [];
@@ -586,73 +578,13 @@ class GuruController extends Controller
     }
 
     /**
-     * Generate NIP (Nomor Induk Pegawai) - BYPASS Parse Tanggal
-     * Format: TGL HARI INI (YYYYMMDD) + TAHUN + 01 + NOMOR URUT
+     * Generate NIP (Nomor Induk Pegawai)
+     * Format: NIP + TGL HARI INI (YYYYMMDD) + NOMOR URUT
      */
     private function generateNIP($tanggalLahir, $rowNumber)
     {
-        // 🔥 BYPASS: Abaikan tanggal lahir, gunakan tanggal hari ini
-        $date = date('Ymd');
-        $year = date('Y');
-        $random = str_pad($rowNumber, 4, '0', STR_PAD_LEFT);
-        return $date . $year . '01' . $random;
-    }
-    
-    /**
-     * Parse Indonesian date format to Y-m-d
-     * Mendukung: "15 Agustus 1973", "Bogor, 15 Agustus 1973"
-     */
-    private function parseIndonesianDate($dateStr)
-    {
-        if (empty($dateStr)) {
-            return null;
-        }
-        
-        $dateStr = trim($dateStr);
-        
-        $months = [
-            'Januari' => '01', 'Jan' => '01',
-            'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
-            'Maret' => '03', 'Mar' => '03',
-            'April' => '04', 'Apr' => '04',
-            'Mei' => '05',
-            'Juni' => '06', 'Jun' => '06',
-            'Juli' => '07', 'Jul' => '07',
-            'Agustus' => '08', 'Ags' => '08',
-            'September' => '09', 'Sep' => '09',
-            'Oktober' => '10', 'Okt' => '10',
-            'November' => '11', 'Nov' => '11', 'Nopember' => '11',
-            'Desember' => '12', 'Des' => '12'
-        ];
-        
-        foreach ($months as $namaBulan => $angkaBulan) {
-            if (stripos($dateStr, $namaBulan) !== false) {
-                $parts = explode($namaBulan, $dateStr, 2);
-                $hari = trim($parts[0]);
-                $tahun = trim($parts[1] ?? '');
-                
-                $hari = preg_replace('/[^0-9]/', '', $hari);
-                $tahun = preg_replace('/[^0-9]/', '', $tahun);
-                
-                if (!empty($hari) && !empty($tahun) && strlen($tahun) == 4) {
-                    $hari = str_pad($hari, 2, '0', STR_PAD_LEFT);
-                    return $tahun . '-' . $angkaBulan . '-' . $hari;
-                }
-                break;
-            }
-        }
-        
-        if (strpos($dateStr, ',') !== false) {
-            $parts = explode(',', $dateStr, 2);
-            $datePart = trim($parts[1]);
-            return $this->parseIndonesianDate($datePart);
-        }
-        
-        try {
-            return Carbon::parse($dateStr)->format('Y-m-d');
-        } catch (\Exception $e) {
-            return null;
-        }
+        // 🔥 BYPASS: Abaikan tanggal lahir
+        return 'NIP' . date('Ymd') . str_pad($rowNumber, 4, '0', STR_PAD_LEFT);
     }
     
     private function getPendidikanTerakhir($tahunLulus)
