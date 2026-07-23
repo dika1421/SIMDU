@@ -62,26 +62,22 @@ class PembayaranController extends Controller
                 return redirect()->back()->with('error', 'Data siswa tidak ditemukan');
             }
             
-            // Ambil data pembayaran siswa
             $pembayaran = Keuangan::where('siswa_id', $siswa->id)
                 ->where('tipe', 'pemasukan')
                 ->orderBy('tanggal', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->get();
             
-            // Hitung total
             $totalNominal = $pembayaran->sum('nominal');
             $totalDibayar = $pembayaran->sum('jumlah_dibayar');
             $totalSisa = $pembayaran->sum('sisa');
             
-            // Statistik status
             $statistikStatus = [
                 'lunas' => $pembayaran->where('status', 'lunas')->count(),
                 'belum_lunas' => $pembayaran->where('status', 'belum_lunas')->count(),
                 'pending' => $pembayaran->where('status', 'pending')->count(),
             ];
             
-            // Group by jenis pembayaran
             $byJenis = [];
             $grouped = $pembayaran->groupBy('jenis_pembayaran');
             
@@ -104,7 +100,6 @@ class PembayaranController extends Controller
                 ? round(($totalDibayar / $totalNominal) * 100, 2) 
                 : 0;
             
-            // Data untuk chart
             $chartData = [
                 'labels' => array_column($byJenis, 'label'),
                 'nominal' => array_column($byJenis, 'nominal'),
@@ -112,7 +107,6 @@ class PembayaranController extends Controller
                 'sisa' => array_column($byJenis, 'sisa'),
             ];
             
-            // Daftar jenis pembayaran untuk filter (TAMBAHKAN INI)
             $jenisList = Keuangan::where('siswa_id', $siswa->id)
                 ->where('tipe', 'pemasukan')
                 ->whereNotNull('jenis_pembayaran')
@@ -128,13 +122,12 @@ class PembayaranController extends Controller
             return view('siswa.pembayaran.index', compact(
                 'siswa', 'pembayaran', 'totalNominal', 'totalDibayar', 
                 'totalSisa', 'statistikStatus', 'byJenis', 'persentase',
-                'chartData', 'jenisOptions', 'jenisList'  // TAMBAHKAN 'jenisList'
+                'chartData', 'jenisOptions', 'jenisList'
             ));
             
         } catch (\Exception $e) {
             Log::error('Error in pembayaran index: ' . $e->getMessage());
             
-            // Kirim data kosong agar view tidak error
             return view('siswa.pembayaran.index', [
                 'siswa' => $siswa ?? null,
                 'pembayaran' => collect([]),
@@ -146,7 +139,7 @@ class PembayaranController extends Controller
                 'persentase' => 0,
                 'chartData' => ['labels' => [], 'nominal' => [], 'dibayar' => [], 'sisa' => []],
                 'jenisOptions' => [],
-                'jenisList' => []  // TAMBAHKAN INI
+                'jenisList' => []
             ]);
         }
     }
@@ -208,7 +201,6 @@ class PembayaranController extends Controller
                 ->paginate(15)
                 ->appends(request()->query());
             
-            // Data untuk filter
             $jenisList = Keuangan::where('siswa_id', $siswa->id)
                 ->where('tipe', 'pemasukan')
                 ->whereNotNull('jenis_pembayaran')
@@ -279,11 +271,13 @@ class PembayaranController extends Controller
             $totalDibayar = $tagihan->sum('jumlah_dibayar');
             $totalSisa = $tagihan->sum('sisa');
             
-            // Group per bulan
+            // 🔥 PERBAIKAN: Tambahkan fallback jika $item->tanggal kosong
             $perBulan = [];
             for ($bulan = 1; $bulan <= 12; $bulan++) {
                 $items = $tagihan->filter(function($item) use ($bulan) {
-                    return $item->tanggal && date('n', strtotime($item->tanggal)) == $bulan;
+                    // 🔥 FIX: Jika tanggal kosong, gunakan 'now' sebagai fallback
+                    $tanggal = $item->tanggal ?? date('Y-m-d');
+                    return date('n', strtotime($tanggal)) == $bulan;
                 });
                 
                 $perBulan[$bulan] = [
