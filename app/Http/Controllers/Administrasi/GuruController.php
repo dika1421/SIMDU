@@ -392,7 +392,6 @@ class GuruController extends Controller
 
     /**
      * Import data guru from CSV
-     * ✅ DIPERBAIKI: Tanpa validasi tanggal
      */
     public function import(Request $request)
     {
@@ -434,6 +433,7 @@ class GuruController extends Controller
                 $tmt = trim($row[10] ?? '');
                 $mataPelajaranList = trim($row[11] ?? '');
                 
+                // ========== VALIDASI DASAR ==========
                 if (empty($namaGuru)) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NAMA GURU tidak boleh kosong.";
@@ -452,7 +452,7 @@ class GuruController extends Controller
                     continue;
                 }
                 
-                // Parse tempat dan tanggal lahir (TANPA VALIDASI)
+                // ========== PARSE TEMPAT & TANGGAL (TANPA VALIDASI) ==========
                 $tempatLahir = '';
                 $tanggalLahir = '';
                 if (!empty($tempatTanggalLahir)) {
@@ -465,20 +465,24 @@ class GuruController extends Controller
                     }
                 }
                 
+                // ========== CEK DUPLIKAT ==========
                 if (!empty($nuptk) && Guru::where('nuptk', $nuptk)->exists()) {
                     $failedCount++;
                     $errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah terdaftar.";
                     continue;
                 }
                 
-                $nip = $this->generateNIP($tempatTanggalLahir ?: date('Y-m-d'), $rowNumber);
+                // ========== GENERATE NIP (BY PASS TANGGAL) ==========
+                $nip = $this->generateNIP(date('Y-m-d'), $rowNumber);
                 while (Guru::where('nip', $nip)->exists()) {
-                    $nip = $this->generateNIP($tempatTanggalLahir ?: date('Y-m-d'), $rowNumber . rand(1, 999));
+                    $nip = $this->generateNIP(date('Y-m-d'), $rowNumber . rand(1, 999));
                 }
                 
+                // ========== GENERATE EMAIL ==========
                 $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $namaGuru)) . '@guru.sch.id';
                 $email = $this->generateUniqueEmail($email);
                 
+                // ========== BUAT USER ==========
                 $user = User::create([
                     'name' => $namaGuru,
                     'email' => $email,
@@ -487,6 +491,7 @@ class GuruController extends Controller
                     'status' => 'aktif'
                 ]);
                 
+                // ========== BUAT GURU ==========
                 $guru = Guru::create([
                     'user_id' => $user->id,
                     'nip' => $nip,
@@ -507,6 +512,7 @@ class GuruController extends Controller
                     'status' => 'aktif'
                 ]);
                 
+                // ========== PROSES MATA PELAJARAN ==========
                 if (!empty($mataPelajaranList)) {
                     $mapelNames = array_map('trim', explode(',', $mataPelajaranList));
                     $mapelIds = [];
@@ -580,16 +586,15 @@ class GuruController extends Controller
     }
 
     /**
-     * Generate NIP (Nomor Induk Pegawai)
-     * Format: TGL LAHIR (YYYYMMDD) + TAHUN REGISTRASI + 01 + NOMOR URUT
+     * Generate NIP (Nomor Induk Pegawai) - BYPASS Parse Tanggal
+     * Format: TGL HARI INI (YYYYMMDD) + TAHUN + 01 + NOMOR URUT
      */
     private function generateNIP($tanggalLahir, $rowNumber)
     {
-        // Parse tanggal dengan parseIndonesianDate
-        $tanggalLahirFormatted = $this->parseIndonesianDate($tanggalLahir) ?? date('Y-m-d');
-        $date = date('Ymd', strtotime($tanggalLahirFormatted));
+        // 🔥 BYPASS: Abaikan tanggal lahir, gunakan tanggal hari ini
+        $date = date('Ymd');
         $year = date('Y');
-        $random = str_pad($rowNumber, 3, '0', STR_PAD_LEFT);
+        $random = str_pad($rowNumber, 4, '0', STR_PAD_LEFT);
         return $date . $year . '01' . $random;
     }
     
@@ -605,7 +610,6 @@ class GuruController extends Controller
         
         $dateStr = trim($dateStr);
         
-        // Mapping bulan Indonesia ke angka
         $months = [
             'Januari' => '01', 'Jan' => '01',
             'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
@@ -621,7 +625,6 @@ class GuruController extends Controller
             'Desember' => '12', 'Des' => '12'
         ];
         
-        // FORMAT 1: "15 Agustus 1973"
         foreach ($months as $namaBulan => $angkaBulan) {
             if (stripos($dateStr, $namaBulan) !== false) {
                 $parts = explode($namaBulan, $dateStr, 2);
@@ -639,14 +642,12 @@ class GuruController extends Controller
             }
         }
         
-        // FORMAT 2: "Bogor, 15 Agustus 1973"
         if (strpos($dateStr, ',') !== false) {
             $parts = explode(',', $dateStr, 2);
             $datePart = trim($parts[1]);
             return $this->parseIndonesianDate($datePart);
         }
         
-        // FORMAT 3: "1973-08-15"
         try {
             return Carbon::parse($dateStr)->format('Y-m-d');
         } catch (\Exception $e) {
