@@ -663,29 +663,75 @@ class GuruController extends Controller
      */
     private function generateNIP($tanggalLahir, $rowNumber)
     {
-        $date = date('Ymd', strtotime($tanggalLahir));
+        // Parse tanggal dengan parseIndonesianDate()
+        $tanggalLahirFormatted = $this->parseIndonesianDate($tanggalLahir) ?? date('Y-m-d');
+        $date = date('Ymd', strtotime($tanggalLahirFormatted));
         $year = date('Y');
         $random = str_pad($rowNumber, 3, '0', STR_PAD_LEFT);
         return $date . $year . '01' . $random;
-    }
-    
-    /**
-     * Parse Indonesian date format to Y-m-d
-     */
-    private function parseIndonesianDate($dateStr)
-    {
-        $months = [
-            'Januari' => '01', 'Februari' => '02', 'Maret' => '03', 'April' => '04',
-            'Mei' => '05', 'Juni' => '06', 'Juli' => '07', 'Agustus' => '08',
-            'September' => '09', 'Oktober' => '10', 'November' => '11', 'Desember' => '12'
-        ];
-        
-        $dateStr = str_replace(array_keys($months), array_values($months), $dateStr);
-        $timestamp = strtotime($dateStr);
-        
-        return $timestamp !== false ? date('Y-m-d', $timestamp) : null;
-    }
-    
+    }    
+        /**
+         * Parse Indonesian date format to Y-m-d
+         * Mendukung format: "15 Agustus 1973", "15/08/1973", "1973-08-15"
+         */
+        private function parseIndonesianDate($dateStr)
+        {
+            if (empty($dateStr)) return null;
+            
+            $dateStr = trim($dateStr);
+            
+            // Mapping bulan Indonesia ke angka
+            $months = [
+                'Januari' => '01', 'Jan' => '01',
+                'Februari' => '02', 'Feb' => '02', 'Pebruari' => '02',
+                'Maret' => '03', 'Mar' => '03',
+                'April' => '04', 'Apr' => '04',
+                'Mei' => '05',
+                'Juni' => '06', 'Jun' => '06',
+                'Juli' => '07', 'Jul' => '07',
+                'Agustus' => '08', 'Ags' => '08',
+                'September' => '09', 'Sep' => '09',
+                'Oktober' => '10', 'Okt' => '10',
+                'November' => '11', 'Nov' => '11', 'Nopember' => '11',
+                'Desember' => '12', 'Des' => '12'
+            ];
+            
+            // ========== FORMAT 1: "15 Agustus 1973" ==========
+            foreach ($months as $namaBulan => $angkaBulan) {
+                if (stripos($dateStr, $namaBulan) !== false) {
+                    $parts = explode($namaBulan, $dateStr);
+                    $hari = trim($parts[0]);
+                    $tahun = trim($parts[1] ?? '');
+                    
+                    // Ambil angka dari string
+                    $hari = preg_replace('/[^0-9]/', '', $hari);
+                    $tahun = preg_replace('/[^0-9]/', '', $tahun);
+                    
+                    if (!empty($hari) && !empty($tahun) && strlen($tahun) == 4) {
+                        $hari = str_pad($hari, 2, '0', STR_PAD_LEFT);
+                        return $tahun . '-' . $angkaBulan . '-' . $hari;
+                    }
+                    break;
+                }
+            }
+            
+            // ========== FORMAT 2: "Bogor, 15 Agustus 1973" ==========
+            if (strpos($dateStr, ',') !== false) {
+                $parts = explode(',', $dateStr, 2);
+                $datePart = trim($parts[1]);
+                // Rekursif untuk memproses bagian tanggal
+                return $this->parseIndonesianDate($datePart);
+            }
+            
+            // ========== FORMAT 3: "1973-08-15" atau "15/08/1973" ==========
+            try {
+                // Coba parse dengan Carbon
+                return Carbon::parse($dateStr)->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Jika gagal, return null
+                return null;
+            }
+        }    
     /**
      * Get Pendidikan Terakhir based on tahun lulus
      */
