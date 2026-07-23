@@ -274,7 +274,7 @@ class PembayaranController extends Controller
             $totalDibayar = $tagihan->sum('jumlah_dibayar');
             $totalSisa = $tagihan->sum('sisa');
             
-            // 🔥 BYPASS: Data per bulan diisi 0 (tidak ada filter bulan)
+            // 🔥 PERBAIKAN: Data per bulan diisi 0 (tidak ada strtotime!)
             $perBulan = [];
             for ($bulan = 1; $bulan <= 12; $bulan++) {
                 $perBulan[$bulan] = [
