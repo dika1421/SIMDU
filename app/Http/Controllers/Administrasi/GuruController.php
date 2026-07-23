@@ -661,18 +661,18 @@ class GuruController extends Controller
      * Generate NIP (Nomor Induk Pegawai)
      * Format: TGL LAHIR (YYYYMMDD) + TAHUN REGISTRASI + 01 + NOMOR URUT
      */
-    private function generateNIP($tanggalLahir, $rowNumber)
+        private function generateNIP($tanggalLahir, $rowNumber)
     {
-        // Parse tanggal dengan parseIndonesianDate()
+        // ✅ Parse tanggal dengan parseIndonesianDate
         $tanggalLahirFormatted = $this->parseIndonesianDate($tanggalLahir) ?? date('Y-m-d');
         $date = date('Ymd', strtotime($tanggalLahirFormatted));
         $year = date('Y');
         $random = str_pad($rowNumber, 3, '0', STR_PAD_LEFT);
         return $date . $year . '01' . $random;
-    }    
+    }
         /**
          * Parse Indonesian date format to Y-m-d
-         * Mendukung format: "15 Agustus 1973", "15/08/1973", "1973-08-15"
+         * Mendukung: "15 Agustus 1973", "Bogor, 15 Agustus 1973"
          */
         private function parseIndonesianDate($dateStr)
         {
@@ -719,20 +719,17 @@ class GuruController extends Controller
             if (strpos($dateStr, ',') !== false) {
                 $parts = explode(',', $dateStr, 2);
                 $datePart = trim($parts[1]);
-                // Rekursif untuk memproses bagian tanggal
                 return $this->parseIndonesianDate($datePart);
             }
             
-            // ========== FORMAT 3: "1973-08-15" atau "15/08/1973" ==========
+            // ========== FORMAT 3: "1973-08-15" ==========
             try {
-                // Coba parse dengan Carbon
                 return Carbon::parse($dateStr)->format('Y-m-d');
             } catch (\Exception $e) {
-                // Jika gagal, return null
                 return null;
             }
-        }    
-    /**
+        } 
+   /**
      * Get Pendidikan Terakhir based on tahun lulus
      */
     private function getPendidikanTerakhir($tahunLulus)
