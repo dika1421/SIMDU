@@ -8,20 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('siswa')) {
-            if (!Schema::hasColumn('siswa', 'rfid')) {
-                Schema::table('siswa', function (Blueprint $table) {
-                    $table->string('rfid', 50)->nullable();
+        // Ganti 'siswa' jadi 'siswas' kalau di DB kamu tabelnya siswas
+        if (Schema::hasTable('siswas')) {
+            if (!Schema::hasColumn('siswas', 'rfid')) {
+                Schema::table('siswas', function (Blueprint $table) {
+                    $table->string('rfid', 50)->nullable()->after('jenis_kelamin');
                 });
-                $this->command->info('✅ Kolom RFID berhasil ditambahkan ke tabel siswa');
             }
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasTable('siswa') && Schema::hasColumn('siswa', 'rfid')) {
-            Schema::table('siswa', function (Blueprint $table) {
+        if (Schema::hasTable('siswas') && Schema::hasColumn('siswas', 'rfid')) {
+            Schema::table('siswas', function (Blueprint $table) {
                 $table->dropColumn('rfid');
             });
         }
