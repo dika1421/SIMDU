@@ -100,11 +100,36 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])
             Route::post('/{id}/reset-password', [ManajemenGuruController::class, 'resetPassword'])->name('reset-password');
         });
           
+        // ==================== PERSETUJUAN (APPROVAL) ====================
         Route::prefix('persetujuan')->name('persetujuan.')->group(function () {
+            // ========== ROUTE DASHBOARD PERSETUJUAN ==========
+            Route::get('/dashboard', [PersetujuanController::class, 'dashboard'])->name('dashboard');
+            
+            // ========== ROUTE CRUD PENGADAAN (RESOURCE) ==========
             Route::get('/', [PersetujuanController::class, 'index'])->name('index');
+            Route::get('/create', [PersetujuanController::class, 'create'])->name('create');
+            Route::post('/', [PersetujuanController::class, 'store'])->name('store');
+            
+            // ========== ROUTE EXPORT & PRINT ==========
+            Route::get('/export', [PersetujuanController::class, 'export'])->name('export');
+            
+            // ========== ROUTE BULK ACTION ==========
+            Route::post('/bulk-approve', [PersetujuanController::class, 'bulkApprove'])->name('bulk-approve');
+            Route::post('/bulk-reject', [PersetujuanController::class, 'bulkReject'])->name('bulk-reject');
+            
+            // ========== ROUTE CRUD DETAIL (HARUS DI BAWAH ROUTE BULK) ==========
             Route::get('/{id}', [PersetujuanController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [PersetujuanController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [PersetujuanController::class, 'update'])->name('update');
+            Route::delete('/{id}', [PersetujuanController::class, 'destroy'])->name('destroy');
+            
+            // ========== ROUTE PRINT DETAIL ==========
+            Route::get('/{id}/print', [PersetujuanController::class, 'print'])->name('print');
+            
+            // ========== ROUTE ACTION APPROVAL ==========
             Route::post('/{id}/approve', [PersetujuanController::class, 'approve'])->name('approve');
             Route::post('/{id}/reject', [PersetujuanController::class, 'reject'])->name('reject');
+            Route::post('/{id}/revise', [PersetujuanController::class, 'revise'])->name('revise');
         });
         
         // ==================== LAPORAN ====================
