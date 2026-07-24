@@ -54,8 +54,7 @@ class PersetujuanController extends Controller
         $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
         $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
 
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.index', compact('pengajuan', 'statuses', 'tipes'));
+        return view('kepala-sekolah.persetujuan.index', compact('pengajuan', 'statuses', 'tipes'));
     }
 
     /**
@@ -68,8 +67,7 @@ class PersetujuanController extends Controller
             ->orderBy('name')
             ->get();
 
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.create', compact('pengajuList'));
+        return view('kepala-sekolah.persetujuan.create', compact('pengajuList'));
     }
 
     /**
@@ -126,8 +124,7 @@ class PersetujuanController extends Controller
     {
         $pengajuan = Pengajuan::with(['pengaju', 'disetujuiOleh'])->findOrFail($id);
         
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.show', compact('pengajuan'));
+        return view('kepala-sekolah.persetujuan.show', compact('pengajuan'));
     }
 
     /**
@@ -150,8 +147,7 @@ class PersetujuanController extends Controller
         $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
         $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
 
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.edit', compact('pengajuan', 'pengajuList', 'statuses', 'tipes'));
+        return view('kepala-sekolah.persetujuan.edit', compact('pengajuan', 'pengajuList', 'statuses', 'tipes'));
     }
 
     /**
@@ -221,15 +217,18 @@ class PersetujuanController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya pengajuan dengan status 'menunggu' atau 'ditolak' yang bisa dihapus
         if (!in_array($pengajuan->status, ['menunggu', 'ditolak'])) {
             return redirect()->route('kepala-sekolah.persetujuan.index')
                 ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat dihapus.');
         }
 
+        // Hapus file lampiran jika ada
         if ($pengajuan->lampiran && file_exists(storage_path('app/public/' . $pengajuan->lampiran))) {
             unlink(storage_path('app/public/' . $pengajuan->lampiran));
         }
 
+        // Soft delete
         $pengajuan->delete();
 
         return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -243,6 +242,7 @@ class PersetujuanController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya yang status 'menunggu' yang bisa disetujui
         if ($pengajuan->status !== 'menunggu') {
             return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
         }
@@ -270,6 +270,7 @@ class PersetujuanController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya yang status 'menunggu' yang bisa ditolak
         if ($pengajuan->status !== 'menunggu') {
             return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
         }
@@ -296,6 +297,7 @@ class PersetujuanController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Validasi: hanya yang status 'menunggu' yang bisa direvisi
         if ($pengajuan->status !== 'menunggu') {
             return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
         }
@@ -330,16 +332,19 @@ class PersetujuanController extends Controller
                 ->sum('jumlah_anggaran'),
         ];
 
+        // Pengajuan per tipe
         $perTipe = Pengajuan::selectRaw('tipe, status, count(*) as total')
             ->groupBy('tipe', 'status')
             ->get();
 
+        // Pengajuan terbaru yang menunggu
         $recent = Pengajuan::with('pengaju')
             ->where('status', 'menunggu')
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();
 
+        // Statistik per bulan (untuk chart)
         $perBulan = Pengajuan::selectRaw('MONTH(created_at) as bulan, YEAR(created_at) as tahun, status, count(*) as total')
             ->groupBy('tahun', 'bulan', 'status')
             ->orderBy('tahun', 'desc')
@@ -347,8 +352,7 @@ class PersetujuanController extends Controller
             ->take(12)
             ->get();
 
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.dashboard', compact(
+        return view('kepala-sekolah.persetujuan.dashboard', compact(
             'statistik', 
             'recent', 
             'perTipe', 
@@ -361,6 +365,8 @@ class PersetujuanController extends Controller
      */
     public function export(Request $request)
     {
+        // Implementasi export data
+        // Bisa menggunakan Laravel Excel atau DomPDF
         return redirect()->back()->with('info', 'Fitur export sedang dalam pengembangan.');
     }
 
@@ -370,9 +376,7 @@ class PersetujuanController extends Controller
     public function print($id)
     {
         $pengajuan = Pengajuan::with(['pengaju', 'disetujuiOleh'])->findOrFail($id);
-        
-        // 🔥 UBAH: menggunakan huruf besar 'Persetujuan'
-        return view('kepala-sekolah.Persetujuan.print', compact('pengajuan'));
+        return view('kepala-sekolah.persetujuan.print', compact('pengajuan'));
     }
 
     /**
