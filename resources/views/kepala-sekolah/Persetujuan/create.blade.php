@@ -1,32 +1,82 @@
-@extends('layouts.app')
+@extends('kepala-sekolah.layouts.header')
+
+@section('title', 'Tambah Pengajuan')
 
 @section('content')
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h3>Tambah Data Sekolah</h3>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('manajemen-sekolah.store') }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <label>Nama Sekolah</label>
-                    <input type="text" name="nama" class="form-control" required>
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-plus me-2"></i> Tambah Pengajuan Baru
+                <div class="float-end">
+                    <a href="{{ route('kepala-sekolah.persetujuan.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
                 </div>
-                <div class="form-group">
-                    <label>Alamat</label>
-                    <textarea name="alamat" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select name="status" class="form-control">
-                        <option value="aktif">Aktif</option>
-                        <option value="nonaktif">Nonaktif</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="{{ route('manajemen-sekolah.index') }}" class="btn btn-secondary">Kembali</a>
-            </form>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('kepala-sekolah.persetujuan.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Pengaju <span class="text-danger">*</span></label>
+                        <select name="pengaju_id" class="form-select" required>
+                            <option value="">Pilih Pengaju</option>
+                            @foreach($pengajuList as $user)
+                            <option value="{{ $user->id }}" {{ old('pengaju_id') == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('pengaju_id')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Judul <span class="text-danger">*</span></label>
+                        <input type="text" name="judul" class="form-control" value="{{ old('judul') }}" required>
+                        @error('judul')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipe <span class="text-danger">*</span></label>
+                        <select name="tipe" class="form-select" required>
+                            <option value="anggaran" {{ old('tipe') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
+                            <option value="izin" {{ old('tipe') == 'izin' ? 'selected' : '' }}>Izin</option>
+                            <option value="proyek" {{ old('tipe') == 'proyek' ? 'selected' : '' }}>Proyek</option>
+                            <option value="lainnya" {{ old('tipe') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                        @error('tipe')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
+                        <textarea name="deskripsi" class="form-control" rows="4" required>{{ old('deskripsi') }}</textarea>
+                        @error('deskripsi')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Jumlah Anggaran</label>
+                        <input type="number" name="jumlah_anggaran" class="form-control" value="{{ old('jumlah_anggaran', 0) }}">
+                        @error('jumlah_anggaran')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Prioritas</label>
+                        <select name="prioritas" class="form-select">
+                            <option value="rendah" {{ old('prioritas') == 'rendah' ? 'selected' : '' }}>Rendah</option>
+                            <option value="sedang" {{ old('prioritas') == 'sedang' ? 'selected' : '' }} selected>Sedang</option>
+                            <option value="tinggi" {{ old('prioritas') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
+                        </select>
+                        @error('prioritas')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lampiran</label>
+                        <input type="file" name="lampiran" class="form-control">
+                        <small class="text-muted">PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
+                        @error('lampiran')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                    <a href="{{ route('kepala-sekolah.persetujuan.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Batal
+                    </a>
+                </form>
+            </div>
         </div>
     </div>
 </div>
