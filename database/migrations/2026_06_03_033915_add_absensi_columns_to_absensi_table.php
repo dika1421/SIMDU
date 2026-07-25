@@ -9,29 +9,24 @@ class AddAbsensiColumnsToAbsensiTable extends Migration
     public function up()
     {
         Schema::table('absensi', function (Blueprint $table) {
-            // Tambahkan kolom absensi_type jika belum ada
             if (!Schema::hasColumn('absensi', 'absensi_type')) {
                 $table->enum('absensi_type', ['siswa', 'guru'])->after('id')->nullable();
             }
             
-            // Tambahkan kolom siswa_id jika belum ada
             if (!Schema::hasColumn('absensi', 'siswa_id')) {
                 $table->unsignedBigInteger('siswa_id')->nullable()->after('absensi_type');
-                $table->foreign('siswa_id')->references('id')->on('siswa')->onDelete('cascade');
+                $table->foreign('siswa_id')->references('id')->on('siswas')->onDelete('cascade');
             }
             
-            // Tambahkan kolom guru_id jika belum ada
             if (!Schema::hasColumn('absensi', 'guru_id')) {
                 $table->unsignedBigInteger('guru_id')->nullable()->after('siswa_id');
-                $table->foreign('guru_id')->references('id')->on('guru')->onDelete('cascade');
+                $table->foreign('guru_id')->references('id')->on('gurus')->onDelete('cascade');
             }
             
-            // Tambahkan kolom waktu_keluar jika belum ada
             if (!Schema::hasColumn('absensi', 'waktu_keluar')) {
                 $table->time('waktu_keluar')->nullable()->after('waktu_masuk');
             }
             
-            // Tambahkan index untuk performance
             $table->index(['absensi_type', 'tanggal']);
             $table->index(['siswa_id', 'tanggal']);
             $table->index(['guru_id', 'tanggal']);
