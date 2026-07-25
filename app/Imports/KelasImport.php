@@ -15,81 +15,83 @@ class KelasImport implements ToCollection, WithHeadingRow
     private $successCount = 0;
     private $failedCount = 0;
     private $errors = [];
-    
+
     public function collection(Collection $rows)
     {
         DB::beginTransaction();
-        
+
         try {
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
-                
-                // Ambil data dari row
-                $namaKelas = trim($row['nama_kelas'] ?? '');
-                $kodeKelas = trim($row['kode_kelas'] ?? '');
-                $tingkat = trim($row['tingkat'] ?? '');
-                $kodeJurusan = trim($row['kode_jurusan'] ?? '');
-                $kapasitas = trim($row['kapasitas'] ?? '36');
-                $status = trim($row['status'] ?? 'aktif');
-                $keterangan = trim($row['keterangan'] ?? '');
-                
-                // Validasi required fields
+
+                // === SUPPORT 2 FORMAT HEADER ===
+                // Format 1 (punyamu yang lama): nama_kelas, kode_kelas, tingkat, kode_jurusan, kapasitas, status, keterangan
+                // Format 2 (dari file 01_import_kelas.csv): nama, jurusan, tingkat
+                $namaKelas = trim($row['nama_kelas']?? $row['nama']?? '');
+                $kodeKelas = trim($row['kode_kelas']?? '');
+                $tingkat = trim($row['tingkat']?? '');
+                $kodeJurusan = trim($row['kode_jurusan']?? '');
+                $namaJurusan = trim($row['jurusan']?? ''); // dari file baru
+                $kapasitas = trim($row['kapasitas']?? '40');
+                $status = trim($row['status']?? 'aktif');
+                $keterangan = trim($row['keterangan']?? '');
+
+                // Validasi required
                 if (empty($namaKelas)) {
                     $this->failedCount++;
                     $this->errors[] = "Baris {$rowNumber}: NAMA KELAS tidak boleh kosong.";
                     continue;
                 }
-                
-                // Cek apakah nama kelas sudah ada
+
                 if (Kelas::where('nama', $namaKelas)->exists()) {
                     $this->failedCount++;
-                    $this->errors[] = "Baris {$rowNumber}: Nama kelas '{$namaKelas}' sudah terdaftar.";
+                    $this->errors[] = "Baris {$rowNumber}: '{$namaKelas}' sudah ada, dilewati.";
                     continue;
                 }
-                
-                // Validasi tingkat
+
+                // Validasi tingkat - auto detect jika kosong
+                if (empty($tingkat)) {
+                    $tingkat = explode(' ', $namaKelas)[0]?? 'X';
+                }
+                $tingkat = strtoupper($tingkat);
                 $tingkatList = ['X', 'XI', 'XII', 'XIII'];
-                if (empty($tingkat) || !in_array($tingkat, $tingkatList)) {
-                    $this->failedCount++;
-                    $this->errors[] = "Baris {$rowNumber}: TINGKAT harus X, XI, XII, atau XIII (ditemukan: '{$tingkat}').";
-                    continue;
+                if (!in_array($tingkat, $tingkatList)) {
+                    $tingkat = 'X';
                 }
-                
-                // Cari jurusan berdasarkan kode jurusan
+
+                // Cari jurusan: bisa dari kode_jurusan ATAU nama jurusan
                 $jurusanId = null;
                 if (!empty($kodeJurusan)) {
                     $jurusan = Jurusan::where('kode_jurusan', $kodeJurusan)->first();
-                    if (!$jurusan) {
-                        $this->failedCount++;
-                        $this->errors[] = "Baris {$rowNumber}: Kode Jurusan '{$kodeJurusan}' tidak ditemukan.";
-                        continue;
+                    if ($jurusan) $jurusanId = $jurusan->id;
+                }
+                if (!$jurusanId &&!empty($namaJurusan)) {
+                    // Cari by nama jurusan (PEMASARAN / KULINER)
+                    $jurusan = Jurusan::where('nama', 'LIKE', "%{$namaJurusan}%")->first();
+                    if ($jurusan) {
+                        $jurusanId = $jurusan->id;
+                    } else {
+                        // Auto create jurusan kalau belum ada
+                        $jurusan = Jurusan::create([
+                            'nama' => strtoupper($namaJurusan),
+                            'kode_jurusan' => strtoupper(substr($namaJurusan,0,3)).rand(10,99),
+                            'status' => 'aktif'
+                        ]);
+                        $jurusanId = $jurusan->id;
                     }
-                    $jurusanId = $jurusan->id;
                 }
-                
-                // Validasi kapasitas
+
                 $kapasitasInt = (int) $kapasitas;
-                if ($kapasitasInt < 1 || $kapasitasInt > 100) {
-                    $this->failedCount++;
-                    $this->errors[] = "Baris {$rowNumber}: KAPASITAS harus antara 1-100 (ditemukan: '{$kapasitas}').";
-                    continue;
-                }
-                
-                // Validasi status
-                if (!in_array($status, ['aktif', 'nonaktif'])) {
-                    $status = 'aktif';
-                }
-                
-                // Generate kode kelas jika kosong
+                if ($kapasitasInt < 1 || $kapasitasInt > 100) $kapasitasInt = 40;
+                if (!in_array($status, ['aktif', 'nonaktif'])) $status = 'aktif';
+
                 if (empty($kodeKelas)) {
-                    $kodeKelas = strtoupper(substr($namaKelas, 0, 3)) . '-' . rand(10, 99);
+                    $kodeKelas = strtoupper(str_replace(' ', '_', $namaKelas));
                 }
-                
-                // Cek apakah kode kelas sudah ada
                 if (Kelas::where('kode_kelas', $kodeKelas)->exists()) {
-                    $kodeKelas = $kodeKelas . '-' . rand(1, 9);
+                    $kodeKelas = $kodeKelas. '-'. rand(10,99);
                 }
-                
+
                 try {
                     Kelas::create([
                         'nama' => $namaKelas,
@@ -99,41 +101,23 @@ class KelasImport implements ToCollection, WithHeadingRow
                         'kapasitas' => $kapasitasInt,
                         'status' => $status,
                         'keterangan' => $keterangan,
-                        'tahun_ajaran' => date('Y') . '/' . (date('Y') + 1),
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                        'tahun_ajaran' => date('Y'). '/'. (date('Y') + 1),
                     ]);
-                    
                     $this->successCount++;
-                    
                 } catch (\Exception $e) {
                     $this->failedCount++;
-                    $this->errors[] = "Baris {$rowNumber}: " . $e->getMessage();
-                    Log::error('Import Kelas Error: ' . $e->getMessage());
+                    $this->errors[] = "Baris {$rowNumber}: ". $e->getMessage();
+                    Log::error('Import Kelas Error: '. $e->getMessage());
                 }
             }
-            
             DB::commit();
-            
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->errors[] = "Error: " . $e->getMessage();
-            Log::error('Import Kelas Error: ' . $e->getMessage());
+            $this->errors[] = "Fatal: ". $e->getMessage();
         }
     }
-    
-    public function getSuccessCount()
-    {
-        return $this->successCount;
-    }
-    
-    public function getFailedCount()
-    {
-        return $this->failedCount;
-    }
-    
-    public function getErrors()
-    {
-        return $this->errors;
-    }
+
+    public function getSuccessCount(){ return $this->successCount; }
+    public function getFailedCount(){ return $this->failedCount; }
+    public function getErrors(){ return $this->errors; }
 }

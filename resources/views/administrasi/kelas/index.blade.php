@@ -43,6 +43,10 @@
         Manajemen Kelas
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <!-- TAMBAHAN: TOMBOL IMPORT -->
+        <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="fas fa-file-csv"></i> Import CSV
+        </button>
         <a href="{{ route('administrasi.kelas.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i> Tambah Kelas
         </a>
@@ -213,6 +217,35 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- TAMBAHAN: MODAL IMPORT - TIDAK MERUBAH CODE ASLI LAINNYA -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('administrasi.kelas.import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-file-csv me-2"></i>Import Kelas dari CSV</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">
+                <small><b>Format CSV:</b> nama, jurusan, tingkat <br>Contoh: <code>X A PEMASARAN,PEMASARAN,X</code><br>
+                File <b>01_import_kelas.csv</b> yang tadi sudah sesuai.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Pilih File CSV</label>
+                <input type="file" name="file" class="form-control" accept=".csv,.txt" required>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success"><i class="fas fa-upload"></i> Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 @endsection
 

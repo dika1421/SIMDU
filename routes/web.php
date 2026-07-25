@@ -167,6 +167,12 @@ Route::middleware(['auth', 'check.role:administrasi'])
         Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])->name('dashboard');
         
         Route::resource('jurusan', JurusanController::class);
+
+        // ========== KELAS - IMPORT HARUS DI ATAS RESOURCE ==========
+        Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
+        Route::get('/kelas/download-template', [KelasController::class, 'downloadTemplate'])->name('kelas.download-template');
+        Route::get('/kelas/export', [KelasController::class, 'export'])->name('kelas.export');
+        
         Route::resource('kelas', KelasController::class);
         Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])->name('kelas.get-list');
         
