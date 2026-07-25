@@ -16,30 +16,32 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class GuruController extends Controller
 {
-    // ============ HELPER TANGGAL INDONESIA (KUNCINYA) ============
     private function parseTanggalIndo($tanggal)
     {
         if (empty($tanggal)) return null;
+        $tanggal = trim((string)$tanggal);
 
-        // Jika dari Excel berupa angka serial
-        if (is_numeric($tanggal)) {
+        if (is_numeric($tanggal) && (float)$tanggal > 30000) {
             try {
                 return ExcelDate::excelToDateTimeObject($tanggal)->format('Y-m-d');
             } catch (\Exception $e) {}
         }
 
-        $tanggal = trim($tanggal);
+        if (preg_match('/^\d{4}$/', $tanggal)) {
+            return $tanggal. '-01-01';
+        }
 
-        // Mapping bulan Indonesia -> Inggris
         $bulanIndo = [
             'Januari' => 'January', 'Februari' => 'February', 'Maret' => 'March',
             'April' => 'April', 'Mei' => 'May', 'Juni' => 'June',
             'Juli' => 'July', 'Agustus' => 'August', 'September' => 'September',
-            'Oktober' => 'October', 'November' => 'November', 'Desember' => 'December',
+            'Oktober' => 'October', 'Nopember' => 'November', 'November' => 'November',
+            'Desember' => 'December',
             'januari' => 'January', 'februari' => 'February', 'maret' => 'March',
             'april' => 'April', 'mei' => 'May', 'juni' => 'June',
             'juli' => 'July', 'agustus' => 'August', 'september' => 'September',
-            'oktober' => 'October', 'november' => 'November', 'desember' => 'December',
+            'oktober' => 'October', 'nopember' => 'November', 'november' => 'November',
+            'desember' => 'December',
         ];
 
         $tglEnglish = str_ireplace(array_keys($bulanIndo), array_values($bulanIndo), $tanggal);
@@ -47,18 +49,15 @@ class GuruController extends Controller
         try {
             return Carbon::parse($tglEnglish)->format('Y-m-d');
         } catch (\Exception $e) {
-            // Coba format d/m/Y manual
             try {
                 return Carbon::createFromFormat('d/m/Y', $tanggal)->format('Y-m-d');
             } catch (\Exception $e2) {
-                Log::warning("Gagal parse tanggal: {$tanggal} -> {$e->getMessage()}");
                 return null;
             }
         }
     }
 
     private function parseTanggalIndoSafe($tanggal) {
-        // Untuk hitung umur di index, biar gak error kalau tanggal rusak
         try {
             $parsed = $this->parseTanggalIndo($tanggal);
             return $parsed? Carbon::parse($parsed) : null;
@@ -69,7 +68,6 @@ class GuruController extends Controller
     {
         try {
             $query = Guru::with(['user', 'mataPelajaran']);
-
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
@@ -83,22 +81,15 @@ class GuruController extends Controller
                       });
                 });
             }
-
             $guru = $query->orderBy('created_at', 'desc')->paginate(10);
-
             $guruLaki = Guru::where('jenis_kelamin', 'L')->count();
             $guruPerempuan = Guru::where('jenis_kelamin', 'P')->count();
-
-            // FIX: Rata usia tahan error tanggal Indo
             $rataUsia = Guru::whereNotNull('tanggal_lahir')->get()
                 ->map(function($g) {
                     $carbon = $this->parseTanggalIndoSafe($g->tanggal_lahir);
                     return $carbon? $carbon->age : null;
-                })
-                ->filter()
-                ->avg();
+                })->filter()->avg();
             $rataUsia = round($rataUsia?? 0);
-
             return view('administrasi.guru.index', compact('guru', 'guruLaki', 'guruPerempuan', 'rataUsia'));
         } catch (\Exception $e) {
             Log::error('Error in Guru Index: '. $e->getMessage());
@@ -118,7 +109,7 @@ class GuruController extends Controller
             'nama_guru' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
             'tempat_lahir' => 'required|string|max:100',
-            'tanggal_lahir' => 'required|string', // FIX: jangan pakai date, biar 15 Agustus 1973 lolos
+            'tanggal_lahir' => 'required|string',
             'alamat_lengkap' => 'required|string',
             'nuptk' => 'nullable|string|max:20|unique:gurus,nuptk',
             'jabatan' => 'required|string|max:100',
@@ -137,15 +128,12 @@ class GuruController extends Controller
 
         try {
             DB::beginTransaction();
-
             $nip = $request->nip;
             if (empty($nip)) {
                 $nip = $this->generateNIP($request->tanggal_lahir, $this->getNextGuruId());
             }
-
             $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $request->nama_guru)). '@guru.sch.id';
             $email = $this->generateUniqueEmail($email);
-
             $user = User::create([
                 'name' => $request->nama_guru,
                 'email' => $email,
@@ -153,7 +141,6 @@ class GuruController extends Controller
                 'role' => 'guru',
                 'status' => 'aktif'
             ]);
-
             $guru = Guru::create([
                 'user_id' => $user->id,
                 'nip' => $nip,
@@ -174,17 +161,11 @@ class GuruController extends Controller
                 'agama' => $request->agama,
                 'status' => 'aktif'
             ]);
-
             if ($request->has('mata_pelajaran') &&!empty($request->mata_pelajaran)) {
                 $guru->mataPelajaran()->sync($request->mata_pelajaran);
             }
-
             DB::commit();
-            $mapelCount = $request->has('mata_pelajaran')? count($request->mata_pelajaran) : 0;
-            $message = "✅ Guru {$guru->nama_lengkap} berhasil ditambahkan!";
-            if ($mapelCount > 0) $message.= "<br>📚 Mengampu {$mapelCount} mata pelajaran.";
-
-            return redirect()->route('administrasi.guru.index')->with('success', $message);
+            return redirect()->route('administrasi.guru.index')->with('success', "✅ Guru {$guru->nama_lengkap} berhasil ditambahkan!");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in Guru Store: '. $e->getMessage());
@@ -198,7 +179,6 @@ class GuruController extends Controller
             $guru = Guru::with(['user', 'mataPelajaran', 'kelasWali'])->findOrFail($id);
             return view('administrasi.guru.show', compact('guru'));
         } catch (\Exception $e) {
-            Log::error('Error in Guru Show: '. $e->getMessage());
             return back()->with('error', 'Data guru tidak ditemukan');
         }
     }
@@ -211,7 +191,6 @@ class GuruController extends Controller
             $selectedMapel = $guru->mataPelajaran->pluck('id')->toArray();
             return view('administrasi.guru.edit', compact('guru', 'mataPelajaran', 'selectedMapel'));
         } catch (\Exception $e) {
-            Log::error('Error in Guru Edit: '. $e->getMessage());
             return back()->with('error', 'Data guru tidak ditemukan');
         }
     }
@@ -243,7 +222,6 @@ class GuruController extends Controller
         try {
             DB::beginTransaction();
             $guru = Guru::findOrFail($id);
-
             $guru->update([
                 'nama_lengkap' => $request->nama_lengkap,
                 'jenis_kelamin' => $request->jenis_kelamin,
@@ -263,26 +241,18 @@ class GuruController extends Controller
                 'nip' => $request->nip,
                 'status' => $request->status?? 'aktif'
             ]);
-
             if ($guru->user) {
                 $guru->user->update(['name' => $request->nama_lengkap]);
             }
-
             if ($request->has('mata_pelajaran')) {
                 $guru->mataPelajaran()->sync($request->mata_pelajaran);
             } else {
                 $guru->mataPelajaran()->sync([]);
             }
-
             DB::commit();
-            $mapelCount = $request->has('mata_pelajaran')? count($request->mata_pelajaran) : 0;
-            $message = "✅ Guru {$guru->nama_lengkap} berhasil diupdate!";
-            if ($mapelCount > 0) $message.= "<br>📚 Mengampu {$mapelCount} mata pelajaran.";
-
-            return redirect()->route('administrasi.guru.index')->with('success', $message);
+            return redirect()->route('administrasi.guru.index')->with('success', "✅ Guru {$guru->nama_lengkap} berhasil diupdate!");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error in Guru Update: '. $e->getMessage());
             return back()->with('error', '❌ Gagal mengupdate: '. $e->getMessage())->withInput();
         }
     }
@@ -300,7 +270,6 @@ class GuruController extends Controller
             return redirect()->route('administrasi.guru.index')->with('success', "✅ Guru {$guru->nama_lengkap} berhasil dihapus!");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error in Guru Destroy: '. $e->getMessage());
             return back()->with('error', '❌ Gagal menghapus guru: '. $e->getMessage());
         }
     }
@@ -317,23 +286,23 @@ class GuruController extends Controller
                       ->orWhere('nip', 'LIKE', "%{$search}%");
                 });
             }
-            $guru = $query->orderBy('created_at', 'desc')->get();
+            $guruList = $query->orderBy('created_at', 'desc')->get();
             $headers = ['NO', 'NAMA GURU', 'JK', 'TEMPAT LAHIR', 'TANGGAL LAHIR','ALAMAT', 'NUPTK', 'NIP', 'JABATAN', 'MATA PELAJARAN','PENDIDIKAN TERAKHIR', 'JURUSAN', 'UNIVERSITAS', 'TAHUN LULUS','TMT MASUK', 'TMT DARUL ULUM', 'AGAMA', 'NO TELEPON', 'STATUS'];
-
-            $callback = function() use ($headers, $guru) {
+            $self = $this;
+            $callback = function() use ($headers, $guruList, $self) {
                 $handle = fopen('php://output', 'w');
                 fwrite($handle, "\xEF\xBB\xBF");
                 fputcsv($handle, $headers);
                 $no = 1;
-                foreach ($guru as $g) {
+                foreach ($guruList as $g) {
                     $mataPelajaran = $g->mataPelajaran->pluck('nama_mapel')->implode(', ');
                     fputcsv($handle, [
                         $no++,$g->nama_lengkap,$g->jenis_kelamin,$g->tempat_lahir,
-                        $g->tanggal_lahir? ($this->parseTanggalIndo($g->tanggal_lahir)?? $g->tanggal_lahir) : '',
+                        $g->tanggal_lahir? ($self->parseTanggalIndo($g->tanggal_lahir)?? $g->tanggal_lahir) : '',
                         $g->alamat,$g->nuptk,$g->nip,$g->status_kepegawaian,$mataPelajaran,
                         $g->pendidikan_terakhir,$g->jurusan_pendidikan,$g->universitas,$g->tahun_lulus,
-                        $g->tmt_masuk? ($this->parseTanggalIndo($g->tmt_masuk)?? $g->tmt_masuk) : '',
-                        $g->tmt? ($this->parseTanggalIndo($g->tmt)?? $g->tmt) : '',
+                        $g->tmt_masuk? ($self->parseTanggalIndo($g->tmt_masuk)?? $g->tmt_masuk) : '',
+                        $g->tmt? ($self->parseTanggalIndo($g->tmt)?? $g->tmt) : '',
                         $g->agama,$g->no_telepon,$g->status
                     ]);
                 }
@@ -345,7 +314,6 @@ class GuruController extends Controller
                 'Content-Disposition' => 'attachment; filename="'. $filename. '"'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error in Guru Export: '. $e->getMessage());
             return redirect()->route('administrasi.guru.index')->with('error', '❌ Gagal export data: '. $e->getMessage());
         }
     }
@@ -367,7 +335,6 @@ class GuruController extends Controller
             };
             return response()->streamDownload($callback, 'template_guru.csv', ['Content-Type' => 'text/csv; charset=UTF-8',]);
         } catch (\Exception $e) {
-            Log::error('Error in downloadTemplate: '. $e->getMessage());
             return redirect()->route('administrasi.guru.index')->with('error', '❌ Gagal download template: '. $e->getMessage());
         }
     }
@@ -386,7 +353,6 @@ class GuruController extends Controller
             while (($row = fgetcsv($handle, 0, ','))!== false) {
                 $rowNumber++;
                 if (count(array_filter($row)) < 4) continue;
-
                 $namaGuru = trim($row[1]?? '');
                 $jk = trim($row[2]?? '');
                 $tempatTanggalLahir = trim($row[3]?? '');
@@ -398,11 +364,9 @@ class GuruController extends Controller
                 $tahunLulus = trim($row[9]?? '');
                 $tmt = trim($row[10]?? '');
                 $mataPelajaranList = trim($row[11]?? '');
-
                 if (empty($namaGuru)) { $failedCount++; $errors[] = "Baris {$rowNumber}: NAMA GURU kosong."; continue; }
                 if (empty($jk) ||!in_array(strtoupper($jk), ['L', 'P'])) { $failedCount++; $errors[] = "Baris {$rowNumber}: JK harus L/P"; continue; }
                 if (empty($jabatan)) { $failedCount++; $errors[] = "Baris {$rowNumber}: JABATAN kosong."; continue; }
-
                 $tempatLahir = ''; $tanggalLahirRaw = '';
                 if (!empty($tempatTanggalLahir)) {
                     if (strpos($tempatTanggalLahir, ',')!== false) {
@@ -415,31 +379,27 @@ class GuruController extends Controller
                 }
                 $tanggalLahir = $this->parseTanggalIndo($tanggalLahirRaw);
                 $tmtParsed = $this->parseTanggalIndo($tmt);
-
                 if (!empty($nuptk) && Guru::where('nuptk', $nuptk)->exists()) {
                     $failedCount++; $errors[] = "Baris {$rowNumber}: NUPTK '{$nuptk}' sudah ada."; continue;
                 }
-
                 $nip = 'NIP'. date('Ymd'). str_pad($rowNumber, 4, '0', STR_PAD_LEFT);
                 while (Guru::where('nip', $nip)->exists()) {
                     $nip = 'NIP'. date('Ymd'). str_pad($rowNumber. rand(1, 99), 4, '0', STR_PAD_LEFT);
                 }
                 $email = strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $namaGuru)). '@guru.sch.id';
                 $email = $this->generateUniqueEmail($email);
-
                 $user = User::create([
                     'name' => $namaGuru, 'email' => $email,
                     'password' => Hash::make('password123'),
                     'role' => 'guru', 'status' => 'aktif'
                 ]);
-
                 $guru = Guru::create([
                     'user_id' => $user->id, 'nip' => $nip,
                     'nuptk' =>!empty($nuptk)? $nuptk : null,
                     'nama_lengkap' => $namaGuru,
                     'jenis_kelamin' => strtoupper($jk),
                     'tempat_lahir' => $tempatLahir,
-                    'tanggal_lahir' => $tanggalLahir, // FIX: sudah di-parse Indonesia
+                    'tanggal_lahir' => $tanggalLahir,
                     'alamat' => $alamat,
                     'pendidikan_terakhir' => $this->getPendidikanTerakhir($tahunLulus),
                     'jurusan_pendidikan' =>!empty($jurusan)? $jurusan : 'Pendidikan',
@@ -450,7 +410,6 @@ class GuruController extends Controller
                     'status_kepegawaian' => $jabatan,
                     'agama' => 'Islam', 'status' => 'aktif'
                 ]);
-
                 if (!empty($mataPelajaranList)) {
                     $mapelNames = array_map('trim', explode(',', $mataPelajaranList));
                     $mapelIds = [];
