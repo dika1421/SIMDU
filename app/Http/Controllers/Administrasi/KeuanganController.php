@@ -23,13 +23,12 @@ class KeuanganController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('nama', 'LIKE', "%{$search}%")
+                    $q->where('nama_kelas', 'LIKE', "%{$search}%")
                       ->orWhere('kode_kelas', 'LIKE', "%{$search}%")
                       ->orWhere('tingkat', 'LIKE', "%{$search}%");
                 });
             }
-            $kelas = $query->orderBy('tingkat')->orderBy('nama')->paginate(10);
-            $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
+            $kelas = $query->orderBy('tingkat')->orderBy('nama')->paginate(10);            $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
             $tingkatList = ['X' => 'X', 'XI' => 'XI', 'XII' => 'XII', 'XIII' => 'XIII'];
             $jurusanList = Jurusan::orderBy('kode_jurusan')->get();
             return view('administrasi.kelas.index', compact('kelas', 'statusList', 'tingkatList', 'jurusanList'));
