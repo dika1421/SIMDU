@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Facades\Log;
 
 class KelasImport implements ToCollection, WithHeadingRow
 {
@@ -22,10 +21,9 @@ class KelasImport implements ToCollection, WithHeadingRow
         try {
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
-                $namaKelas = trim($row['nama_kelas']?? $row['nama']?? $row['nama kelas']?? $row['kelas']?? '');
+                $namaKelas = trim($row['nama_kelas']?? $row['nama']?? '');
                 $tingkat = trim($row['tingkat']?? '');
                 $namaJurusan = trim($row['jurusan']?? $row['kode_jurusan']?? '');
-                $kapasitas = trim($row['kapasitas']?? '40');
 
                 if (empty($namaKelas)) {
                     $this->failedCount++;
@@ -33,7 +31,6 @@ class KelasImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-                // PAKSA pakai nama_kelas, jangan nama
                 if (Kelas::where('nama_kelas', $namaKelas)->exists()) {
                     $this->failedCount++;
                     $this->errors[] = "Baris {$rowNumber}: '{$namaKelas}' sudah ada";
@@ -41,29 +38,20 @@ class KelasImport implements ToCollection, WithHeadingRow
                 }
 
                 if (empty($tingkat)) $tingkat = explode(' ', $namaKelas)[0];
-                $tingkat = strtoupper($tingkat);
 
                 $jurusanId = null;
                 if (!empty($namaJurusan)) {
-                    $jur = Jurusan::where('nama', 'ILIKE', "%{$namaJurusan}%")
-                           ->orWhere('kode_jurusan', 'ILIKE', "%{$namaJurusan}%")->first();
+                    $jur = Jurusan::where('nama', 'ILIKE', "%{$namaJurusan}%")->first();
                     if ($jur) $jurusanId = $jur->id;
                 }
 
-                try {
-                    Kelas::create([
-                        'nama_kelas' => $namaKelas,
-                        'tingkat' => $tingkat,
-                        'jurusan_id' => $jurusanId,
-                        'kapasitas' => (int)$kapasitas,
-                        'status' => 'aktif',
-                    ]);
-                    $this->successCount++;
-                } catch (\Exception $e) {
-                    $this->failedCount++;
-                    $this->errors[] = "Baris {$rowNumber}: ".$e->getMessage();
-                    Log::error($e->getMessage());
-                }
+                // INSERT HANYA KOLOM YANG ADA DI DB KAMU
+                Kelas::create([
+                    'nama_kelas' => $namaKelas,
+                    'tingkat' => strtoupper($tingkat),
+                    'jurusan_id' => $jurusanId,
+                ]);
+                $this->successCount++;
             }
             DB::commit();
         } catch (\Exception $e) {
