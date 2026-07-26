@@ -19,46 +19,53 @@ class SiswaImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows)
     {
-        DB::beginTransaction();
-        try {
-            foreach ($rows as $index => $row) {
-                $baris = $index + 2;
-                $nis = trim($row['nis'] ?? '');
-                $nama = trim($row['nama'] ?? $row['nama_lengkap'] ?? '');
-                $kelasNama = trim($row['kelas'] ?? $row['kelas_id'] ?? $row['nama_kelas'] ?? '');
-                $rfid = trim($row['rfid'] ?? $row['rfid_card'] ?? '');
+        foreach ($rows as $index => $row) {
+            $baris = $index + 2;
+            $nis = trim((string)($row['nis'] ?? ''));
+            $nama = trim((string)($row['nama'] ?? $row['nama_lengkap'] ?? ''));
+            $kelasNama = trim((string)($row['kelas'] ?? ''));
+            $rfid = trim((string)($row['rfid'] ?? ''));
 
-                if (empty($nis) || empty($nama)) {
-                    $this->failed++;
-                    $this->errors[] = "Baris {$baris}: NIS/Nama kosong";
-                    continue;
+            // bersihkan .0 dari excel
+            $nis = str_replace('.0', '', $nis);
+
+            if (empty($nis) || empty($nama)) {
+                $this->failed++;
+                $this->errors[] = "Baris {$baris}: NIS/Nama kosong";
+                continue;
+            }
+
+            // Cek duplikat HANYA di kolom nis (karena nisn tidak ada)
+            if (Siswa::where('nis', $nis)->exists()) {
+                $this->failed++;
+                $this->errors[] = "Baris {$baris}: NIS {$nis} sudah ada";
+                continue;
+            }
+
+            $kelasId = null;
+            if (!empty($kelasNama)) {
+                if (is_numeric($kelasNama)) {
+                    $kelasId = (int)$kelasNama;
+                } else {
+                    $kelas = Kelas::where('nama_kelas', 'ILIKE', "%{$kelasNama}%")->first();
+                    if ($kelas) $kelasId = $kelas->id;
+                }
+            }
+
+            try {
+                DB::beginTransaction();
+
+                // Cek email user duplikat
+                $email = $nis . '@siswa.simdu.sch.id';
+                if (User::where('email', $email)->exists()) {
+                    $email = $nis . '_' . time() . rand(1,9) . '@siswa.simdu.sch.id';
                 }
 
-                if (Siswa::where('nis', $nis)->exists()) {
-                    $this->failed++;
-                    $this->errors[] = "Baris {$baris}: NIS {$nis} sudah ada";
-                    continue;
-                }
-
-                $kelasId = null;
-                if (!empty($kelasNama)) {
-                    // kalau isinya ID angka, pakai langsung. Kalau nama, cari
-                    if (is_numeric($kelasNama)) {
-                        $kelasId = (int)$kelasNama;
-                    } else {
-                        $kelas = Kelas::where('nama_kelas', 'ILIKE', "%{$kelasNama}%")->first();
-                        if ($kelas) $kelasId = $kelas->id;
-                    }
-                }
-
-                // Buat user login
                 $user = User::create([
                     'name' => $nama,
-                    'email' => $nis . '@siswa.simdu.sch.id',
+                    'email' => $email,
                     'password' => Hash::make($nis),
                 ]);
-                // kalau kamu pakai role di users
-                // $user->assignRole('siswa');
 
                 Siswa::create([
                     'user_id' => $user->id,
@@ -67,12 +74,14 @@ class SiswaImport implements ToCollection, WithHeadingRow
                     'kelas_id' => $kelasId,
                     'rfid_card' => $rfid ?: null,
                 ]);
+
+                DB::commit();
                 $this->success++;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                $this->failed++;
+                $this->errors[] = "Baris {$baris}: " . $e->getMessage();
             }
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $this->errors[] = "Fatal Baris ".($baris??'?').": ".$e->getMessage();
         }
     }
 
