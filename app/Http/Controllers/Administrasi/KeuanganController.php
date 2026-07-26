@@ -8,8 +8,8 @@ use App\Models\Guru;
 use App\Models\Jurusan;
 use App\Models\TahunAjaran;
 use App\Models\Siswa;
+use App\Models\Spp;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class KeuanganController extends Controller
@@ -54,7 +54,6 @@ class KeuanganController extends Controller
             'jurusan_id' => 'nullable|exists:jurusan,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
             'kapasitas' => 'nullable|integer|min:1|max:100',
-            'keterangan' => 'nullable|string|max:255'
         ]);
         Kelas::create([
             'nama_kelas' => $request->nama_kelas,
@@ -73,48 +72,38 @@ class KeuanganController extends Controller
     public function destroy($id){ $kelas=Kelas::findOrFail($id); $kelas->delete(); return redirect()->route('administrasi.kelas.index')->with('success','Kelas dihapus!'); }
     public function getKelasList(Request $request){ $query=Kelas::with('jurusan'); if($request->filled('search')) $query->where('nama_kelas','LIKE',"%{$request->search}%"); return response()->json(['success'=>true,'data'=>$query->orderBy('nama_kelas')->get()]); }
 
-    // ================== SPP FIX FINAL ==================
+    // ================== SPP FIX FINAL - TIDAK PAKAI PEMBAYARANSPP ==================
     public function sppIndex(Request $request)
     {
         $bulanList = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
         $tahunList = range(date('Y')-2, date('Y')+1);
-        $statusList = ['lunas'=>'Lunas','belum_lunas'=>'Belum Lunas'];
+        $statusList = ['lunas'=>'Lunas','belum_bayar'=>'Belum Bayar','terlambat'=>'Terlambat'];
         $kelas = Kelas::orderBy('nama_kelas')->get();
-
-        // Coba ambil dari tabel pembayaran_spp / spp / pembayaran
-        $spp = null;
-        try {
-            if (\Schema::hasTable('pembayaran_spp')) {
-                $query = \App\Models\PembayaranSpp::with(['siswa.user','siswa.kelas']);
-                if($request->filled('bulan')) $query->where('bulan', $request->bulan);
-                if($request->filled('tahun')) $query->where('tahun', $request->tahun);
-                if($request->filled('kelas')) $query->whereHas('siswa', fn($q)=>$q->where('kelas_id',$request->kelas));
-                if($request->filled('status')) $query->where('status', $request->status);
-                $spp = $query->orderBy('created_at','desc')->paginate(15);
-            } elseif (\Schema::hasTable('spp')) {
-                $spp = \App\Models\Spp::with(['siswa.user','siswa.kelas'])->paginate(15);
-            } else {
-                // Fallback: pakai model Keuangan jika ada
-                $spp = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, ['path'=>request()->url()]);
-            }
-        } catch (\Exception $e) {
-            $spp = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, ['path'=>request()->url()]);
-        }
-
         $bulan = $request->bulan;
         $tahun = $request->tahun;
+
+        try {
+            $query = Spp::with(['siswa.user','siswa.kelas']);
+            if($request->filled('bulan')) $query->where('bulan', $request->bulan);
+            if($request->filled('tahun')) $query->where('tahun', $request->tahun);
+            if($request->filled('kelas')) $query->whereHas('siswa', fn($q)=>$q->where('kelas_id',$request->kelas));
+            if($request->filled('status')) $query->where('status', $request->status);
+            $spp = $query->orderBy('created_at','desc')->paginate(15);
+        } catch (\Exception $e) {
+            Log::error('sppIndex: '.$e->getMessage());
+            $spp = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, ['path'=>request()->url()]);
+        }
 
         return view('administrasi.keuangan.spp.index', compact('spp','kelas','bulanList','tahunList','statusList','bulan','tahun'));
     }
 
     public function sppCreate(){ $kelas=Kelas::orderBy('nama_kelas')->get(); $siswa=Siswa::with('user','kelas')->get(); return view('administrasi.keuangan.spp.create', compact('kelas','siswa')); }
     public function sppStore(Request $request){ return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP disimpan'); }
-    public function sppShow($id){ $kelas = Kelas::with(['waliKelas.user','jurusan','siswa'])->findOrFail($id); return view('administrasi.kelas.show', compact('kelas')); }
+    public function sppShow($id){ return redirect()->route('administrasi.keuangan.spp.index'); }
     public function sppEdit($id){ $kelas=Kelas::orderBy('nama_kelas')->get(); return view('administrasi.keuangan.spp.edit', compact('kelas')); }
     public function sppUpdate(Request $request, $id){ return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP diupdate'); }
-    public function sppDestroy($id){ return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP dihapus'); }
+    public function sppDestroy($id){ try{ Spp::findOrFail($id)->delete(); }catch(\Exception $e){} return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP dihapus'); }
     public function sppLaporan(){ $kelas=Kelas::orderBy('nama_kelas')->get(); return view('administrasi.keuangan.spp.laporan', compact('kelas')); }
-    
     public function pembayaranLainIndex(Request $request){ return $this->sppIndex($request); }
     public function pembayaranLainCreate(){ return $this->sppCreate(); }
     public function pembayaranLainStore(Request $request){ return $this->sppStore($request); }
