@@ -3,42 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Siswa extends Model
 {
-    use SoftDeletes;
-    
-    protected $table = 'siswas';
-    
+    // FIX 1: Tabel kamu namanya 'siswa', bukan 'siswas'
+    protected $table = 'siswa';
+
+    // FIX 2: Hapus SoftDeletes karena di DB gak ada deleted_at
+    // use SoftDeletes;
+
+    // FIX 3: Fillable harus SAMA PERSIS dengan kolom real di DB
     protected $fillable = [
         'user_id',
-        'nisn',
         'nis',
-        'nama_lengkap',
-        'jenis_kelamin',
-        'tempat_lahir',
-        'tanggal_lahir',
-        'alamat',
-        'no_telepon',
+        'nama',
         'kelas_id',
-        'nama_ayah',
-        'nama_ibu',
-        'no_telepon_orangtua',
-        'pekerjaan_orangtua',
-        'tahun_masuk',
-        'status'
+        'rfid_card',
     ];
 
-    protected $casts = [
-        'tanggal_lahir' => 'date',
-        'tahun_masuk' => 'integer',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-    ];
+    // Kalau pakai create_at / update_at yang custom nama
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'update_at';
 
     public function user(): BelongsTo
     {
@@ -50,38 +36,15 @@ class Siswa extends Model
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 
-    // HAPUS method ini jika ada (polymorphic)
-    // public function absensi()
-    // {
-    //     return $this->morphMany(Absensi::class, 'absensi');
-    // }
-    
-    // HAPUS atau COMMENT method ini
-    // public function absensi(): HasMany
-    // {
-    //     return $this->hasMany(Absensi::class, 'siswa_id', 'id');
-    // }
-
-    public function getNamaLengkapAttribute($value)
-    {
-        return $value;
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'aktif');
-    }
-
+    // FIX 4: Scope disesuaikan kolom real
     public function scopeSearch($query, $search)
     {
         if ($search) {
             return $query->where(function($q) use ($search) {
-                $q->where('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nis', 'LIKE', "%{$search}%")
-                  ->orWhere('nisn', 'LIKE', "%{$search}%")
+                $q->where('nama', 'ILIKE', "%{$search}%")
+                  ->orWhere('nis', 'ILIKE', "%{$search}%")
                   ->orWhereHas('user', function($user) use ($search) {
-                      $user->where('name', 'LIKE', "%{$search}%")
-                           ->orWhere('email', 'LIKE', "%{$search}%");
+                      $user->where('name', 'ILIKE', "%{$search}%");
                   });
             });
         }
