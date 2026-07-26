@@ -16,9 +16,6 @@ use App\Exports\KelasExport;
 
 class KelasController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         try {
@@ -36,17 +33,20 @@ class KelasController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('nama', 'LIKE', "%{$search}%")
-                      ->orWhere('kode_kelas', 'LIKE', "%{$search}%")
-                      ->orWhere('tingkat', 'LIKE', "%{$search}%");
+                    // FIX: pakai nama_kelas
+                    $q->where('nama_kelas', 'ILIKE', "%{$search}%")
+                      ->orWhere('kode_kelas', 'ILIKE', "%{$search}%")
+                      ->orWhere('tingkat', 'ILIKE', "%{$search}%");
                 });
             }
 
-            $kelas = $query->orderBy('tingkat')->orderBy('nama')->paginate(10);
+            // FIX: orderBy nama -> nama_kelas
+            $kelas = $query->orderBy('tingkat')->orderBy('nama_kelas')->paginate(10);
 
             $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
             $tingkatList = ['X' => 'X (Sepuluh)', 'XI' => 'XI (Sebelas)', 'XII' => 'XII (Dua Belas)', 'XIII' => 'XIII (Tiga Belas)'];
-            $jurusanList = Jurusan::orderBy('nama')->get();
+            // FIX: Jurusan kamu kadang kolomnya nama_jurusan, bukan nama
+            $jurusanList = Jurusan::orderByRaw('COALESCE(nama_jurusan, nama)')->get();
 
             return view('administrasi.kelas.index', compact('kelas', 'statusList', 'tingkatList', 'jurusanList'));
         } catch (\Exception $e) {
@@ -59,7 +59,7 @@ class KelasController extends Controller
     {
         try {
             $guru = Guru::with('user')->where('status', 'aktif')->orderBy('nama_lengkap')->get();
-            $jurusanList = Jurusan::orderBy('nama')->get();
+            $jurusanList = Jurusan::orderByRaw('COALESCE(nama_jurusan, nama)')->get();
             $tahunAjaran = TahunAjaran::where('status', 'aktif')->first();
             $tingkatList = ['X' => 'X (Sepuluh)', 'XI' => 'XI (Sebelas)', 'XII' => 'XII (Dua Belas)', 'XIII' => 'XIII (Tiga Belas)'];
             $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
@@ -73,7 +73,8 @@ class KelasController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_kelas' => 'required|string|max:50|unique:kelas,nama',
+            // FIX: validasi harus ke nama_kelas
+            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas',
             'tingkat' => 'required|in:X,XI,XII,XIII',
             'jurusan_id' => 'nullable|exists:jurusan,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
@@ -85,15 +86,16 @@ class KelasController extends Controller
 
         try {
             DB::beginTransaction();
-            $exists = Kelas::where('nama', $request->nama_kelas)->exists();
+            // FIX: where nama -> nama_kelas
+            $exists = Kelas::where('nama_kelas', $request->nama_kelas)->exists();
             if ($exists) throw new \Exception('Nama kelas sudah terdaftar!');
 
             $kodeKelas = $request->kode_kelas;
             if (empty($kodeKelas)) {
                 $jurusan = Jurusan::find($request->jurusan_id);
-                $kodeJurusan = $jurusan? $jurusan->kode_jurusan : 'UMUM';
+                $kodeJurusan = $jurusan? ($jurusan->kode_jurusan?? 'UMUM') : 'UMUM';
                 $lastKelas = Kelas::where('tingkat', $request->tingkat)->where('jurusan_id', $request->jurusan_id)->orderBy('id', 'desc')->first();
-                if ($lastKelas && preg_match('/(\d+)$/', $lastKelas->kode_kelas, $matches)) {
+                if ($lastKelas && $lastKelas->kode_kelas && preg_match('/(\d+)$/', $lastKelas->kode_kelas, $matches)) {
                     $nextNumber = (int)$matches[1] + 1;
                     $kodeKelas = $request->tingkat. '-'. $kodeJurusan. '-'. str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
                 } else {
@@ -102,7 +104,7 @@ class KelasController extends Controller
             }
 
             $kelas = Kelas::create([
-                'nama' => $request->nama_kelas,
+                'nama_kelas' => $request->nama_kelas, // FIX
                 'kode_kelas' => $kodeKelas,
                 'tingkat' => $request->tingkat,
                 'jurusan_id' => $request->jurusan_id,
@@ -114,7 +116,7 @@ class KelasController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('administrasi.kelas.index')->with('success', '✅ Kelas '. $kelas->nama. ' berhasil ditambahkan!');
+            return redirect()->route('administrasi.kelas.index')->with('success', '✅ Kelas '. $kelas->nama_kelas. ' berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in kelasStore: '. $e->getMessage());
@@ -142,7 +144,7 @@ class KelasController extends Controller
         try {
             $kelas = Kelas::with(['siswa', 'waliKelas'])->findOrFail($id);
             $guru = Guru::with('user')->where('status', 'aktif')->orderBy('nama_lengkap')->get();
-            $jurusanList = Jurusan::orderBy('nama')->get();
+            $jurusanList = Jurusan::orderByRaw('COALESCE(nama_jurusan, nama)')->get();
             $tahunAjaran = TahunAjaran::where('status', 'aktif')->first();
             $tingkatList = ['X' => 'X (Sepuluh)', 'XI' => 'XI (Sebelas)', 'XII' => 'XII (Dua Belas)', 'XIII' => 'XIII (Tiga Belas)'];
             $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
@@ -156,7 +158,7 @@ class KelasController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_kelas' => 'required|string|max:50|unique:kelas,nama,'. $id,
+            'nama_kelas' => 'required|string|max:50|unique:kelas,nama_kelas,'. $id,
             'tingkat' => 'required|in:X,XI,XII,XIII',
             'jurusan_id' => 'nullable|exists:jurusan,id',
             'wali_kelas_id' => 'nullable|exists:gurus,id',
@@ -170,7 +172,7 @@ class KelasController extends Controller
             DB::beginTransaction();
             $kelas = Kelas::findOrFail($id);
             $kelas->update([
-                'nama' => $request->nama_kelas,
+                'nama_kelas' => $request->nama_kelas, // FIX
                 'kode_kelas' => $request->kode_kelas?? $kelas->kode_kelas,
                 'tingkat' => $request->tingkat,
                 'jurusan_id' => $request->jurusan_id,
@@ -181,7 +183,7 @@ class KelasController extends Controller
                 'tahun_ajaran' => $request->tahun_ajaran?? $kelas->tahun_ajaran?? date('Y'). '/'. (date('Y') + 1),
             ]);
             DB::commit();
-            return redirect()->route('administrasi.kelas.index')->with('success', '✅ Kelas '. $kelas->nama. ' berhasil diupdate!');
+            return redirect()->route('administrasi.kelas.index')->with('success', '✅ Kelas '. $kelas->nama_kelas. ' berhasil diupdate!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error in kelasUpdate: '. $e->getMessage());
@@ -197,7 +199,7 @@ class KelasController extends Controller
             if ($kelas->siswa()->count() > 0) {
                 return response()->json(['success' => false, 'message' => 'Kelas tidak dapat dihapus karena masih memiliki '. $kelas->siswa()->count(). ' siswa!'], 400);
             }
-            $namaKelas = $kelas->nama;
+            $namaKelas = $kelas->nama_kelas; // FIX
             $kelas->delete();
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Kelas '. $namaKelas. ' berhasil dihapus!']);
@@ -239,13 +241,11 @@ class KelasController extends Controller
 
     public function downloadTemplate()
     {
-        // Buat CSV template sederhana yang compatible dengan 01_import_kelas.csv
         $callback = function() {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['nama', 'jurusan', 'tingkat', 'kapasitas', 'status']);
+            fputcsv($handle, ['nama_kelas', 'jurusan', 'tingkat', 'kapasitas', 'status']);
             fputcsv($handle, ['X A PEMASARAN', 'PEMASARAN', 'X', '40', 'aktif']);
             fputcsv($handle, ['X B PEMASARAN', 'PEMASARAN', 'X', '40', 'aktif']);
-            fputcsv($handle, ['X KULINER', 'KULINER', 'X', '40', 'aktif']);
             fclose($handle);
         };
         return response()->stream($callback, 200, [
@@ -257,21 +257,21 @@ class KelasController extends Controller
     public function export()
     {
         try {
-            // Kalau ada KelasExport class pakai itu, kalau tidak export manual CSV
             if (class_exists(\App\Exports\KelasExport::class)) {
                 return Excel::download(new KelasExport, 'export_kelas_'.date('Ymd').'.xlsx');
             }
 
-            $kelas = Kelas::with('jurusan')->orderBy('tingkat')->orderBy('nama')->get();
+            // FIX: orderBy nama -> nama_kelas
+            $kelas = Kelas::with('jurusan')->orderBy('tingkat')->orderBy('nama_kelas')->get();
             $callback = function() use ($kelas) {
                 $handle = fopen('php://output', 'w');
-                fputcsv($handle, ['nama', 'kode_kelas', 'tingkat', 'jurusan', 'kapasitas', 'status', 'jumlah_siswa']);
+                fputcsv($handle, ['nama_kelas', 'kode_kelas', 'tingkat', 'jurusan', 'kapasitas', 'status', 'jumlah_siswa']);
                 foreach ($kelas as $k) {
                     fputcsv($handle, [
-                        $k->nama,
+                        $k->nama_kelas,
                         $k->kode_kelas,
                         $k->tingkat,
-                        $k->jurusan->nama?? '-',
+                        $k->jurusan->nama_jurusan?? $k->jurusan->nama?? '-',
                         $k->kapasitas,
                         $k->status,
                         $k->siswa->count()
@@ -295,18 +295,19 @@ class KelasController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('nama', 'LIKE', "%{$search}%")->orWhere('kode_kelas', 'LIKE', "%{$search}%");
+                    $q->where('nama_kelas', 'ILIKE', "%{$search}%")->orWhere('kode_kelas', 'ILIKE', "%{$search}%");
                 });
             }
             if ($request->filled('tingkat')) $query->where('tingkat', $request->tingkat);
             if ($request->filled('jurusan_id')) $query->where('jurusan_id', $request->jurusan_id);
 
-            $kelas = $query->orderBy('tingkat')->orderBy('nama')->get()->map(function($item) {
+            $kelas = $query->orderBy('tingkat')->orderBy('nama_kelas')->get()->map(function($item) {
                 return [
                     'id' => $item->id,
-                    'text' => $item->tingkat. ' '. $item->nama. ($item->jurusan? ' ('.$item->jurusan->nama.')' : ''),
+                    'text' => $item->tingkat. ' '. $item->nama_kelas. ($item->jurusan? ' ('.($item->jurusan->nama_jurusan?? $item->jurusan->nama).')' : ''),
                     'tingkat' => $item->tingkat,
-                    'nama' => $item->nama,
+                    'nama' => $item->nama_kelas,
+                    'nama_kelas' => $item->nama_kelas,
                     'kode_kelas' => $item->kode_kelas,
                 ];
             });
@@ -319,15 +320,18 @@ class KelasController extends Controller
     public function getJurusanList(Request $request)
     {
         try {
-            $query = Jurusan::orderBy('nama');
+            $query = Jurusan::query();
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('nama', 'LIKE', "%{$search}%")->orWhere('kode_jurusan', 'LIKE', "%{$search}%");
+                    $q->where('nama', 'ILIKE', "%{$search}%")
+                      ->orWhere('nama_jurusan', 'ILIKE', "%{$search}%")
+                      ->orWhere('kode_jurusan', 'ILIKE', "%{$search}%");
                 });
             }
-            $jurusan = $query->get(['id', 'nama', 'kode_jurusan'])->map(function($item) {
-                return ['id' => $item->id, 'nama' => $item->nama, 'nama_jurusan' => $item->nama, 'kode_jurusan' => $item->kode_jurusan, 'text' => $item->kode_jurusan. ' - '. $item->nama];
+            $jurusan = $query->orderByRaw('COALESCE(nama_jurusan, nama)')->get(['id', 'nama', 'nama_jurusan', 'kode_jurusan'])->map(function($item) {
+                $nama = $item->nama_jurusan?? $item->nama;
+                return ['id' => $item->id, 'nama' => $nama, 'nama_jurusan' => $nama, 'kode_jurusan' => $item->kode_jurusan, 'text' => $item->kode_jurusan. ' - '. $nama];
             });
             return response()->json(['success' => true, 'data' => $jurusan]);
         } catch (\Exception $e) {
@@ -342,7 +346,7 @@ class KelasController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('nama_lengkap', 'LIKE', "%{$search}%")->orWhere('nip', 'LIKE', "%{$search}%");
+                    $q->where('nama_lengkap', 'ILIKE', "%{$search}%")->orWhere('nip', 'ILIKE', "%{$search}%");
                 });
             }
             $guru = $query->orderBy('nama_lengkap')->get()->map(function($item) {
