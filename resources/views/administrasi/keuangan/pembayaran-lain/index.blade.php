@@ -9,7 +9,6 @@
         Data Pembayaran Lain
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <!-- PERBAIKAN: Gunakan route create -->
         <a href="{{ route('administrasi.keuangan.pembayaran-lain.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i> Tambah Pembayaran
         </a>
@@ -49,17 +48,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($pembayaran as $key => $item)
+                    @forelse($pembayaranLain as $key => $item)
                     <tr>
-                        <td>{{ $key + $pembayaran->firstItem() }}</td>
-                        <td>{{ $item->no_transaksi }}</td>
+                        <td>{{ $key + $pembayaranLain->firstItem() }}</td>
+                        <td>{{ $item->no_transaksi ?? $item->kode_transaksi ?? 'TRX-'.$item->id }}</td>
                         <td>{{ $item->siswa->nis ?? '-' }}</td>
                         <td>{{ $item->siswa->user->name ?? $item->siswa->nama_lengkap ?? '-' }}</td>
-                        <td>{{ $item->siswa->kelas->nama_kelas ?? $item->siswa->kelas->nama ?? $item->siswa->kelas->kelas ?? '-' }}</td>
-                        <td>{{ $item->kategori }}</td>
+                        <td>{{ $item->siswa->kelas->nama_kelas ?? '-' }}</td>
+                        <td>{{ $item->kategori ?? $item->jenis_pembayaran ?? $item->jenis ?? '-' }}</td>
                         <td>Rp {{ number_format($item->jumlah, 0, ',', '.') }}</td>
-                        <td>{{ $item->metode_bayar }}</td>
-                        <td>{{ \Carbon\Carbon::parse($item->tanggal_bayar)->format('d/m/Y') }}</td>
+                        <td>{{ $item->metode_bayar ?? $item->metode ?? '-' }}</td>
+                        <td>{{ $item->tanggal_bayar ? \Carbon\Carbon::parse($item->tanggal_bayar)->format('d/m/Y') : '-' }}</td>
                         <td>
                             <a href="{{ route('administrasi.keuangan.pembayaran-lain.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i>
@@ -75,7 +74,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="text-center">Tidak ada data pembayaran</td>
+                        <td colspan="10" class="text-center py-5">
+                            <i class="fas fa-database fa-3x text-muted mb-3"></i><br>
+                            Tidak ada data pembayaran lain
+                            <br><br>
+                            <a href="{{ route('administrasi.keuangan.pembayaran-lain.create') }}" class="btn btn-sm btn-primary">
+                                + Tambah Pembayaran
+                            </a>
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -83,7 +89,7 @@
         </div>
         
         <div class="d-flex justify-content-end mt-3">
-            {{ $pembayaran->links() }}
+            {{ $pembayaranLain->links() }}
         </div>
     </div>
 </div>
