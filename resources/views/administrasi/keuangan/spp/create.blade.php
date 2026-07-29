@@ -1,9 +1,10 @@
 @extends('administrasi.layouts.header')
 
-@section('title', 'Tambah Pembayaran SPP')
+@section('title', 'Tambah Pembayaran Lain')
 
 @section('content')
 <style>
+    /* ================= ORIGINAL CSS KAMU - TETAP ADA ================= */
     .siswa-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 15px;
@@ -66,15 +67,26 @@
         font-size: 1.2rem;
         margin-right: 10px;
     }
+
+    /* TAMBAHAN CSS UNTUK FORM BARU */
+    .form-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
 </style>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">
         <i class="fas fa-plus me-2"></i>
-        Tambah Pembayaran SPP
+        Tambah Pembayaran Lain
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('administrasi.keuangan.spp') }}" class="btn btn-sm btn-secondary">
+        <a href="{{ route('administrasi.keuangan.pembayaran-lain.index') }}" class="btn btn-sm btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
@@ -87,9 +99,16 @@
     </div>
 @endif
 
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <div class="row">
     <div class="col-md-12">
-        <!-- Card Pencarian NIS -->
+        <!-- Card Pencarian NIS - ORIGINAL KAMU -->
         <div class="search-card">
             <div class="row align-items-center">
                 <div class="col-md-8">
@@ -119,7 +138,7 @@
             </div>
         </div>
         
-        <!-- Card Informasi Siswa (akan muncul setelah mencari NIS) -->
+        <!-- Card Informasi Siswa - ORIGINAL KAMU -->
         <div id="siswaInfoCard" style="display: none;">
             <div class="siswa-card">
                 <div class="row align-items-center">
@@ -151,9 +170,9 @@
     </div>
 </div>
 
-<div class="card mt-3">
+<div class="card mt-3 form-card">
     <div class="card-body">
-        <form action="{{ route('administrasi.keuangan.spp.store') }}" method="POST" id="formSPP">
+        <form action="{{ route('administrasi.keuangan.pembayaran-lain.store') }}" method="POST" id="formSPP">
             @csrf
             
             <!-- Hidden fields untuk menyimpan data siswa -->
@@ -161,65 +180,76 @@
             <input type="hidden" name="kelas_id" id="selected_kelas_id" value="">
             
             <div class="row">
+                {{-- ==================== TAMBAHAN BARU SESUAI SCREENSHOT KAMU ==================== --}}
+
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-calendar-alt text-primary"></i> Bulan 
-                        <span class="text-danger">*</span>
+                        <i class="fas fa-school text-primary"></i> Pilih Kelas <span class="text-danger">*</span>
                     </label>
-                    <select name="bulan" id="bulan" class="form-select @error('bulan') is-invalid @enderror" required>
-                        <option value="">-- Pilih Bulan --</option>
-                        @foreach($bulanList as $key => $nama)
-                            <option value="{{ $key }}" {{ old('bulan') == $key ? 'selected' : '' }}>
-                                {{ $nama }}
-                            </option>
+                    <select id="kelas_dropdown" class="form-select @error('kelas_id') is-invalid @enderror" required>
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach($kelasList ?? $kelas ?? [] as $k)
+                            <option value="{{ $k->id }}">{{ $k->nama_kelas ?? $k->nama }}</option>
                         @endforeach
                     </select>
-                    @error('bulan')
+                    <small class="text-muted">Kelas akan otomatis terisi setelah NIS ditemukan</small>
+                    @error('kelas_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-calendar-year text-primary"></i> Tahun 
-                        <span class="text-danger">*</span>
+                        <i class="fas fa-user-graduate text-primary"></i> Siswa <span class="text-danger">*</span>
                     </label>
-                    <select name="tahun" id="tahun" class="form-select @error('tahun') is-invalid @enderror" required>
-                        <option value="">-- Pilih Tahun --</option>
-                        @foreach($tahunList as $thn)
-                            <option value="{{ $thn }}" {{ old('tahun') == $thn ? 'selected' : '' }}>
-                                {{ $thn }}
-                            </option>
-                        @endforeach
+                    <select id="siswa_dropdown" class="form-select @error('siswa_id') is-invalid @enderror" required>
+                        <option value="">-- Pilih Siswa --</option>
                     </select>
-                    @error('tahun')
+                    <small class="text-muted">Siswa akan otomatis terisi setelah NIS ditemukan</small>
+                    @error('siswa_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-money-bill-wave text-primary"></i> Jumlah Pembayaran 
-                        <span class="text-danger">*</span>
+                        <i class="fas fa-tags text-primary"></i> Kategori Pembayaran <span class="text-danger">*</span>
+                    </label>
+                    <select name="kategori_pembayaran" id="kategori" class="form-select @error('kategori_pembayaran') is-invalid @enderror" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="Daftar Ulang" {{ old('kategori_pembayaran')=='Daftar Ulang'?'selected':'' }}>Daftar Ulang</option>
+                        <option value="Uang Gedung" {{ old('kategori_pembayaran')=='Uang Gedung'?'selected':'' }}>Uang Gedung</option>
+                        <option value="Uang Seragam" {{ old('kategori_pembayaran')=='Uang Seragam'?'selected':'' }}>Uang Seragam</option>
+                        <option value="Uang Buku" {{ old('kategori_pembayaran')=='Uang Buku'?'selected':'' }}>Uang Buku</option>
+                        <option value="Uang Kegiatan" {{ old('kategori_pembayaran')=='Uang Kegiatan'?'selected':'' }}>Uang Kegiatan</option>
+                        <option value="Lainnya" {{ old('kategori_pembayaran')=='Lainnya'?'selected':'' }}>Lainnya</option>
+                    </select>
+                    @error('kategori_pembayaran')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-money-bill-wave text-primary"></i> Jumlah <span class="text-danger">*</span>
                     </label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input type="number" name="jumlah" id="jumlah" class="form-control @error('jumlah') is-invalid @enderror" 
-                               value="{{ old('jumlah') }}" placeholder="0" required min="1000">
+                               value="{{ old('jumlah') }}" placeholder="Masukkan jumlah" required min="1000">
                     </div>
                     <small class="text-muted">Minimal pembayaran Rp 1.000</small>
                     @error('jumlah')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
+
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-credit-card text-primary"></i> Metode Pembayaran 
-                        <span class="text-danger">*</span>
+                        <i class="fas fa-credit-card text-primary"></i> Metode Pembayaran <span class="text-danger">*</span>
                     </label>
                     <select name="metode_bayar" id="metode_bayar" class="form-select @error('metode_bayar') is-invalid @enderror" required>
-                        <option value="">-- Pilih Metode --</option>
+                        <option value="">Pilih Metode</option>
                         <option value="Tunai" {{ old('metode_bayar') == 'Tunai' ? 'selected' : '' }}>💵 Tunai</option>
                         <option value="Transfer" {{ old('metode_bayar') == 'Transfer' ? 'selected' : '' }}>🏦 Transfer Bank</option>
                         <option value="Virtual Account" {{ old('metode_bayar') == 'Virtual Account' ? 'selected' : '' }}>📱 Virtual Account</option>
@@ -230,12 +260,22 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-calendar text-primary"></i> Tanggal Bayar
+                    </label>
+                    <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control @error('tanggal_bayar') is-invalid @enderror" value="{{ old('tanggal_bayar', date('Y-m-d')) }}" required>
+                    @error('tanggal_bayar')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
                 
                 <div class="col-12 mb-3">
                     <label class="form-label">
                         <i class="fas fa-info-circle text-primary"></i> Keterangan
                     </label>
-                    <textarea name="keterangan" id="keterangan" class="form-control" rows="3" placeholder="Contoh: Pembayaran SPP Bulan Januari 2024">{{ old('keterangan') }}</textarea>
+                    <textarea name="keterangan" id="keterangan" class="form-control" rows="3" placeholder="Masukkan keterangan (opsional)">{{ old('keterangan') }}</textarea>
                 </div>
             </div>
             
@@ -262,7 +302,56 @@ let isSubmitting = false;
 
 $(document).ready(function() {
     
-    // Cari berdasarkan NIS
+    // ================== FUNGSI BARU: LOAD SISWA BY KELAS ==================
+    $('#kelas_dropdown').on('change', function(){
+        let kelasId = $(this).val();
+        $('#selected_kelas_id').val(kelasId);
+        if(!kelasId){
+            $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
+            return;
+        }
+        $('#siswa_dropdown').html('<option>Loading...</option>');
+        $.ajax({
+            url: '{{ route("administrasi.keuangan.get-siswa-by-kelas") }}',
+            type: 'GET',
+            data: {kelas_id: kelasId},
+            dataType: 'json',
+            success: function(res){
+                let opts = '<option value="">-- Pilih Siswa --</option>';
+                let list = res.data || [];
+                $.each(list, function(i,s){
+                    let nama = s.nama || s.nama_lengkap || s.user?.name || 'Tanpa Nama';
+                    opts += `<option value="${s.id}" data-nama="${nama}" data-nis="${s.nis}" data-kelas="${s.kelas_nama||''}" data-wali="${s.wali_kelas||''}">${nama} - ${s.nis}</option>`;
+                });
+                $('#siswa_dropdown').html(opts);
+            },
+            error: function(){
+                $('#siswa_dropdown').html('<option value="">Gagal load siswa</option>');
+            }
+        });
+    });
+
+    $('#siswa_dropdown').on('change', function(){
+        let id = $(this).val();
+        $('#siswa_id').val(id);
+        if(id){
+            let nama = $(this).find(':selected').data('nama');
+            let nis = $(this).find(':selected').data('nis');
+            let kelas = $(this).find(':selected').data('kelas') || $('#kelas_dropdown option:selected').text();
+            let wali = $(this).find(':selected').data('wali') || '-';
+            currentSiswa = {id:id, nama:nama, nis:nis, kelas_nama:kelas, wali_kelas:wali};
+            $('#displayNama').text(nama);
+            $('#displayNIS').text(nis);
+            $('#displayKelas').text(kelas);
+            $('#displayWaliKelas').text(wali);
+            $('#siswaInfoCard').fadeIn();
+        } else {
+            $('#siswaInfoCard').fadeOut();
+            currentSiswa = null;
+        }
+    });
+    
+    // ================== ORIGINAL CODE KAMU: CARI NIS ==================
     $('#btnCariNis').on('click', function() {
         var nis = $('#nis').val().trim();
         
@@ -310,6 +399,22 @@ $(document).ready(function() {
                     // Set hidden fields
                     $('#siswa_id').val(currentSiswa.id);
                     $('#selected_kelas_id').val(currentSiswa.kelas_id);
+                    $('#kelas_dropdown').val(currentSiswa.kelas_id);
+
+                    // Trigger load siswa di dropdown
+                    $.ajax({
+                        url: '{{ route("administrasi.keuangan.get-siswa-by-kelas") }}',
+                        data: {kelas_id: currentSiswa.kelas_id},
+                        success: function(res2){
+                            let opts = '<option value="">-- Pilih Siswa --</option>';
+                            $.each(res2.data||[], function(i,s){
+                                let sel = s.id==currentSiswa.id?'selected':'';
+                                let nama = s.nama || s.user?.name || s.nama_lengkap;
+                                opts += `<option value="${s.id}" ${sel} data-nama="${nama}" data-nis="${s.nis}">${nama} - ${s.nis}</option>`;
+                            });
+                            $('#siswa_dropdown').html(opts);
+                        }
+                    });
                     
                     // Tampilkan card
                     $('#siswaInfoCard').fadeIn();
@@ -397,13 +502,11 @@ $(document).ready(function() {
         }
     });
     
-    // VALIDASI FORM SEBELUM SUBMIT - PERBAIKAN UTAMA
+    // VALIDASI FORM SEBELUM SUBMIT - PERBAIKAN UTAMA + TAMBAHAN KATEGORI
     $('#formSPP').on('submit', function(e) {
-        // Cegah submit default dulu
         e.preventDefault();
         
-        // Cek apakah sudah ada siswa yang dipilih
-        if (!currentSiswa) {
+        if (!currentSiswa && !$('#siswa_id').val()) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Validasi',
@@ -414,75 +517,47 @@ $(document).ready(function() {
             return false;
         }
         
-        var bulan = $('#bulan').val();
-        var tahun = $('#tahun').val();
+        var kategori = $('#kategori').val();
         var jumlah = $('#jumlah').val();
         var metode = $('#metode_bayar').val();
+        var tanggal = $('#tanggal_bayar').val();
         
-        // Validasi bulan
-        if (!bulan || bulan === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validasi',
-                text: 'Silakan pilih bulan!',
-                confirmButtonColor: '#3085d6'
-            });
-            $('#bulan').focus();
+        if (!kategori || kategori === '') {
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih kategori pembayaran!'});
+            $('#kategori').focus();
             return false;
         }
-        
-        // Validasi tahun
-        if (!tahun || tahun === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validasi',
-                text: 'Silakan pilih tahun!',
-                confirmButtonColor: '#3085d6'
-            });
-            $('#tahun').focus();
-            return false;
-        }
-        
-        // Validasi jumlah
         if (!jumlah || jumlah < 1000) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validasi',
-                text: 'Jumlah pembayaran minimal Rp 1.000!',
-                confirmButtonColor: '#3085d6'
-            });
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Jumlah pembayaran minimal Rp 1.000!'});
             $('#jumlah').focus();
             return false;
         }
-        
-        // Validasi metode
         if (!metode || metode === '') {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validasi',
-                text: 'Silakan pilih metode pembayaran!',
-                confirmButtonColor: '#3085d6'
-            });
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih metode pembayaran!'});
             $('#metode_bayar').focus();
             return false;
         }
+        if (!tanggal) {
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih tanggal bayar!'});
+            $('#tanggal_bayar').focus();
+            return false;
+        }
         
-        // Jika semua validasi lolos, tampilkan konfirmasi
         Swal.fire({
             title: 'Konfirmasi Pembayaran',
             html: `
                 <div style="text-align: left;">
-                    <p>Apakah Anda yakin ingin menyimpan pembayaran SPP untuk:</p>
+                    <p>Apakah Anda yakin ingin menyimpan pembayaran untuk:</p>
                     <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 10px;">
-                        <strong style="font-size: 16px;">${currentSiswa.nama}</strong><br>
-                        <span class="text-muted">Kelas: ${currentSiswa.kelas_nama || '-'}</span><br>
-                        <span class="text-muted">NIS: ${currentSiswa.nis}</span>
+                        <strong style="font-size: 16px;">${currentSiswa ? currentSiswa.nama : $('#siswa_dropdown option:selected').text()}</strong><br>
+                        <span class="text-muted">Kelas: ${currentSiswa ? currentSiswa.kelas_nama : '-'}</span><br>
+                        <span class="text-muted">NIS: ${currentSiswa ? currentSiswa.nis : '-'}</span>
                         <hr class="my-2">
                         <table style="width: 100%;">
-                            <tr><td>Bulan</td><td>: ${$('#bulan option:selected').text()}</td></tr>
-                            <tr><td>Tahun</td><td>: ${tahun}</td></tr>
+                            <tr><td>Kategori</td><td>: ${$('#kategori option:selected').text()}</td></tr>
                             <tr><td>Jumlah</td><td>: Rp ${parseInt(jumlah).toLocaleString('id-ID')}</td></tr>
                             <tr><td>Metode</td><td>: ${metode}</td></tr>
+                            <tr><td>Tanggal</td><td>: ${tanggal}</td></tr>
                         </table>
                     </div>
                 </div>
@@ -496,10 +571,7 @@ $(document).ready(function() {
             allowOutsideClick: false
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit form
                 $('#btnSubmit').html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...').prop('disabled', true);
-                
-                // Submit form secara manual
                 $('#formSPP')[0].submit();
             }
         });
@@ -508,17 +580,19 @@ $(document).ready(function() {
     });
 });
 
-// Fungsi reset form
+// Fungsi reset form - ORIGINAL + UPDATE
 function resetForm() {
     if (isSubmitting) return;
     
     currentSiswa = null;
     $('#siswa_id').val('');
     $('#selected_kelas_id').val('');
-    $('#bulan').val('');
-    $('#tahun').val('');
+    $('#kelas_dropdown').val('');
+    $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
+    $('#kategori').val('');
     $('#jumlah').val('');
     $('#metode_bayar').val('');
+    $('#tanggal_bayar').val('{{ date('Y-m-d') }}');
     $('#keterangan').val('');
     $('#nis').val('');
     $('#siswaInfoCard').fadeOut();
