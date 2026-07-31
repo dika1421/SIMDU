@@ -303,34 +303,27 @@ let isSubmitting = false;
 $(document).ready(function() {
     
     // ================== FUNGSI BARU: LOAD SISWA BY KELAS ==================
-    $('#kelas_dropdown').on('change', function(){
-        let kelasId = $(this).val();
-        $('#selected_kelas_id').val(kelasId);
-        if(!kelasId){
-            $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
-            return;
-        }
-        $('#siswa_dropdown').html('<option>Loading...</option>');
-        $.ajax({
-            url: '{{ route("administrasi.keuangan.get-siswa-by-kelas") }}',
-            type: 'GET',
-            data: {kelas_id: kelasId},
-            dataType: 'json',
-            success: function(res){
-                let opts = '<option value="">-- Pilih Siswa --</option>';
-                let list = res.data || [];
-                $.each(list, function(i,s){
-                    let nama = s.nama || s.nama_lengkap || s.user?.name || 'Tanpa Nama';
-                    opts += `<option value="${s.id}" data-nama="${nama}" data-nis="${s.nis}" data-kelas="${s.kelas_nama||''}" data-wali="${s.wali_kelas||''}">${nama} - ${s.nis}</option>`;
-                });
-                $('#siswa_dropdown').html(opts);
-            },
-            error: function(){
-                $('#siswa_dropdown').html('<option value="">Gagal load siswa</option>');
+        $('#kelas_dropdown').on('change', function(){
+            let kelasId = $(this).val();
+            $('#selected_kelas_id').val(kelasId);
+            $('#siswa_id').val('');
+            if(!kelasId){
+                $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
+                return;
             }
+            $.ajax({
+                url: '{{ route("administrasi.keuangan.get-siswa-by-kelas") }}',
+                data: {kelas_id: kelasId},
+                success: function(res){
+                    let opts = '<option value="">-- Pilih Siswa --</option>';
+                    $.each(res.data||[], function(i,s){
+                        opts += `<option value="${s.id}" data-nama="${s.nama}" data-nis="${s.nis}" data-kelas="${s.kelas_nama}">${s.nama} - ${s.nis}</option>`;
+                    });
+                    $('#siswa_dropdown').html(opts);
+                }
+            });
         });
-    });
-
+        
     $('#siswa_dropdown').on('change', function(){
         let id = $(this).val();
         $('#siswa_id').val(id);
