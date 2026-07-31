@@ -73,58 +73,58 @@ class KeuanganController extends Controller
     public function sppCreate(){ 
         $kelasList = Kelas::orderBy('nama_kelas')->get();
         $kelas = $kelasList;
-        $siswa=Siswa::with('user','kelas')->where('status','aktif')->get(); 
+        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); // FIX: nama
         $bulanList=[1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; 
         $tahunList=range(date('Y')-2, date('Y')+1); 
         return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','bulanList','tahunList')); 
     }
 
+    // FIX: Semua orderBy nama_lengkap -> nama, dan mapping nama_lengkap -> nama
     public function getSiswaByKelas(Request $request){ 
         try {
             $siswa=Siswa::with(['user','kelas','kelas.waliKelas.user'])
                 ->where('kelas_id',$request->kelas_id)
                 ->where('status','aktif')
-                ->orderBy('nama_lengkap')->get()
+                ->orderBy('nama')->get() // FIX
                 ->map(function($s){
                     return [
                         'id'=>$s->id,
-                        'nama'=>$s->user->name ?? $s->nama_lengkap ?? '-',
+                        'nama'=>$s->user->name ?? $s->nama ?? '-', // FIX
                         'nis'=>$s->nis,
                         'kelas_id'=>$s->kelas_id,
                         'kelas_nama'=>$s->kelas->nama_kelas ?? '-',
-                        'wali_kelas'=>$s->kelas->waliKelas->user->name ?? '-'
+                        'wali_kelas'=>$s->kelas->waliKelas->user->name ?? $s->kelas->waliKelas->nama_lengkap ?? '-'
                     ];
                 });
             return response()->json(['success'=>true,'data'=>$siswa]); 
         } catch(\Exception $e){
-            return response()->json(['success'=>false,'message'=>$e->getMessage()]);
+            return response()->json(['success'=>false,'message'=>$e->getMessage(), 'data'=>[]]);
         }
     }
 
     public function cariSiswa(Request $request){ 
         $request->validate(['nis'=>'required']); 
-        $siswa=Siswa::with(['user','kelas.waliKelas.user'])->where('nis',$request->nis)->first(); 
-        if(!$siswa) return response()->json(['success'=>false,'message'=>'Siswa tidak ditemukan']); 
+        $siswa=Siswa::with(['user','kelas.waliKelas.user'])->where('nis',$request->nis)->where('status','aktif')->first(); 
+        if(!$siswa) return response()->json(['success'=>false,'message'=>'Siswa dengan NIS '.$request->nis.' tidak ditemukan']); 
         return response()->json(['success'=>true,'data'=>[
             'id'=>$siswa->id,
-            'nama'=>$siswa->user->name ?? $siswa->nama_lengkap ?? '-',
+            'nama'=>$siswa->user->name ?? $siswa->nama ?? '-', // FIX
             'nis'=>$siswa->nis,
             'kelas_id'=>$siswa->kelas_id,
             'kelas_nama'=>$siswa->kelas->nama_kelas ?? '-', 
-            'wali_kelas'=>$siswa->kelas->waliKelas->user->name ?? '-'
+            'wali_kelas'=>$siswa->kelas->waliKelas->user->name ?? $siswa->kelas->waliKelas->nama_lengkap ?? '-'
         ]]); 
     }
 
-    // TAMBAHAN UNTUK BLADE BARU KAMU
     public function cariSiswaByKelas(Request $request){
-        $siswa = Siswa::with('kelas')
+        $siswa = Siswa::with(['user','kelas','kelas.waliKelas.user'])
             ->where('kelas_id', $request->kelas_id)
             ->where('status','aktif')
-            ->orderBy('nama_lengkap')->get()
+            ->orderBy('nama')->get() // FIX
             ->map(function($s){
                 return [
                     'id'=>$s->id,
-                    'nama'=>$s->user->name ?? $s->nama_lengkap,
+                    'nama'=>$s->user->name ?? $s->nama ?? '-', // FIX
                     'nis'=>$s->nis,
                     'kelas_id'=>$s->kelas_id,
                     'kelas_nama'=>$s->kelas->nama_kelas ?? '-',
@@ -136,7 +136,7 @@ class KeuanganController extends Controller
 
     public function sppStore(Request $request){ 
         $request->validate([
-            'siswa_id'=>'required|exists:siswa,id',
+            'siswa_id'=>'required|exists:siswas,id', // FIX: siswas bukan siswa
             'bulan'=>'required',
             'tahun'=>'nullable',
             'jumlah'=>'required|numeric|min:1000',
@@ -178,15 +178,16 @@ class KeuanganController extends Controller
         return view('administrasi.keuangan.spp.laporan', compact('kelas','kelasList','data','total','lunas','belum','bulan','tahun')); 
     }
 
-    // ================== PEMBAYARAN LAIN - FIX FULL ==================
+    // ================== PEMBAYARAN LAIN ==================
     public function pembayaranLainIndex(Request $request)
     {
         $kelas = Kelas::orderBy('nama_kelas')->get();
         $kelasList = $kelas;
+        $jenisList=['Uang Gedung'=>'Uang Gedung','Uang Seragam'=>'Uang Seragam','Uang Buku'=>'Uang Buku','Uang Kegiatan'=>'Uang Kegiatan','Daftar Ulang'=>'Daftar Ulang','Lainnya'=>'Lainnya'];
         try {
             $query = PembayaranLain::with(['siswa.user','siswa.kelas']);
             if($request->filled('kelas')) $query->whereHas('siswa', fn($q)=>$q->where('kelas_id',$request->kelas));
-            if($request->filled('jenis')) $query->where('jenis_pembayaran', $request->jenis)->orWhere('kategori_pembayaran',$request->jenis);
+            if($request->filled('jenis')) $query->where(function($q) use ($request){ $q->where('jenis_pembayaran',$request->jenis)->orWhere('kategori_pembayaran',$request->jenis); });
             if($request->filled('status')) $query->where('status', $request->status);
             $pembayaranLain = $query->orderBy('created_at','desc')->paginate(15);
             $pembayaran = $pembayaranLain;
@@ -195,20 +196,20 @@ class KeuanganController extends Controller
             $pembayaranLain = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, ['path'=>request()->url()]);
             $pembayaran = $pembayaranLain;
         }
-        return view('administrasi.keuangan.pembayaran-lain.index', compact('pembayaranLain','pembayaran','kelas','kelasList'));
+        return view('administrasi.keuangan.pembayaran-lain.index', compact('pembayaranLain','pembayaran','kelas','kelasList','jenisList'));
     }
 
     public function pembayaranLainCreate(){ 
         $kelas=Kelas::orderBy('nama_kelas')->get(); 
         $kelasList=$kelas;
-        $siswa=Siswa::with('user','kelas')->where('status','aktif')->get(); 
+        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); // FIX
         $jenisList=['Uang Gedung'=>'Uang Gedung','Uang Seragam'=>'Uang Seragam','Uang Buku'=>'Uang Buku','Uang Kegiatan'=>'Uang Kegiatan','Daftar Ulang'=>'Daftar Ulang','Lainnya'=>'Lainnya']; 
         return view('administrasi.keuangan.pembayaran-lain.create', compact('kelas','kelasList','siswa','jenisList')); 
     }
 
     public function pembayaranLainStore(Request $request){ 
         $request->validate([
-            'siswa_id'=>'required|exists:siswa,id',
+            'siswa_id'=>'required|exists:siswas,id', // FIX
             'kategori_pembayaran'=>'required|string',
             'jumlah'=>'required|numeric|min:1000',
             'metode_bayar'=>'required',
