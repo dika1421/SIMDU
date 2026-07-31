@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Log;
 
 class KeuanganController extends Controller
 {
-    // ================== KELAS (TETAP) ==================
     public function index(Request $request)
     {
         try {
@@ -73,32 +72,33 @@ class KeuanganController extends Controller
     public function sppCreate(){ 
         $kelasList = Kelas::orderBy('nama_kelas')->get();
         $kelas = $kelasList;
-        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); // FIX: nama
+        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); 
         $bulanList=[1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; 
         $tahunList=range(date('Y')-2, date('Y')+1); 
         return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','bulanList','tahunList')); 
     }
 
-    // FIX: Semua orderBy nama_lengkap -> nama, dan mapping nama_lengkap -> nama
     public function getSiswaByKelas(Request $request){ 
         try {
-            $siswa=Siswa::with(['user','kelas','kelas.waliKelas.user'])
+            if(!$request->kelas_id) return response()->json(['success'=>true,'data'=>[]]);
+            $siswa=Siswa::with(['user','kelas'])
                 ->where('kelas_id',$request->kelas_id)
                 ->where('status','aktif')
-                ->orderBy('nama')->get() // FIX
+                ->orderBy('nama')->get()
                 ->map(function($s){
                     return [
                         'id'=>$s->id,
-                        'nama'=>$s->user->name ?? $s->nama ?? '-', // FIX
+                        'nama'=>$s->nama ?? $s->user->name ?? '-',
                         'nis'=>$s->nis,
                         'kelas_id'=>$s->kelas_id,
                         'kelas_nama'=>$s->kelas->nama_kelas ?? '-',
-                        'wali_kelas'=>$s->kelas->waliKelas->user->name ?? $s->kelas->waliKelas->nama_lengkap ?? '-'
+                        'wali_kelas'=>$s->kelas->waliKelas->user->name ?? '-'
                     ];
                 });
             return response()->json(['success'=>true,'data'=>$siswa]); 
         } catch(\Exception $e){
-            return response()->json(['success'=>false,'message'=>$e->getMessage(), 'data'=>[]]);
+            Log::error('getSiswaByKelas: '.$e->getMessage());
+            return response()->json(['success'=>false,'message'=>$e->getMessage(),'data'=>[]]);
         }
     }
 
@@ -108,35 +108,21 @@ class KeuanganController extends Controller
         if(!$siswa) return response()->json(['success'=>false,'message'=>'Siswa dengan NIS '.$request->nis.' tidak ditemukan']); 
         return response()->json(['success'=>true,'data'=>[
             'id'=>$siswa->id,
-            'nama'=>$siswa->user->name ?? $siswa->nama ?? '-', // FIX
+            'nama'=>$siswa->nama ?? $siswa->user->name ?? '-',
             'nis'=>$siswa->nis,
             'kelas_id'=>$siswa->kelas_id,
             'kelas_nama'=>$siswa->kelas->nama_kelas ?? '-', 
-            'wali_kelas'=>$siswa->kelas->waliKelas->user->name ?? $siswa->kelas->waliKelas->nama_lengkap ?? '-'
+            'wali_kelas'=>$siswa->kelas->waliKelas->user->name ?? '-'
         ]]); 
     }
 
     public function cariSiswaByKelas(Request $request){
-        $siswa = Siswa::with(['user','kelas','kelas.waliKelas.user'])
-            ->where('kelas_id', $request->kelas_id)
-            ->where('status','aktif')
-            ->orderBy('nama')->get() // FIX
-            ->map(function($s){
-                return [
-                    'id'=>$s->id,
-                    'nama'=>$s->user->name ?? $s->nama ?? '-', // FIX
-                    'nis'=>$s->nis,
-                    'kelas_id'=>$s->kelas_id,
-                    'kelas_nama'=>$s->kelas->nama_kelas ?? '-',
-                    'wali_kelas'=>$s->kelas->waliKelas->user->name ?? '-'
-                ];
-            });
-        return response()->json(['success'=>true,'data'=>$siswa]);
+        return $this->getSiswaByKelas($request);
     }
 
     public function sppStore(Request $request){ 
         $request->validate([
-            'siswa_id'=>'required|exists:siswas,id', // FIX: siswas bukan siswa
+            'siswa_id'=>'required|exists:siswas,id',
             'bulan'=>'required',
             'tahun'=>'nullable',
             'jumlah'=>'required|numeric|min:1000',
@@ -153,13 +139,14 @@ class KeuanganController extends Controller
             'keterangan'=>$request->keterangan,
             'tanggal_bayar'=>$request->tanggal_bayar ?? now()
         ]); 
-        return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil disimpan'); 
+        // FIX: redirect ke index spp, bukan ke pembayaran-lain
+        return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP berhasil disimpan'); 
     }
 
-    public function sppShow($id){ return redirect()->route('administrasi.keuangan.spp'); }
+    public function sppShow($id){ return redirect()->route('administrasi.keuangan.spp.index'); }
     public function sppEdit($id){ $kelas=Kelas::orderBy('nama_kelas')->get(); $kelasList=$kelas; $spp=Spp::findOrFail($id); $bulanList=[1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; $tahunList=range(date('Y')-2, date('Y')+1); return view('administrasi.keuangan.spp.edit', compact('kelas','kelasList','spp','bulanList','tahunList')); }
-    public function sppUpdate(Request $request, $id){ Spp::findOrFail($id)->update($request->all()); return redirect()->route('administrasi.keuangan.spp')->with('success','SPP diupdate'); }
-    public function sppDestroy($id){ try{ Spp::findOrFail($id)->delete(); }catch(\Exception $e){} return redirect()->route('administrasi.keuangan.spp')->with('success','SPP dihapus'); }
+    public function sppUpdate(Request $request, $id){ Spp::findOrFail($id)->update($request->all()); return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP diupdate'); }
+    public function sppDestroy($id){ try{ Spp::findOrFail($id)->delete(); }catch(\Exception $e){} return redirect()->route('administrasi.keuangan.spp.index')->with('success','SPP dihapus'); }
     
     public function sppLaporan(Request $request){ 
         $bulan = (int)($request->bulan ?? date('n'));
@@ -202,14 +189,14 @@ class KeuanganController extends Controller
     public function pembayaranLainCreate(){ 
         $kelas=Kelas::orderBy('nama_kelas')->get(); 
         $kelasList=$kelas;
-        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); // FIX
+        $siswa=Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get();
         $jenisList=['Uang Gedung'=>'Uang Gedung','Uang Seragam'=>'Uang Seragam','Uang Buku'=>'Uang Buku','Uang Kegiatan'=>'Uang Kegiatan','Daftar Ulang'=>'Daftar Ulang','Lainnya'=>'Lainnya']; 
         return view('administrasi.keuangan.pembayaran-lain.create', compact('kelas','kelasList','siswa','jenisList')); 
     }
 
     public function pembayaranLainStore(Request $request){ 
         $request->validate([
-            'siswa_id'=>'required|exists:siswas,id', // FIX
+            'siswa_id'=>'required|exists:siswas,id',
             'kategori_pembayaran'=>'required|string',
             'jumlah'=>'required|numeric|min:1000',
             'metode_bayar'=>'required',
@@ -219,10 +206,8 @@ class KeuanganController extends Controller
             'siswa_id'=>$request->siswa_id,
             'jenis_pembayaran'=>$request->kategori_pembayaran,
             'kategori_pembayaran'=>$request->kategori_pembayaran,
-            'kategori'=>$request->kategori_pembayaran,
             'jumlah'=>$request->jumlah,
             'metode_bayar'=>$request->metode_bayar,
-            'metode'=>$request->metode_bayar,
             'status'=>'lunas',
             'keterangan'=>$request->keterangan,
             'tanggal_bayar'=>$request->tanggal_bayar
@@ -241,7 +226,6 @@ class KeuanganController extends Controller
         $data = $request->all();
         if($request->filled('kategori_pembayaran')){
             $data['jenis_pembayaran']=$request->kategori_pembayaran;
-            $data['kategori']=$request->kategori_pembayaran;
             $data['kategori_pembayaran']=$request->kategori_pembayaran;
         }
         PembayaranLain::findOrFail($id)->update($data); 
