@@ -52,15 +52,17 @@ class Kelas extends Model
         return $this->belongsTo(Guru::class, 'wali_kelas_id');
     }
     
+    /**
+     * 🔥 HANYA SATU METHOD jadwal()
+     * Relasi ke tabel jadwal (tanpa 's')
+     */
     public function jadwal()
     {
         return $this->hasMany(Jadwal::class, 'kelas_id');
     }
     
-    public function jadwals()
-    {
-        return $this->hasMany(Jadwals::class, 'kelas_id', 'id');
-    }
+    // ❌ HAPUS METHOD INI - TIDAK PERLU
+    // public function jadwals() { ... }
     
     public function nilai()
     {
@@ -74,7 +76,6 @@ class Kelas extends Model
     
     // ==================== ACCESSORS ====================
     
-    // FIX: jangan pakai $this->nama lagi biar gak loop
     public function getNamaKelasAttribute()
     {
         return $this->attributes['nama_kelas'] ?? $this->attributes['nama'] ?? '-';
