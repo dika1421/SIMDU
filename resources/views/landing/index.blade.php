@@ -606,6 +606,7 @@
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             background: #f8f9fa;
+            height: 260px;
         }
         
         .gallery-card:hover {
@@ -615,7 +616,7 @@
         
         .gallery-card img {
             width: 100%;
-            height: 260px;
+            height: 100%;
             object-fit: cover;
             transition: transform 0.6s ease;
         }
@@ -838,7 +839,7 @@
                 padding: 10px;
                 margin-top: 30px;
             }
-            .gallery-card img {
+            .gallery-card {
                 height: 200px;
             }
         }
@@ -858,7 +859,7 @@
             .navbar-brand {
                 font-size: 1.2rem;
             }
-            .gallery-card img {
+            .gallery-card {
                 height: 160px;
             }
         }
@@ -1055,68 +1056,69 @@
             </p>
         </div>
 
-        <!-- 🔥 DEBUG: Tampilkan info jika tidak ada data -->
-        @if(isset($galleries) && $galleries->isEmpty())
-            <div class="alert alert-info text-center py-4">
-                <i class="fas fa-info-circle fa-2x mb-2"></i>
-                <p class="mb-0">Belum ada galeri. Silakan tambahkan melalui menu <strong>Administrasi → Galeri</strong></p>
+        @if(isset($galleries) && $galleries->count() > 0)
+            <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                Menampilkan <strong>{{ $galleries->count() }}</strong> galeri kegiatan.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
-
-        <div class="row g-4">
-            @forelse($galleries ?? [] as $gallery)
-                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
-                    <div class="gallery-card">
-                        @php
-                            $imagePath = 'storage/galleries/' . $gallery->image;
-                            $fullPath = public_path($imagePath);
-                            $imageExists = file_exists($fullPath);
-                        @endphp
-                        
-                        @if($imageExists)
-                            <img src="{{ asset($imagePath) }}" 
-                                 alt="{{ $gallery->title }}"
-                                 loading="lazy">
-                        @else
-                            <img src="https://via.placeholder.com/400x300/f0f0f0/999?text=Gambar+Tidak+Ada" 
-                                 alt="Gambar tidak tersedia"
-                                 style="object-fit: contain; background: #f0f0f0;">
-                            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 small" style="z-index: 10;">
-                                <i class="fas fa-exclamation-triangle"></i> File hilang
-                            </div>
-                        @endif
-                        
-                        <div class="overlay">
-                            <h6>{{ Str::limit($gallery->title, 30) }}</h6>
-                            <div class="d-flex justify-content-between align-items-center mt-1">
-                                <span class="badge-category">
-                                    <i class="fas fa-tag me-1"></i>{{ $gallery->category ?? 'Kegiatan' }}
-                                </span>
-                                @if($gallery->event_date)
-                                    <span class="badge-date">
-                                        <i class="fas fa-calendar-alt me-1"></i>{{ \Carbon\Carbon::parse($gallery->event_date)->format('d/m/Y') }}
+            
+            <div class="row g-4">
+                @foreach($galleries as $gallery)
+                    <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
+                        <div class="gallery-card">
+                            @php
+                                $imageUrl = asset('storage/galleries/' . $gallery->image);
+                                $imagePath = public_path('storage/galleries/' . $gallery->image);
+                                $imageExists = file_exists($imagePath);
+                            @endphp
+                            
+                            @if($imageExists)
+                                <img src="{{ $imageUrl }}" 
+                                     alt="{{ $gallery->title }}"
+                                     loading="lazy"
+                                     onerror="this.src='https://via.placeholder.com/400x300/f0f0f0/999?text=Gambar+Error'">
+                            @else
+                                <img src="https://via.placeholder.com/400x300/f0f0f0/999?text=Gambar+Tidak+Ada" 
+                                     alt="Gambar tidak tersedia"
+                                     style="object-fit: contain; background: #f0f0f0;">
+                                <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 small" style="z-index: 10;">
+                                    <i class="fas fa-exclamation-triangle"></i> File hilang
+                                </div>
+                            @endif
+                            
+                            <div class="overlay">
+                                <h6>{{ Str::limit($gallery->title, 30) }}</h6>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span class="badge-category">
+                                        <i class="fas fa-tag me-1"></i>{{ $gallery->category ?? 'Kegiatan' }}
                                     </span>
-                                @endif
+                                    @if($gallery->event_date)
+                                        <span class="badge-date">
+                                            <i class="fas fa-calendar-alt me-1"></i>{{ \Carbon\Carbon::parse($gallery->event_date)->format('d/m/Y') }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @empty
-                <div class="col-12 text-center py-5">
-                    <div class="empty-state">
-                        <i class="fas fa-images fa-4x text-muted mb-3"></i>
-                        <h5 class="text-muted">Belum Ada Galeri</h5>
-                        <p class="text-muted small">Dokumentasi kegiatan akan ditampilkan di sini</p>
-                    </div>
-                </div>
-            @endforelse
-        </div>
+                @endforeach
+            </div>
 
-        @if(isset($galleries) && $galleries->count() > 8)
-            <div class="text-center mt-5" data-aos="fade-up">
-                <a href="#" class="btn btn-outline-custom">
-                    Lihat Semua <i class="fas fa-arrow-right ms-2"></i>
-                </a>
+            @if($galleries->count() > 8)
+                <div class="text-center mt-5" data-aos="fade-up">
+                    <a href="#" class="btn btn-outline-custom">
+                        Lihat Semua <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            @endif
+        @else
+            <div class="col-12 text-center py-5">
+                <div class="empty-state">
+                    <i class="fas fa-images fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Belum Ada Galeri</h5>
+                    <p class="text-muted small">Dokumentasi kegiatan akan ditampilkan di sini</p>
+                </div>
             </div>
         @endif
     </div>
