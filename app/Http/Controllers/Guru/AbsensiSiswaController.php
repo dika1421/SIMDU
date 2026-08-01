@@ -34,7 +34,7 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // Ambil kelas yang diajar oleh guru (gunakan relasi jadwal)
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->orderBy('nama')->get();
@@ -49,12 +49,12 @@ class AbsensiSiswaController extends Controller
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             $search = $request->get('search');
 
-            // Ambil mata pelajaran yang diajar oleh guru di kelas tertentu
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $mataPelajaranList = collect();
             if ($kelasId) {
                 $mataPelajaranList = DB::table('mata_pelajarans as mp')
                     ->select('mp.id', 'mp.nama_mapel as nama')
-                    ->join('jadwals as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                    ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
                     ->where('j.guru_id', $guru->id)
                     ->where('j.kelas_id', $kelasId)
                     ->whereNull('mp.deleted_at')
@@ -84,7 +84,6 @@ class AbsensiSiswaController extends Controller
 
             // Ambil absensi untuk tanggal ini berdasarkan mata pelajaran
             foreach ($siswa as $s) {
-                // PERBAIKAN: Gunakan 'siswa_id' langsung, bukan 'absensi_type' dan 'absensi_id'
                 $absensi = Absensi::where('siswa_id', $s->id)
                     ->whereDate('tanggal', $tanggal)
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -158,7 +157,6 @@ class AbsensiSiswaController extends Controller
             $savedCount = 0;
             foreach ($request->absensi as $siswaId => $data) {
                 if (isset($data['status']) && !empty($data['status'])) {
-                    // PERBAIKAN: Gunakan 'siswa_id' langsung
                     Absensi::updateOrCreate(
                         [
                             'siswa_id' => $siswaId,
@@ -225,7 +223,6 @@ class AbsensiSiswaController extends Controller
             if ($siswa) {
                 $mataPelajaranId = $request->get('mata_pelajaran_id');
                 
-                // PERBAIKAN: Gunakan 'siswa_id' langsung
                 $sudahAbsen = Absensi::where('siswa_id', $siswa->id)
                     ->whereDate('tanggal', date('Y-m-d'))
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -233,7 +230,6 @@ class AbsensiSiswaController extends Controller
                     })
                     ->exists();
                 
-                // Cek apakah sudah checkout
                 $absensi = Absensi::where('siswa_id', $siswa->id)
                     ->whereDate('tanggal', date('Y-m-d'))
                     ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -289,7 +285,6 @@ class AbsensiSiswaController extends Controller
                 return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan'], 404);
             }
             
-            // PERBAIKAN: Gunakan 'siswa_id' langsung
             $existing = Absensi::where('siswa_id', $request->siswa_id)
                 ->whereDate('tanggal', $tanggal)
                 ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -299,7 +294,6 @@ class AbsensiSiswaController extends Controller
                 
             if ($existing) {
                 if ($action == 'checkout' && !$existing->jam_keluar) {
-                    // Checkout
                     $existing->update([
                         'jam_keluar' => $waktuAbsen,
                         'updated_at' => now(),
@@ -307,7 +301,6 @@ class AbsensiSiswaController extends Controller
                     $message = '✅ Checkout berhasil!';
                     $isUpdate = true;
                 } elseif ($action == 'checkin') {
-                    // Update status
                     $existing->update([
                         'status' => $request->status,
                         'jam_masuk' => $waktuAbsen,
@@ -322,7 +315,6 @@ class AbsensiSiswaController extends Controller
                     $isUpdate = false;
                 }
             } else {
-                // Create new absensi
                 Absensi::create([
                     'siswa_id' => $request->siswa_id,
                     'tanggal' => $tanggal,
@@ -348,7 +340,6 @@ class AbsensiSiswaController extends Controller
                 'terlambat' => 'Terlambat'
             ];
             
-            // Ambil data terbaru
             $absensi = Absensi::where('siswa_id', $request->siswa_id)
                 ->whereDate('tanggal', $tanggal)
                 ->when($mataPelajaranId, function($q) use ($mataPelajaranId) {
@@ -396,10 +387,10 @@ class AbsensiSiswaController extends Controller
                 ], 404);
             }
             
-            // Gunakan query builder langsung
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $mataPelajaran = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwals as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
                 ->where('j.guru_id', $guru->id)
                 ->where('j.kelas_id', $kelasId)
                 ->whereNull('mp.deleted_at')
@@ -441,12 +432,11 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // Ambil kelas yang diajar oleh guru (gunakan relasi jadwal)
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->orderBy('nama')->get();
 
-            // Jika tidak ada kelas, ambil semua kelas
             if ($kelas->isEmpty()) {
                 $kelas = Kelas::orderBy('nama')->get();
             }
@@ -457,10 +447,10 @@ class AbsensiSiswaController extends Controller
             $tahun = $request->get('tahun', date('Y'));
             $search = $request->get('search');
 
-            // Ambil mata pelajaran yang diajar oleh guru
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $mataPelajaranList = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwals as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
                 ->where('j.guru_id', $guru->id)
                 ->when($kelasId, function($q) use ($kelasId) {
                     $q->where('j.kelas_id', $kelasId);
@@ -471,7 +461,6 @@ class AbsensiSiswaController extends Controller
                 ->orderBy('mp.nama_mapel', 'asc')
                 ->get();
 
-            // Query siswa
             $query = Siswa::with(['user', 'kelas'])->where('status', 'aktif');
             
             if ($kelasId) {
@@ -490,10 +479,8 @@ class AbsensiSiswaController extends Controller
             
             $siswa = $query->get();
             
-            // Hitung statistik per siswa berdasarkan mata pelajaran
             $statistikSiswa = [];
             foreach ($siswa as $s) {
-                // PERBAIKAN: Gunakan 'siswa_id' langsung
                 $absensi = Absensi::where('siswa_id', $s->id)
                     ->whereYear('tanggal', $tahun)
                     ->whereMonth('tanggal', $bulan)
@@ -521,14 +508,12 @@ class AbsensiSiswaController extends Controller
                 ];
             }
             
-            // Data untuk dropdown bulan
             $bulanList = [
                 1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
                 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
                 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
             ];
             
-            // Data untuk dropdown tahun
             $tahunList = range(date('Y') - 2, date('Y') + 1);
             
             return view('guru.absensi-siswa.riwayat', compact(
@@ -569,12 +554,11 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // Ambil kelas yang diajar oleh guru (gunakan relasi jadwal)
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->orderBy('nama')->get();
 
-            // Jika tidak ada jadwal, ambil semua kelas
             if ($kelas->isEmpty()) {
                 $kelas = Kelas::orderBy('nama')->get();
             }
@@ -584,9 +568,10 @@ class AbsensiSiswaController extends Controller
             $kelasId = $request->get('kelas_id');
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             
+            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $mataPelajaranList = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwals as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
                 ->where('j.guru_id', $guru->id)
                 ->when($kelasId, function($q) use ($kelasId) {
                     $q->where('j.kelas_id', $kelasId);
@@ -617,7 +602,6 @@ class AbsensiSiswaController extends Controller
                 $rekapKelas['total_siswa'] = $siswa->count();
                 
                 foreach ($siswa as $s) {
-                    // PERBAIKAN: Gunakan 'siswa_id' langsung
                     $absensi = Absensi::where('siswa_id', $s->id)
                         ->whereYear('tanggal', $tahun)
                         ->whereMonth('tanggal', $bulan)
