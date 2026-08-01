@@ -32,8 +32,7 @@ class DashboardController extends Controller
             $guru = Guru::where('user_id', $user->id)->first();
 
             if (!$guru) {
-                // Jika guru tidak ditemukan, coba cari berdasarkan user_id di tabel guru
-                $guru = Guru::first(); // Ambil guru pertama sebagai fallback
+                $guru = Guru::first();
             }
 
             // Total Kelas yang diajar
@@ -44,10 +43,10 @@ class DashboardController extends Controller
             $totalSiswa = Siswa::whereIn('kelas_id', $kelasIds)->where('status', 'aktif')->count();
             $siswaPerKelas = $totalKelas > 0 ? round($totalSiswa / $totalKelas) : 0;
 
-            // Total Mata Pelajaran yang diajar - PERBAIKAN: gunakan mata_pelajaran_id
-            $totalMapel = Jadwal::where('guru_id', $guru->id)->distinct('mata_pelajaran_id')->count();
+            // 🔥 PERBAIKAN: gunakan 'mata_pelajaran' (sesuai database)
+            $totalMapel = Jadwal::where('guru_id', $guru->id)->distinct('mata_pelajaran')->count();
 
-            // Rata-rata Nilai
+            // 🔥 PERBAIKAN: Rata-rata Nilai menggunakan 'mapel_id' (sesuai model Nilai)
             $rataNilai = Nilai::where('guru_id', $guru->id)
                 ->where('status', 'published')
                 ->avg('nilai_akhir') ?? 0;
@@ -60,11 +59,10 @@ class DashboardController extends Controller
                 ->orderBy('jam_mulai')
                 ->get();
 
-            // Absensi Hari Ini (untuk semua siswa yang diajar)
+            // Absensi Hari Ini
             $siswaIds = Siswa::whereIn('kelas_id', $kelasIds)->pluck('id');
             $tanggalHariIni = Carbon::today();
 
-            // PERBAIKAN: Gunakan 'siswa_id' langsung, bukan 'absensi_type' dan 'absensi_id'
             $hadirHariIni = Absensi::whereIn('siswa_id', $siswaIds)
                 ->whereDate('tanggal', $tanggalHariIni)
                 ->where('status', 'hadir')
@@ -90,7 +88,7 @@ class DashboardController extends Controller
                 ? round(($hadirHariIni / $totalAbsensiHariIni) * 100, 2) 
                 : 0;
 
-            // Data untuk grafik nilai per kelas
+            // 🔥 PERBAIKAN: Data untuk grafik nilai per kelas
             $chartLabels = [];
             $chartData = [];
             
@@ -106,7 +104,6 @@ class DashboardController extends Controller
                 $chartData[] = round($rataNilaiKelas, 2);
             }
 
-            // Jika tidak ada data chart, set default
             if (empty($chartLabels)) {
                 $chartLabels = ['Belum Ada Data'];
                 $chartData = [0];
@@ -124,7 +121,6 @@ class DashboardController extends Controller
             
             $totalNilai = Nilai::where('guru_id', $guru->id)->count();
 
-            // Prestasi terbaru (contoh data)
             $prestasiTerbaru = collect();
 
             return view('guru.dashboard', compact(
@@ -151,7 +147,6 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('Dashboard Error: ' . $e->getMessage());
             
-            // Jika error, kirim data default
             return view('guru.dashboard', [
                 'guru' => null,
                 'totalKelas' => 0,
@@ -177,12 +172,6 @@ class DashboardController extends Controller
     }
 
     /**
-     * =============================================
-     * FUNGSI PROFIL GURU
-     * =============================================
-     */
-
-    /**
      * Display profil guru
      */
     public function profil()
@@ -195,12 +184,11 @@ class DashboardController extends Controller
                 return redirect()->back()->with('error', 'Data guru tidak ditemukan.');
             }
 
-            // Data statistik untuk profil
             $kelasIds = Jadwal::where('guru_id', $guru->id)->distinct('kelas_id')->pluck('kelas_id');
             $totalKelas = $kelasIds->count();
             $totalSiswa = Siswa::whereIn('kelas_id', $kelasIds)->where('status', 'aktif')->count();
-            // PERBAIKAN: gunakan mata_pelajaran_id
-            $totalMapel = Jadwal::where('guru_id', $guru->id)->distinct('mata_pelajaran_id')->count();
+            // 🔥 PERBAIKAN: gunakan 'mata_pelajaran'
+            $totalMapel = Jadwal::where('guru_id', $guru->id)->distinct('mata_pelajaran')->count();
             
             return view('guru.profil.index', compact(
                 'guru', 
@@ -257,22 +245,18 @@ class DashboardController extends Controller
                 return redirect()->back()->with('error', 'Data guru tidak ditemukan.');
             }
 
-            // Update user
             $user->update([
                 'name' => $request->name,
                 'email' => $request->email,
             ]);
 
-            // Update guru
             $guruData = [
                 'nomor_hp' => $request->nomor_hp,
                 'alamat' => $request->alamat,
                 'jenis_kelamin' => $request->jenis_kelamin,
             ];
 
-            // Upload foto jika ada
             if ($request->hasFile('foto')) {
-                // Hapus foto lama jika ada
                 if ($guru->foto && file_exists(storage_path('app/public/' . $guru->foto))) {
                     unlink(storage_path('app/public/' . $guru->foto));
                 }
@@ -307,12 +291,10 @@ class DashboardController extends Controller
 
             $user = auth()->user();
 
-            // Check current password
             if (!Hash::check($request->current_password, $user->password)) {
                 return back()->with('error', '❌ Password saat ini salah!');
             }
 
-            // Update password
             $user->update([
                 'password' => Hash::make($request->new_password),
             ]);
@@ -325,12 +307,6 @@ class DashboardController extends Controller
             return back()->with('error', '❌ Gagal mengubah password: ' . $e->getMessage());
         }
     }
-
-    /**
-     * =============================================
-     * FUNGSI TAMBAHAN LAINNYA
-     * =============================================
-     */
 
     /**
      * Get calendar events for guru
@@ -347,13 +323,11 @@ class DashboardController extends Controller
 
             $events = [];
 
-            // Ambil jadwal mengajar sebagai events
             $jadwal = Jadwal::with(['mapel', 'kelas'])
                 ->where('guru_id', $guru->id)
                 ->get();
 
             foreach ($jadwal as $j) {
-                // Mapping hari ke tanggal
                 $hariMap = [
                     1 => 'Monday',
                     2 => 'Tuesday',
@@ -370,14 +344,14 @@ class DashboardController extends Controller
                 
                 $events[] = [
                     'id' => 'jadwal_' . $j->id,
-                    'title' => $j->mapel->nama_mapel . ' - ' . $j->kelas->nama_kelas,
+                    'title' => ($j->mapel->nama_mapel ?? 'Mapel') . ' - ' . ($j->kelas->nama_kelas ?? 'Kelas'),
                     'start' => $startDate->format('Y-m-d') . 'T' . $j->jam_mulai,
                     'end' => $startDate->format('Y-m-d') . 'T' . $j->jam_selesai,
                     'color' => '#3498db',
                     'allDay' => false,
                     'extendedProps' => [
-                        'kelas' => $j->kelas->nama_kelas,
-                        'mapel' => $j->mapel->nama_mapel,
+                        'kelas' => $j->kelas->nama_kelas ?? '-',
+                        'mapel' => $j->mapel->nama_mapel ?? '-',
                         'ruangan' => $j->ruangan ?? '-'
                     ]
                 ];
@@ -407,7 +381,6 @@ class DashboardController extends Controller
             $kelasIds = Jadwal::where('guru_id', $guru->id)->distinct('kelas_id')->pluck('kelas_id');
             $siswaIds = Siswa::whereIn('kelas_id', $kelasIds)->pluck('id');
 
-            // Statistik absensi bulan ini
             $bulanIni = Carbon::now()->month;
             $tahunIni = Carbon::now()->year;
 
