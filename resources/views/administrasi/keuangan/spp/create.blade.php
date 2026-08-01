@@ -76,6 +76,14 @@
         font-weight: 600;
         font-size: 0.9rem;
     }
+    
+    /* Highlight error */
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    .invalid-feedback {
+        display: block !important;
+    }
 </style>
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -337,6 +345,8 @@ $(document).ready(function() {
     $('#siswa_dropdown').on('change', function(){
         let id = $(this).val();
         $('#siswa_id').val(id); // ISI HIDDEN INPUT
+        console.log('siswa_id terpilih:', id); // DEBUG
+        
         if(id){
             let nama = $(this).find(':selected').data('nama');
             let nis = $(this).find(':selected').data('nis');
@@ -345,6 +355,7 @@ $(document).ready(function() {
             $('#displayNama').text(nama);
             $('#displayNIS').text(nis);
             $('#displayKelas').text(kelas);
+            $('#displayWaliKelas').text('-');
             $('#siswaInfoCard').fadeIn();
         } else {
             $('#siswaInfoCard').fadeOut();
@@ -373,6 +384,7 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 Swal.close();
+                console.log('Response cari siswa:', response); // DEBUG
                 
                 if (response.success) {
                     currentSiswa = response.data;
@@ -380,11 +392,14 @@ $(document).ready(function() {
                     $('#displayNama').text(currentSiswa.nama);
                     $('#displayNIS').text(currentSiswa.nis);
                     $('#displayKelas').text(currentSiswa.kelas_nama || 'Tidak ada kelas');
+                    $('#displayWaliKelas').text('-');
                     
                     // ISI HIDDEN INPUT
                     $('#siswa_id').val(currentSiswa.id);
                     $('#selected_kelas_id').val(currentSiswa.kelas_id);
                     $('#kelas_dropdown').val(currentSiswa.kelas_id);
+                    
+                    console.log('siswa_id diisi:', $('#siswa_id').val()); // DEBUG
 
                     // Load siswa di dropdown
                     $.ajax({
@@ -397,6 +412,7 @@ $(document).ready(function() {
                                 opts += `<option value="${s.id}" ${sel} data-nama="${s.nama}" data-nis="${s.nis}">${s.nama} - ${s.nis}</option>`;
                             });
                             $('#siswa_dropdown').html(opts);
+                            console.log('Dropdown siswa diisi dengan:', res2.data); // DEBUG
                         }
                     });
                     
@@ -425,8 +441,9 @@ $(document).ready(function() {
                     $('#nis').focus();
                 }
             },
-            error: function() {
+            error: function(xhr) {
                 Swal.close();
+                console.error('AJAX Error:', xhr.responseText); // DEBUG
                 Swal.fire({icon: 'error', title: 'Terjadi Kesalahan', text: 'Gagal mencari siswa'});
             },
             complete: function() {
@@ -443,16 +460,13 @@ $(document).ready(function() {
         }
     });
     
-    // VALIDASI SEBELUM SUBMIT
+    // VALIDASI SEBELUM SUBMIT - CEK DENGAN KETAT
     $('#formSPP').on('submit', function(e) {
         var siswaId = $('#siswa_id').val();
-        var kategori = $('#kategori').val();
-        var tanggal = $('#tanggal_bayar').val();
-        var jumlah = $('#jumlah').val();
-        var metode = $('#metode_bayar').val();
+        console.log('Submit - siswa_id:', siswaId); // DEBUG
         
-        // CEK SISWA_ID
-        if (!siswaId || siswaId === '') {
+        // CEK SISWA_ID - HARUS ADA
+        if (!siswaId || siswaId === '' || siswaId === '0' || siswaId === null) {
             e.preventDefault();
             Swal.fire({
                 icon: 'warning',
@@ -463,6 +477,19 @@ $(document).ready(function() {
             return false;
         }
         
+        // CEK APAKAH SISWA_ID VALID (integer)
+        if (isNaN(siswaId) || parseInt(siswaId) <= 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validasi Gagal',
+                text: 'ID Siswa tidak valid! Silakan pilih ulang.'
+            });
+            return false;
+        }
+        
+        // CEK KATEGORI
+        var kategori = $('#kategori').val();
         if (!kategori || kategori === '') {
             e.preventDefault();
             Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih kategori pembayaran!'});
@@ -470,6 +497,8 @@ $(document).ready(function() {
             return false;
         }
         
+        // CEK TANGGAL
+        var tanggal = $('#tanggal_bayar').val();
         if (!tanggal) {
             e.preventDefault();
             Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih tanggal bayar!'});
@@ -477,6 +506,8 @@ $(document).ready(function() {
             return false;
         }
         
+        // CEK JUMLAH
+        var jumlah = $('#jumlah').val();
         if (!jumlah || jumlah < 1000) {
             e.preventDefault();
             Swal.fire({icon: 'warning', title: 'Validasi', text: 'Jumlah minimal Rp 1.000!'});
@@ -484,6 +515,8 @@ $(document).ready(function() {
             return false;
         }
         
+        // CEK METODE
+        var metode = $('#metode_bayar').val();
         if (!metode || metode === '') {
             e.preventDefault();
             Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih metode pembayaran!'});
@@ -492,6 +525,7 @@ $(document).ready(function() {
         }
         
         // Jika semua valid, submit
+        console.log('✅ Validasi sukses, submit form');
         return true;
     });
 });
@@ -512,6 +546,7 @@ function resetForm() {
     $('#nis').val('');
     $('#siswaInfoCard').fadeOut();
     $('#nis').focus();
+    console.log('Form direset'); // DEBUG
 }
 </script>
 @endpush
