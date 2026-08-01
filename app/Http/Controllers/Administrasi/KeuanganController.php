@@ -170,7 +170,7 @@ class KeuanganController extends Controller
     }
 
     /**
-     * STORE SPP - PERBAIKAN DENGAN DEBUG LEBIH DETAIL
+     * STORE SPP - PERBAIKAN FINAL TANPA exists VALIDATION
      */
     public function sppStore(Request $request){ 
         // DEBUG: Log semua data yang masuk
@@ -196,21 +196,14 @@ class KeuanganController extends Controller
             } else {
                 Log::error('❌ Siswa ID ' . $siswaId . ' TIDAK DITEMUKAN!');
                 Log::info('📋 ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)));
-                
-                return redirect()->back()
-                    ->with('error', 'Siswa ID ' . $siswaId . ' tidak ditemukan! ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)))
-                    ->withInput();
             }
         } else {
             Log::error('❌ siswa_id KOSONG!');
-            return redirect()->back()
-                ->with('error', 'Silakan pilih siswa terlebih dahulu!')
-                ->withInput();
         }
         
-        // Validasi
+        // 🔥 VALIDASI TANPA exists:siswas,id
         $validator = Validator::make($request->all(), [
-            'siswa_id' => 'required|integer|exists:siswas,id',
+            'siswa_id' => 'required|integer|min:1',
             'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
             'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:1000',
@@ -227,6 +220,24 @@ class KeuanganController extends Controller
         }
         
         try {
+            // 🔥 CEK LAGI APAKAH SISWA ADA
+            if (!$siswa) {
+                $siswa = Siswa::find($request->siswa_id);
+                if (!$siswa) {
+                    Log::error('❌ Siswa ID ' . $request->siswa_id . ' TIDAK DITEMUKAN DI DATABASE!');
+                    
+                    // Ambil sample ID siswa yang tersedia
+                    $availableIds = Siswa::limit(10)->pluck('id')->toArray();
+                    $availableNis = Siswa::limit(10)->pluck('nis')->toArray();
+                    
+                    return redirect()->back()
+                        ->with('error', 'Siswa tidak ditemukan! ID: ' . $request->siswa_id . '. ID yang tersedia: ' . implode(', ', $availableIds))
+                        ->withInput();
+                }
+            }
+            
+            Log::info('✅ SISWA VALID, melanjutkan penyimpanan...');
+            
             $tanggal = $request->tanggal_bayar;
             $bulan = date('n', strtotime($tanggal));
             $tahun = date('Y', strtotime($tanggal));
