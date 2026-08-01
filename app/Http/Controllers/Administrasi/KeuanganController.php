@@ -170,12 +170,43 @@ class KeuanganController extends Controller
     }
 
     /**
-     * STORE SPP - PERBAIKAN FINAL
+     * STORE SPP - PERBAIKAN DENGAN DEBUG LEBIH DETAIL
      */
     public function sppStore(Request $request){ 
         // DEBUG: Log semua data yang masuk
         Log::info('=== DATA SPP MASUK ===');
-        Log::info($request->all());
+        Log::info('Data lengkap:', $request->all());
+        
+        // 🔥 CEK SEMUA ID SISWA YANG TERSEDIA
+        $allSiswaIds = Siswa::pluck('id')->toArray();
+        Log::info('📋 SEMUA ID SISWA DI DATABASE:', $allSiswaIds);
+        
+        // 🔥 CEK APAKAH SISWA_ID ADA
+        $siswaId = $request->siswa_id;
+        $siswa = null;
+        
+        if ($siswaId) {
+            $siswa = Siswa::find($siswaId);
+            if ($siswa) {
+                Log::info('✅ Siswa ditemukan:', [
+                    'id' => $siswa->id, 
+                    'nama' => $siswa->nama ?? $siswa->user->name ?? '-',
+                    'nis' => $siswa->nis ?? '-'
+                ]);
+            } else {
+                Log::error('❌ Siswa ID ' . $siswaId . ' TIDAK DITEMUKAN!');
+                Log::info('📋 ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)));
+                
+                return redirect()->back()
+                    ->with('error', 'Siswa ID ' . $siswaId . ' tidak ditemukan! ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)))
+                    ->withInput();
+            }
+        } else {
+            Log::error('❌ siswa_id KOSONG!');
+            return redirect()->back()
+                ->with('error', 'Silakan pilih siswa terlebih dahulu!')
+                ->withInput();
+        }
         
         // Validasi
         $validator = Validator::make($request->all(), [
@@ -196,20 +227,6 @@ class KeuanganController extends Controller
         }
         
         try {
-            // Cek apakah siswa benar-benar ada di database
-            $siswa = Siswa::find($request->siswa_id);
-            if (!$siswa) {
-                Log::error('Siswa dengan ID ' . $request->siswa_id . ' tidak ditemukan!');
-                
-                // Ambil sample ID siswa yang tersedia
-                $availableIds = Siswa::limit(10)->pluck('id')->toArray();
-                Log::info('ID Siswa yang tersedia (sample):', $availableIds);
-                
-                return redirect()->back()
-                    ->with('error', 'Siswa dengan ID ' . $request->siswa_id . ' tidak ditemukan di database!')
-                    ->withInput();
-            }
-            
             $tanggal = $request->tanggal_bayar;
             $bulan = date('n', strtotime($tanggal));
             $tahun = date('Y', strtotime($tanggal));
@@ -227,7 +244,7 @@ class KeuanganController extends Controller
                 'tanggal_bayar' => $tanggal
             ]); 
 
-            Log::info('✅ SPP BERHASIL DISIMPAN:', ['id' => $spp->id, 'siswa_id' => $request->siswa_id]);
+            Log::info('✅ SPP BERHASIL DISIMPAN!', ['id' => $spp->id, 'siswa_id' => $request->siswa_id]);
 
             return redirect()->route('administrasi.keuangan.spp')->with('success', 'SPP berhasil disimpan!');
             
@@ -254,13 +271,20 @@ class KeuanganController extends Controller
     }
     
     public function sppUpdate(Request $request, $id){ 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
             'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:1000',
             'metode_bayar' => 'required|string',
             'status' => 'nullable|string'
         ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Validasi gagal: ' . implode(', ', $validator->errors()->all()));
+        }
         
         try {
             $tanggal = $request->tanggal_bayar;
