@@ -209,6 +209,23 @@
                     @enderror
                 </div>
 
+                {{-- ============= KATEGORI PEMBAYARAN (BAYAR UNTUK APA) ============= --}}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="fas fa-tags text-primary"></i> Kategori Pembayaran <span class="text-danger">*</span>
+                    </label>
+                    <select name="kategori" id="kategori" class="form-select @error('kategori') is-invalid @enderror" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="SPP Bulanan" {{ old('kategori') == 'SPP Bulanan' ? 'selected' : '' }}>📅 SPP Bulanan</option>
+                        <option value="SPP Tahunan" {{ old('kategori') == 'SPP Tahunan' ? 'selected' : '' }}>📆 SPP Tahunan</option>
+                        <option value="SPP Semester" {{ old('kategori') == 'SPP Semester' ? 'selected' : '' }}>📚 SPP Semester</option>
+                    </select>
+                    <small class="text-muted">Pilih jenis pembayaran SPP</small>
+                    @error('kategori')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 {{-- ============= TANGGAL BAYAR (SATU FIELD) ============= --}}
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
@@ -261,9 +278,9 @@
                         <i class="fas fa-info-circle text-primary"></i> Status
                     </label>
                     <select name="status" id="status" class="form-select">
-                        <option value="lunas" {{ old('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                        <option value="belum_bayar" {{ old('status') == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="terlambat" {{ old('status') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                        <option value="lunas" {{ old('status') == 'lunas' ? 'selected' : '' }}>✅ Lunas</option>
+                        <option value="belum_bayar" {{ old('status') == 'belum_bayar' ? 'selected' : '' }}>⏳ Belum Bayar</option>
+                        <option value="terlambat" {{ old('status') == 'terlambat' ? 'selected' : '' }}>⚠️ Terlambat</option>
                     </select>
                 </div>
                 
@@ -499,10 +516,16 @@ $(document).ready(function() {
             return false;
         }
         
+        var kategori = $('#kategori').val();
         var tanggal = $('#tanggal_bayar').val();
         var jumlah = $('#jumlah').val();
         var metode = $('#metode_bayar').val();
         
+        if (!kategori || kategori === '') {
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih kategori pembayaran!'});
+            $('#kategori').focus();
+            return false;
+        }
         if (!tanggal || tanggal === '') {
             Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih tanggal bayar!'});
             $('#tanggal_bayar').focus();
@@ -520,6 +543,7 @@ $(document).ready(function() {
         }
         
         var status = $('#status option:selected').text();
+        var kategoriText = $('#kategori option:selected').text();
         
         Swal.fire({
             title: 'Konfirmasi Pembayaran SPP',
@@ -532,6 +556,7 @@ $(document).ready(function() {
                         <span class="text-muted">NIS: ${currentSiswa ? currentSiswa.nis : '-'}</span>
                         <hr class="my-2">
                         <table style="width: 100%;">
+                            <tr><td>Kategori</td><td>: ${kategoriText}</td></tr>
                             <tr><td>Tanggal Bayar</td><td>: ${tanggal}</td></tr>
                             <tr><td>Jumlah</td><td>: Rp ${parseInt(jumlah).toLocaleString('id-ID')}</td></tr>
                             <tr><td>Metode</td><td>: ${metode}</td></tr>
@@ -567,6 +592,7 @@ function resetForm() {
     $('#selected_kelas_id').val('');
     $('#kelas_dropdown').val('');
     $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
+    $('#kategori').val('');
     $('#tanggal_bayar').val('{{ date('Y-m-d') }}');
     $('#jumlah').val('');
     $('#metode_bayar').val('');

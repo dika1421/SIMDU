@@ -93,6 +93,7 @@ class KeuanganController extends Controller
         $bulanList = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
         $tahunList = range(date('Y')-2, date('Y')+1);
         $statusList = ['lunas'=>'Lunas','belum_bayar'=>'Belum Bayar','terlambat'=>'Terlambat'];
+        $kategoriList = ['SPP Bulanan'=>'SPP Bulanan', 'SPP Tahunan'=>'SPP Tahunan', 'SPP Semester'=>'SPP Semester'];
         $kelas = Kelas::orderBy('nama_kelas')->get();
         $kelasList = $kelas;
         $bulan = $request->bulan; 
@@ -105,6 +106,7 @@ class KeuanganController extends Controller
             if($request->filled('tahun')) $query->where('tahun', $request->tahun);
             if($request->filled('kelas')) $query->whereHas('siswa', fn($q)=>$q->where('kelas_id',$request->kelas));
             if($request->filled('status')) $query->where('status', $request->status);
+            if($request->filled('kategori')) $query->where('kategori', $request->kategori);
             
             $spp = $query->orderBy('created_at','desc')->paginate(15);
             
@@ -113,16 +115,15 @@ class KeuanganController extends Controller
             $spp = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, ['path'=>request()->url()]);
         }
         
-        return view('administrasi.keuangan.spp.index', compact('spp','kelas','kelasList','bulanList','tahunList','statusList','bulan','tahun'));
+        return view('administrasi.keuangan.spp.index', compact('spp','kelas','kelasList','bulanList','tahunList','statusList','kategoriList','bulan','tahun'));
     }
 
     public function sppCreate(){ 
         $kelasList = Kelas::orderBy('nama_kelas')->get();
         $kelas = $kelasList;
         $siswa = Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); 
-        $bulanList = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; 
-        $tahunList = range(date('Y')-2, date('Y')+1); 
-        return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','bulanList','tahunList')); 
+        $kategoriList = ['SPP Bulanan'=>'SPP Bulanan', 'SPP Tahunan'=>'SPP Tahunan', 'SPP Semester'=>'SPP Semester'];
+        return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','kategoriList')); 
     }
 
     public function getSiswaByKelas(Request $request){ 
@@ -168,37 +169,49 @@ class KeuanganController extends Controller
     }
 
     /**
-     * STORE SPP - PERBAIKAN UTAMA
+     * STORE SPP - PERBAIKAN DENGAN KATEGORI
      * Menyimpan data SPP dan redirect ke index SPP
      */
     public function sppStore(Request $request){ 
-        // Validasi untuk SPP
+        // Validasi untuk SPP dengan kategori
         $request->validate([
             'siswa_id' => 'required|exists:siswas,id',
-            'bulan' => 'required|integer|between:1,12',
-            'tahun' => 'nullable|integer',
+            'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
+            'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:1000',
             'metode_bayar' => 'required|string',
-            'tanggal_bayar' => 'nullable|date'
+            'status' => 'nullable|string'
         ]); 
         
-        // Simpan data SPP
+        // Ambil bulan dan tahun dari tanggal_bayar
+        $tanggal = $request->tanggal_bayar;
+        $bulan = date('n', strtotime($tanggal)); // 1-12
+        $tahun = date('Y', strtotime($tanggal)); // 2024
+        
+        // Simpan data SPP dengan kategori
         $spp = Spp::create([
             'siswa_id' => $request->siswa_id,
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun ?? date('Y'),
+            'kategori' => $request->kategori,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
             'jumlah' => $request->jumlah,
             'nominal' => $request->jumlah,
-            'status' => 'lunas',
+            'status' => $request->status ?? 'lunas',
             'metode_bayar' => $request->metode_bayar,
             'keterangan' => $request->keterangan,
-            'tanggal_bayar' => $request->tanggal_bayar ?? now()
+            'tanggal_bayar' => $tanggal
         ]); 
 
         // Log untuk debugging
-        Log::info('SPP berhasil disimpan:', ['id' => $spp->id, 'siswa_id' => $request->siswa_id, 'bulan' => $request->bulan]);
+        Log::info('SPP berhasil disimpan:', [
+            'id' => $spp->id, 
+            'siswa_id' => $request->siswa_id, 
+            'kategori' => $request->kategori,
+            'bulan' => $bulan,
+            'tahun' => $tahun
+        ]);
 
-        // ✅ REDIRECT KE INDEX SPP (BUKAN PEMBAYARAN LAIN)
+        // ✅ REDIRECT KE INDEX SPP
         return redirect()->route('administrasi.keuangan.spp')->with('success', 'SPP berhasil disimpan!'); 
     }
 
@@ -211,25 +224,34 @@ class KeuanganController extends Controller
         $kelasList = $kelas; 
         $spp = Spp::findOrFail($id); 
         $bulanList = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember']; 
-        $tahunList = range(date('Y')-2, date('Y')+1); 
-        return view('administrasi.keuangan.spp.edit', compact('kelas','kelasList','spp','bulanList','tahunList')); 
+        $tahunList = range(date('Y')-2, date('Y')+1);
+        $kategoriList = ['SPP Bulanan'=>'SPP Bulanan', 'SPP Tahunan'=>'SPP Tahunan', 'SPP Semester'=>'SPP Semester'];
+        return view('administrasi.keuangan.spp.edit', compact('kelas','kelasList','spp','bulanList','tahunList','kategoriList')); 
     }
     
     public function sppUpdate(Request $request, $id){ 
         $request->validate([
-            'bulan' => 'required|integer|between:1,12',
-            'tahun' => 'nullable|integer',
+            'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
+            'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:1000',
-            'metode_bayar' => 'required|string'
+            'metode_bayar' => 'required|string',
+            'status' => 'nullable|string'
         ]);
+        
+        $tanggal = $request->tanggal_bayar;
+        $bulan = date('n', strtotime($tanggal));
+        $tahun = date('Y', strtotime($tanggal));
+        
         Spp::findOrFail($id)->update([
-            'bulan' => $request->bulan,
-            'tahun' => $request->tahun ?? date('Y'),
+            'kategori' => $request->kategori,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
             'jumlah' => $request->jumlah,
             'nominal' => $request->jumlah,
             'metode_bayar' => $request->metode_bayar,
+            'status' => $request->status ?? 'lunas',
             'keterangan' => $request->keterangan,
-            'tanggal_bayar' => $request->tanggal_bayar
+            'tanggal_bayar' => $tanggal
         ]); 
         return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil diupdate'); 
     }
