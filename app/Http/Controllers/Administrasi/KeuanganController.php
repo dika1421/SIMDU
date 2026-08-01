@@ -170,45 +170,28 @@ class KeuanganController extends Controller
     }
 
     /**
-     * STORE SPP - PERBAIKAN DENGAN NOMINAL
+     * STORE SPP
      */
     public function sppStore(Request $request){ 
-        // DEBUG: Log semua data yang masuk
-        Log::info('=== DATA SPP MASUK ===');
-        Log::info('Data lengkap:', $request->all());
+        Log::info('=== DATA SPP MASUK ===', $request->all());
         
-        // 🔥 CEK SEMUA ID SISWA YANG TERSEDIA
-        $allSiswaIds = Siswa::pluck('id')->toArray();
-        Log::info('📋 SEMUA ID SISWA DI DATABASE:', $allSiswaIds);
-        
-        // 🔥 CEK APAKAH SISWA_ID ADA
+        // Cek siswa
         $siswaId = $request->siswa_id;
-        $siswa = null;
-        
-        if ($siswaId) {
-            $siswa = Siswa::find($siswaId);
-            if ($siswa) {
-                Log::info('✅ Siswa ditemukan:', [
-                    'id' => $siswa->id, 
-                    'nama' => $siswa->nama ?? $siswa->user->name ?? '-',
-                    'nis' => $siswa->nis ?? '-'
-                ]);
-            } else {
-                Log::error('❌ Siswa ID ' . $siswaId . ' TIDAK DITEMUKAN!');
-                Log::info('📋 ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)));
-                
-                return redirect()->back()
-                    ->with('error', 'Siswa ID ' . $siswaId . ' tidak ditemukan! ID yang tersedia: ' . implode(', ', array_slice($allSiswaIds, 0, 10)))
-                    ->withInput();
-            }
-        } else {
-            Log::error('❌ siswa_id KOSONG!');
+        if (!$siswaId) {
             return redirect()->back()
                 ->with('error', 'Silakan pilih siswa terlebih dahulu!')
                 ->withInput();
         }
         
-        // 🔥 VALIDASI
+        $siswa = Siswa::find($siswaId);
+        if (!$siswa) {
+            $availableIds = Siswa::limit(10)->pluck('id')->toArray();
+            return redirect()->back()
+                ->with('error', 'Siswa ID ' . $siswaId . ' tidak ditemukan! ID yang tersedia: ' . implode(', ', $availableIds))
+                ->withInput();
+        }
+        
+        // Validasi
         $validator = Validator::make($request->all(), [
             'siswa_id' => 'required|integer|min:1',
             'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
@@ -231,21 +214,21 @@ class KeuanganController extends Controller
             $bulan = date('n', strtotime($tanggal));
             $tahun = date('Y', strtotime($tanggal));
             
-            // 🔥 SIMPAN DENGAN NOMINAL
             $spp = Spp::create([
                 'siswa_id' => $request->siswa_id,
                 'kategori' => $request->kategori,
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'jumlah' => $request->jumlah,
-                'nominal' => $request->jumlah, // 🔥 ISI NOMINAL SAMA DENGAN JUMLAH
+                'nominal' => $request->jumlah,
                 'status' => $request->status ?? 'lunas',
                 'metode_bayar' => $request->metode_bayar,
                 'keterangan' => $request->keterangan,
-                'tanggal_bayar' => $tanggal
+                'tanggal_bayar' => $tanggal,
+                'tanggal_jatuh_tempo' => date('Y-m-d', strtotime($tanggal . ' +7 days'))
             ]); 
 
-            Log::info('✅ SPP BERHASIL DISIMPAN!', ['id' => $spp->id, 'siswa_id' => $request->siswa_id]);
+            Log::info('✅ SPP BERHASIL DISIMPAN!', ['id' => $spp->id]);
 
             return redirect()->route('administrasi.keuangan.spp')->with('success', 'SPP berhasil disimpan!');
             
@@ -302,7 +285,8 @@ class KeuanganController extends Controller
                 'metode_bayar' => $request->metode_bayar,
                 'status' => $request->status ?? 'lunas',
                 'keterangan' => $request->keterangan,
-                'tanggal_bayar' => $tanggal
+                'tanggal_bayar' => $tanggal,
+                'tanggal_jatuh_tempo' => date('Y-m-d', strtotime($tanggal . ' +7 days'))
             ]); 
             
             return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil diupdate');
@@ -371,15 +355,35 @@ class KeuanganController extends Controller
     }
 
     public function pembayaranLainStore(Request $request){ 
+        Log::info('=== DATA PEMBAYARAN LAIN MASUK ===', $request->all());
+        
+        // Cek siswa
+        $siswaId = $request->siswa_id;
+        if (!$siswaId) {
+            return redirect()->back()
+                ->with('error', 'Silakan pilih siswa terlebih dahulu!')
+                ->withInput();
+        }
+        
+        $siswa = Siswa::find($siswaId);
+        if (!$siswa) {
+            $availableIds = Siswa::limit(10)->pluck('id')->toArray();
+            return redirect()->back()
+                ->with('error', 'Siswa ID ' . $siswaId . ' tidak ditemukan! ID yang tersedia: ' . implode(', ', $availableIds))
+                ->withInput();
+        }
+        
+        // Validasi
         $validator = Validator::make($request->all(), [
-            'siswa_id'=>'required|exists:siswas,id',
-            'kategori_pembayaran'=>'required|string',
-            'jumlah'=>'required|numeric|min:1000',
-            'metode_bayar'=>'required|string',
-            'tanggal_bayar'=>'required|date'
+            'siswa_id' => 'required|integer|min:1',
+            'kategori_pembayaran' => 'required|string',
+            'jumlah' => 'required|numeric|min:1000',
+            'metode_bayar' => 'required|string',
+            'tanggal_bayar' => 'required|date'
         ]);
         
         if ($validator->fails()) {
+            Log::error('VALIDASI PEMBAYARAN LAIN GAGAL:', $validator->errors()->toArray());
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput()
@@ -387,20 +391,25 @@ class KeuanganController extends Controller
         }
         
         try {
-            PembayaranLain::create([
-                'siswa_id'=>$request->siswa_id,
-                'jenis_pembayaran'=>$request->kategori_pembayaran,
-                'kategori_pembayaran'=>$request->kategori_pembayaran,
-                'jumlah'=>$request->jumlah,
-                'metode_bayar'=>$request->metode_bayar,
-                'status'=>'lunas',
-                'keterangan'=>$request->keterangan,
-                'tanggal_bayar'=>$request->tanggal_bayar
+            $pembayaran = PembayaranLain::create([
+                'siswa_id' => $request->siswa_id,
+                'jenis_pembayaran' => $request->kategori_pembayaran,
+                'kategori_pembayaran' => $request->kategori_pembayaran,
+                'jumlah' => $request->jumlah,
+                'metode_bayar' => $request->metode_bayar,
+                'status' => $request->status ?? 'lunas',
+                'keterangan' => $request->keterangan,
+                'tanggal_bayar' => $request->tanggal_bayar
             ]); 
-            return redirect()->route('administrasi.keuangan.pembayaran-lain.index')->with('success','Pembayaran Lain berhasil disimpan');
+            
+            Log::info('✅ PEMBAYARAN LAIN BERHASIL DISIMPAN!', ['id' => $pembayaran->id]);
+            
+            return redirect()->route('administrasi.keuangan.pembayaran-lain.index')->with('success', 'Pembayaran Lain berhasil disimpan!');
         } catch (\Exception $e) {
-            Log::error('Error pembayaranLainStore: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+            Log::error('❌ ERROR PEMBAYARAN LAIN STORE: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
