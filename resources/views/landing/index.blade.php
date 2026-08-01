@@ -592,6 +592,73 @@
             transform: translateX(5px);
         }
         
+        /* ===== GALERI SECTION ===== */
+        .gallery-section {
+            padding: 100px 0;
+            background: #ffffff;
+        }
+        
+        .gallery-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .gallery-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 50px rgba(26, 35, 126, 0.15);
+        }
+        
+        .gallery-card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .gallery-card:hover img {
+            transform: scale(1.08);
+        }
+        
+        .gallery-card .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 20px 15px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.75));
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .gallery-card:hover .overlay {
+            opacity: 1;
+        }
+        
+        .gallery-card .overlay h6 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+        
+        .gallery-card .overlay .badge-category {
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            font-size: 0.65rem;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .gallery-card .overlay .badge-date {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.65rem;
+        }
+        
         /* ===== CTA SECTION ===== */
         .cta-section {
             padding: 80px 0;
@@ -762,6 +829,9 @@
                 padding: 10px;
                 margin-top: 30px;
             }
+            .gallery-card img {
+                height: 200px;
+            }
         }
         
         @media (max-width: 576px) {
@@ -778,6 +848,9 @@
             }
             .navbar-brand {
                 font-size: 1.2rem;
+            }
+            .gallery-card img {
+                height: 160px;
             }
         }
     </style>
@@ -961,6 +1034,61 @@
     </div>
 </section>
 
+<!-- ===== GALERI KEGIATAN ===== 🔥 BARU -->
+<section class="gallery-section" id="gallery">
+    <div class="container">
+        <div class="text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Galeri <span class="highlight">Kegiatan</span>
+            </h2>
+            <p class="section-subtitle">
+                Dokumentasi kegiatan dan prestasi SMK Darul Ulum
+            </p>
+        </div>
+
+        <div class="row g-4">
+            @forelse($galleries ?? [] as $gallery)
+                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
+                    <div class="gallery-card">
+                        <img src="{{ asset('storage/galleries/' . $gallery->image) }}" 
+                             alt="{{ $gallery->title }}"
+                             loading="lazy">
+                        <div class="overlay">
+                            <h6>{{ Str::limit($gallery->title, 30) }}</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span class="badge-category">
+                                    <i class="fas fa-tag me-1"></i>{{ $gallery->category ?? 'Kegiatan' }}
+                                </span>
+                                @if($gallery->event_date)
+                                    <span class="badge-date">
+                                        <i class="fas fa-calendar-alt me-1"></i>{{ \Carbon\Carbon::parse($gallery->event_date)->format('d/m/Y') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="col-12 text-center py-5">
+                    <div class="empty-state">
+                        <i class="fas fa-images fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                        <h5 class="text-muted">Belum Ada Galeri</h5>
+                        <p class="text-muted small">Dokumentasi kegiatan akan ditampilkan di sini</p>
+                    </div>
+                </div>
+            @endforelse
+        </div>
+
+        @if(isset($galleries) && $galleries->count() > 8)
+            <div class="text-center mt-5" data-aos="fade-up">
+                <a href="#" class="btn btn-outline-custom">
+                    Lihat Semua <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        @endif
+    </div>
+</section>
+
 <!-- ===== CTA SECTION ===== -->
 <section class="cta-section">
     <div class="container">
@@ -1070,12 +1198,11 @@
 
     // ===== RUN COUNTER =====
     document.addEventListener('DOMContentLoaded', function() {
-        // 🔥 DATA STATISTIK (SESUAIKAN DENGAN DATABASE)
         const stats = {
-            siswa: 1250,
-            guru: 85,
-            kelas: 36,
-            jurusan: 6
+            siswa: {{ $totalSiswa ?? 1250 }},
+            guru: {{ $totalGuru ?? 85 }},
+            kelas: {{ $totalKelas ?? 36 }},
+            jurusan: {{ $totalJurusan ?? 6 }}
         };
         
         animateCounter(document.getElementById('statSiswa'), stats.siswa, 2500);

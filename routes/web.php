@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\LandingPageController; // 🔥 TAMBAHKAN INI
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\KepalaSekolah\DashboardController as KepalaSekolahDashboard;
 use App\Http\Controllers\KepalaSekolah\ManajemenSekolahController;
@@ -23,6 +23,7 @@ use App\Http\Controllers\Administrasi\ArsipController;
 use App\Http\Controllers\Administrasi\KomunikasiController as AdministrasiKomunikasi;
 use App\Http\Controllers\Administrasi\AbsensiSholatController;
 use App\Http\Controllers\Administrasi\MapelController;
+use App\Http\Controllers\Administrasi\GaleriController; // 🔥 TAMBAHKAN INI
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -37,7 +38,7 @@ use App\Http\Controllers\Siswa\KalenderController as SiswaKalender;
 use App\Http\Controllers\Siswa\ProfilController;
 use App\Http\Controllers\Siswa\PembayaranController;
 
-// ================== LANDING PAGE ================== 🔥 TAMBAHKAN INI
+// ================== LANDING PAGE ==================
 Route::get('/', [LandingPageController::class, 'index'])->name('landing');
 Route::get('/about', [LandingPageController::class, 'about'])->name('landing.about');
 Route::get('/features', [LandingPageController::class, 'features'])->name('landing.features');
@@ -220,6 +221,18 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast');
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
+
+    // ================== GALERI (BARU) ================== 🔥 TAMBAHKAN INI
+    Route::prefix('galeri')->name('galeri.')->group(function () {
+        Route::get('/', [GaleriController::class, 'index'])->name('index');
+        Route::get('/create', [GaleriController::class, 'create'])->name('create');
+        Route::post('/', [GaleriController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [GaleriController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [GaleriController::class, 'update'])->name('update');
+        Route::delete('/{id}', [GaleriController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
+    });
+
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
         Route::get('/edit', [AdministrasiDashboard::class, 'editProfil'])->name('edit');
