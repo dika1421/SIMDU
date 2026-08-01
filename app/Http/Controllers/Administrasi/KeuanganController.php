@@ -12,6 +12,7 @@ use App\Models\Spp;
 use App\Models\PembayaranLain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class KeuanganController extends Controller
 {
@@ -169,50 +170,73 @@ class KeuanganController extends Controller
     }
 
     /**
-     * STORE SPP - PERBAIKAN DENGAN KATEGORI
-     * Menyimpan data SPP dan redirect ke index SPP
+     * STORE SPP - PERBAIKAN DENGAN VALIDASI YANG BENAR
      */
     public function sppStore(Request $request){ 
-        // Validasi untuk SPP dengan kategori
-        $request->validate([
+        // Log data yang masuk untuk debugging
+        Log::info('Data SPP masuk:', $request->all());
+        
+        // Validasi untuk SPP
+        $validator = Validator::make($request->all(), [
             'siswa_id' => 'required|exists:siswas,id',
             'kategori' => 'required|string|in:SPP Bulanan,SPP Tahunan,SPP Semester',
             'tanggal_bayar' => 'required|date',
             'jumlah' => 'required|numeric|min:1000',
             'metode_bayar' => 'required|string',
             'status' => 'nullable|string'
-        ]); 
-        
-        // Ambil bulan dan tahun dari tanggal_bayar
-        $tanggal = $request->tanggal_bayar;
-        $bulan = date('n', strtotime($tanggal)); // 1-12
-        $tahun = date('Y', strtotime($tanggal)); // 2024
-        
-        // Simpan data SPP dengan kategori
-        $spp = Spp::create([
-            'siswa_id' => $request->siswa_id,
-            'kategori' => $request->kategori,
-            'bulan' => $bulan,
-            'tahun' => $tahun,
-            'jumlah' => $request->jumlah,
-            'nominal' => $request->jumlah,
-            'status' => $request->status ?? 'lunas',
-            'metode_bayar' => $request->metode_bayar,
-            'keterangan' => $request->keterangan,
-            'tanggal_bayar' => $tanggal
-        ]); 
-
-        // Log untuk debugging
-        Log::info('SPP berhasil disimpan:', [
-            'id' => $spp->id, 
-            'siswa_id' => $request->siswa_id, 
-            'kategori' => $request->kategori,
-            'bulan' => $bulan,
-            'tahun' => $tahun
         ]);
+        
+        if ($validator->fails()) {
+            Log::error('Validasi SPP gagal:', $validator->errors()->toArray());
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        try {
+            // Ambil bulan dan tahun dari tanggal_bayar
+            $tanggal = $request->tanggal_bayar;
+            $bulan = date('n', strtotime($tanggal)); // 1-12
+            $tahun = date('Y', strtotime($tanggal)); // 2024
+            
+            // Cek apakah siswa ada
+            $siswa = Siswa::find($request->siswa_id);
+            if (!$siswa) {
+                return redirect()->back()
+                    ->with('error', 'Siswa tidak ditemukan!')
+                    ->withInput();
+            }
+            
+            // Simpan data SPP
+            $spp = Spp::create([
+                'siswa_id' => $request->siswa_id,
+                'kategori' => $request->kategori,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'jumlah' => $request->jumlah,
+                'nominal' => $request->jumlah,
+                'status' => $request->status ?? 'lunas',
+                'metode_bayar' => $request->metode_bayar,
+                'keterangan' => $request->keterangan,
+                'tanggal_bayar' => $tanggal
+            ]); 
 
-        // ✅ REDIRECT KE INDEX SPP
-        return redirect()->route('administrasi.keuangan.spp')->with('success', 'SPP berhasil disimpan!'); 
+            Log::info('SPP berhasil disimpan:', [
+                'id' => $spp->id, 
+                'siswa_id' => $request->siswa_id, 
+                'kategori' => $request->kategori,
+                'bulan' => $bulan,
+                'tahun' => $tahun
+            ]);
+
+            return redirect()->route('administrasi.keuangan.spp')->with('success', 'SPP berhasil disimpan!');
+            
+        } catch (\Exception $e) {
+            Log::error('Error menyimpan SPP: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     public function sppShow($id){ 
@@ -238,29 +262,39 @@ class KeuanganController extends Controller
             'status' => 'nullable|string'
         ]);
         
-        $tanggal = $request->tanggal_bayar;
-        $bulan = date('n', strtotime($tanggal));
-        $tahun = date('Y', strtotime($tanggal));
-        
-        Spp::findOrFail($id)->update([
-            'kategori' => $request->kategori,
-            'bulan' => $bulan,
-            'tahun' => $tahun,
-            'jumlah' => $request->jumlah,
-            'nominal' => $request->jumlah,
-            'metode_bayar' => $request->metode_bayar,
-            'status' => $request->status ?? 'lunas',
-            'keterangan' => $request->keterangan,
-            'tanggal_bayar' => $tanggal
-        ]); 
-        return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil diupdate'); 
+        try {
+            $tanggal = $request->tanggal_bayar;
+            $bulan = date('n', strtotime($tanggal));
+            $tahun = date('Y', strtotime($tanggal));
+            
+            Spp::findOrFail($id)->update([
+                'kategori' => $request->kategori,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'jumlah' => $request->jumlah,
+                'nominal' => $request->jumlah,
+                'metode_bayar' => $request->metode_bayar,
+                'status' => $request->status ?? 'lunas',
+                'keterangan' => $request->keterangan,
+                'tanggal_bayar' => $tanggal
+            ]); 
+            
+            return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil diupdate');
+            
+        } catch (\Exception $e) {
+            Log::error('Error update SPP: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update: ' . $e->getMessage());
+        }
     }
     
     public function sppDestroy($id){ 
         try{ 
             Spp::findOrFail($id)->delete(); 
-        } catch(\Exception $e){} 
-        return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil dihapus'); 
+            return redirect()->route('administrasi.keuangan.spp')->with('success','SPP berhasil dihapus');
+        } catch(\Exception $e){
+            Log::error('Error delete SPP: ' . $e->getMessage());
+            return redirect()->route('administrasi.keuangan.spp')->with('error', 'Gagal hapus: ' . $e->getMessage());
+        }
     }
     
     public function sppLaporan(Request $request){ 
