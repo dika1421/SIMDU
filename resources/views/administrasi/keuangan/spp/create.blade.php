@@ -172,7 +172,7 @@
 
 <div class="card mt-3 form-card">
     <div class="card-body">
-        {{-- ============= PERBAIKAN UTAMA: ACTION DIUBAH KE SPP.STORE ============= --}}
+        {{-- ============= ACTION KE SPP.STORE ============= --}}
         <form action="{{ route('administrasi.keuangan.spp.store') }}" method="POST" id="formSPP">
             @csrf
             
@@ -209,34 +209,14 @@
                     @enderror
                 </div>
 
-                {{-- ============= TAMBAHAN INPUT BULAN ============= --}}
+                {{-- ============= TANGGAL BAYAR (SATU FIELD) ============= --}}
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-calendar-alt text-primary"></i> Bulan <span class="text-danger">*</span>
+                        <i class="fas fa-calendar-check text-primary"></i> Tanggal Bayar <span class="text-danger">*</span>
                     </label>
-                    <select name="bulan" id="bulan" class="form-select @error('bulan') is-invalid @enderror" required>
-                        <option value="">Pilih Bulan</option>
-                        @foreach($bulanList as $key => $val)
-                            <option value="{{ $key }}" {{ old('bulan') == $key ? 'selected' : '' }}>{{ $val }}</option>
-                        @endforeach
-                    </select>
-                    @error('bulan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                {{-- ============= TAMBAHAN INPUT TAHUN ============= --}}
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-calendar text-primary"></i> Tahun
-                    </label>
-                    <select name="tahun" id="tahun" class="form-select @error('tahun') is-invalid @enderror">
-                        <option value="">Pilih Tahun</option>
-                        @foreach($tahunList as $thn)
-                            <option value="{{ $thn }}" {{ old('tahun', date('Y')) == $thn ? 'selected' : '' }}>{{ $thn }}</option>
-                        @endforeach
-                    </select>
-                    @error('tahun')
+                    <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control @error('tanggal_bayar') is-invalid @enderror" 
+                           value="{{ old('tanggal_bayar', date('Y-m-d')) }}" required>
+                    @error('tanggal_bayar')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -275,16 +255,16 @@
                     @enderror
                 </div>
 
-                {{-- Tanggal Bayar --}}
+                {{-- Status --}}
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
-                        <i class="fas fa-calendar-check text-primary"></i> Tanggal Bayar
+                        <i class="fas fa-info-circle text-primary"></i> Status
                     </label>
-                    <input type="date" name="tanggal_bayar" id="tanggal_bayar" class="form-control @error('tanggal_bayar') is-invalid @enderror" 
-                           value="{{ old('tanggal_bayar', date('Y-m-d')) }}">
-                    @error('tanggal_bayar')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <select name="status" id="status" class="form-select">
+                        <option value="lunas" {{ old('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                        <option value="belum_bayar" {{ old('status') == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
+                        <option value="terlambat" {{ old('status') == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                    </select>
                 </div>
                 
                 {{-- Keterangan --}}
@@ -519,13 +499,13 @@ $(document).ready(function() {
             return false;
         }
         
-        var bulan = $('#bulan').val();
+        var tanggal = $('#tanggal_bayar').val();
         var jumlah = $('#jumlah').val();
         var metode = $('#metode_bayar').val();
         
-        if (!bulan || bulan === '') {
-            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih bulan pembayaran!'});
-            $('#bulan').focus();
+        if (!tanggal || tanggal === '') {
+            Swal.fire({icon: 'warning', title: 'Validasi', text: 'Silakan pilih tanggal bayar!'});
+            $('#tanggal_bayar').focus();
             return false;
         }
         if (!jumlah || jumlah < 1000) {
@@ -539,8 +519,7 @@ $(document).ready(function() {
             return false;
         }
         
-        var bulanNama = $('#bulan option:selected').text();
-        var tahun = $('#tahun').val() || '{{ date("Y") }}';
+        var status = $('#status option:selected').text();
         
         Swal.fire({
             title: 'Konfirmasi Pembayaran SPP',
@@ -553,10 +532,10 @@ $(document).ready(function() {
                         <span class="text-muted">NIS: ${currentSiswa ? currentSiswa.nis : '-'}</span>
                         <hr class="my-2">
                         <table style="width: 100%;">
-                            <tr><td>Bulan</td><td>: ${bulanNama}</td></tr>
-                            <tr><td>Tahun</td><td>: ${tahun}</td></tr>
+                            <tr><td>Tanggal Bayar</td><td>: ${tanggal}</td></tr>
                             <tr><td>Jumlah</td><td>: Rp ${parseInt(jumlah).toLocaleString('id-ID')}</td></tr>
                             <tr><td>Metode</td><td>: ${metode}</td></tr>
+                            <tr><td>Status</td><td>: ${status}</td></tr>
                         </table>
                     </div>
                 </div>
@@ -588,11 +567,10 @@ function resetForm() {
     $('#selected_kelas_id').val('');
     $('#kelas_dropdown').val('');
     $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
-    $('#bulan').val('');
-    $('#tahun').val('');
+    $('#tanggal_bayar').val('{{ date('Y-m-d') }}');
     $('#jumlah').val('');
     $('#metode_bayar').val('');
-    $('#tanggal_bayar').val('{{ date('Y-m-d') }}');
+    $('#status').val('lunas');
     $('#keterangan').val('');
     $('#nis').val('');
     $('#siswaInfoCard').fadeOut();
