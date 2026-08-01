@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LandingPageController; // 🔥 TAMBAHKAN INI
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\KepalaSekolah\DashboardController as KepalaSekolahDashboard;
 use App\Http\Controllers\KepalaSekolah\ManajemenSekolahController;
@@ -36,13 +37,20 @@ use App\Http\Controllers\Siswa\KalenderController as SiswaKalender;
 use App\Http\Controllers\Siswa\ProfilController;
 use App\Http\Controllers\Siswa\PembayaranController;
 
-Route::get('/', function () { return view('welcome'); })->name('home');
+// ================== LANDING PAGE ================== 🔥 TAMBAHKAN INI
+Route::get('/', [LandingPageController::class, 'index'])->name('landing');
+Route::get('/about', [LandingPageController::class, 'about'])->name('landing.about');
+Route::get('/features', [LandingPageController::class, 'features'])->name('landing.features');
+Route::get('/contact', [LandingPageController::class, 'contact'])->name('landing.contact');
+
+// ================== AUTH ==================
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/login/guru', [LoginController::class, 'loginGuru'])->name('login.guru');
 Route::post('/login/siswa', [LoginController::class, 'loginSiswa'])->name('login.siswa');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// ================== KEPALA SEKOLAH ==================
 Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah')->name('kepala-sekolah.')->group(function () {
     Route::get('/dashboard', [KepalaSekolahDashboard::class, 'index'])->name('dashboard');
     Route::prefix('manajemen')->name('manajemen.')->group(function () {
@@ -108,6 +116,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
 });
 
+// ================== ADMINISTRASI ==================
 Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->name('administrasi.')->group(function () {
     Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])->name('dashboard');
     Route::resource('jurusan', JurusanController::class);
@@ -220,6 +229,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/pengaturan', function () { return view('administrasi.pengaturan.index'); })->name('pengaturan');
 });
 
+// ================== GURU ==================
 Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::get('/dashboard', [GuruDashboard::class, 'index'])->name('dashboard');
     Route::prefix('nilai')->name('nilai.')->group(function () {
@@ -273,6 +283,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
     });
 });
 
+// ================== SISWA ==================
 Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaDashboard::class, 'index'])->name('dashboard');
     Route::prefix('nilai')->name('nilai.')->group(function () {
@@ -310,10 +321,12 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
     });
 });
 
+// ================== TEST ROUTE ==================
 Route::middleware(['auth'])->get('/test-role', function () {
     return 'Role Anda: ' . auth()->user()->role;
 });
 
+// ================== FALLBACK ==================
 Route::fallback(function () {
-    return redirect()->route('home')->with('error', 'Halaman tidak ditemukan');
+    return redirect()->route('landing')->with('error', 'Halaman tidak ditemukan');
 });
