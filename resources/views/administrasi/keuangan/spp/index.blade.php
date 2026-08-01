@@ -35,8 +35,8 @@
 <!-- Filter -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-3">
+        <form method="GET" action="{{ route('administrasi.keuangan.spp') }}" class="row g-3">
+            <div class="col-md-2">
                 <label class="form-label">Bulan</label>
                 <select name="bulan" class="form-select" onchange="this.form.submit()">
                     <option value="">Semua Bulan</option>
@@ -47,7 +47,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Tahun</label>
                 <select name="tahun" class="form-select" onchange="this.form.submit()">
                     <option value="">Semua Tahun</option>
@@ -58,7 +58,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Kelas</label>
                 <select name="kelas" class="form-select" onchange="this.form.submit()">
                     <option value="">Semua Kelas</option>
@@ -69,7 +69,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select" onchange="this.form.submit()">
                     <option value="">Semua Status</option>
@@ -79,6 +79,22 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Kategori</label>
+                <select name="kategori" class="form-select" onchange="this.form.submit()">
+                    <option value="">Semua Kategori</option>
+                    @foreach($kategoriList as $key => $nama)
+                        <option value="{{ $key }}" {{ (request('kategori') ?? '') == $key ? 'selected' : '' }}>
+                            {{ $nama }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <a href="{{ route('administrasi.keuangan.spp') }}" class="btn btn-secondary w-100">
+                    <i class="fas fa-undo"></i> Reset
+                </a>
             </div>
         </form>
     </div>
@@ -99,6 +115,7 @@
                         <th>NIS</th>
                         <th>Nama Siswa</th>
                         <th>Kelas</th>
+                        <th>Kategori</th>
                         <th>Bulan</th>
                         <th>Tahun</th>
                         <th>Jumlah</th>
@@ -112,16 +129,19 @@
                     @forelse($spp as $index => $item)
                     <tr>
                         <td class="text-center">{{ $spp->firstItem() + $index }}</td>
-                        <td>{{ $item->no_transaksi ?? '-' }}</td>
+                        <td>{{ $item->no_transaksi ?? 'SPP-' . str_pad($item->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td>{{ $item->siswa->nis ?? '-' }}</td>
                         <td>
-                            <strong>{{ $item->siswa->user->name ?? $item->siswa->nama_lengkap ?? '-' }}</strong>
+                            <strong>{{ $item->siswa->user->name ?? $item->siswa->nama_lengkap ?? $item->siswa->nama ?? '-' }}</strong>
                         </td>
                         <td>
-                            {{ $item->siswa->kelas->nama ?? $item->siswa->kelas->nama_kelas ?? '-' }}
+                            {{ $item->siswa->kelas->nama_kelas ?? $item->siswa->kelas->nama ?? '-' }}
                             @if($item->siswa->kelas && $item->siswa->kelas->tingkat)
                                 <br><small class="text-muted">({{ $item->siswa->kelas->tingkat }})</small>
                             @endif
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ $item->kategori ?? 'SPP Bulanan' }}</span>
                         </td>
                         <td class="text-center">{{ $bulanList[$item->bulan] ?? '-' }}</td>
                         <td class="text-center">{{ $item->tahun }}</td>
@@ -129,9 +149,13 @@
                         <td class="text-center">{{ $item->tanggal_bayar ? \Carbon\Carbon::parse($item->tanggal_bayar)->format('d/m/Y') : '-' }}</td>
                         <td class="text-center">{{ ucfirst($item->metode_bayar ?? '-') }}</td>
                         <td class="text-center">
-                            <span class="badge bg-{{ $item->status == 'lunas' ? 'success' : 'danger' }}">
-                                {{ $item->status == 'lunas' ? 'Lunas' : 'Belum Lunas' }}
-                            </span>
+                            @if($item->status == 'lunas')
+                                <span class="badge bg-success">✅ Lunas</span>
+                            @elseif($item->status == 'belum_bayar')
+                                <span class="badge bg-danger">⏳ Belum Bayar</span>
+                            @else
+                                <span class="badge bg-warning">⚠️ Terlambat</span>
+                            @endif
                         </td>
                         <td class="text-center">
                             <div class="btn-group" role="group">
@@ -146,7 +170,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="text-center py-4">
+                        <td colspan="13" class="text-center py-4">
                             <i class="fas fa-database fa-3x text-muted mb-3 d-block"></i>
                             <p class="text-muted">Belum ada data pembayaran SPP</p>
                             <a href="{{ route('administrasi.keuangan.spp.create') }}" class="btn btn-sm btn-primary mt-2">
@@ -192,7 +216,7 @@
 <script>
     function deletePayment(id) {
         var form = document.getElementById('deleteForm');
-        form.action = '/administrasi/keuangan/spp/' + id;
+        form.action = "{{ route('administrasi.keuangan.spp.destroy', '') }}/" + id;
         var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
         modal.show();
     }
