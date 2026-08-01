@@ -10,12 +10,13 @@ class Jadwal extends Model
 {
     use SoftDeletes;
     
-    protected $table = 'jadwals';
+    // 🔥 PERBAIKAN: Nama tabel seharusnya 'jadwal' (tanpa 's')
+    protected $table = 'jadwal';
     
     protected $fillable = [
         'kelas_id',
         'guru_id',
-        'mata_pelajaran_id',  // PERBAIKAN: gunakan mata_pelajaran_id
+        'mata_pelajaran',  // 🔥 PERBAIKAN: sesuai database, tanpa '_id'
         'hari',
         'jam_mulai',
         'jam_selesai',
@@ -34,22 +35,31 @@ class Jadwal extends Model
         'deleted_at' => 'datetime'
     ];
     
+    // ==================== RELATIONS ====================
+    
+    /**
+     * Relasi ke Kelas
+     */
     public function kelas()
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
     
+    /**
+     * Relasi ke Guru
+     */
     public function guru()
     {
         return $this->belongsTo(Guru::class, 'guru_id');
     }
     
     /**
-     * PERBAIKAN: Relasi ke Mapel menggunakan 'mata_pelajaran_id'
+     * 🔥 PERBAIKAN: Relasi ke Mapel
+     * Gunakan 'mata_pelajaran' (sesuai database)
      */
     public function mapel()
     {
-        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id');
+        return $this->belongsTo(Mapel::class, 'mata_pelajaran', 'id');
     }
     
     /**
@@ -57,6 +67,67 @@ class Jadwal extends Model
      */
     public function mataPelajaran()
     {
-        return $this->belongsTo(Mapel::class, 'mata_pelajaran_id');
+        return $this->belongsTo(Mapel::class, 'mata_pelajaran', 'id');
+    }
+    
+    // ==================== ACCESSORS ====================
+    
+    /**
+     * Get nama mata pelajaran
+     */
+    public function getNamaMapelAttribute()
+    {
+        return $this->mapel->nama_mapel ?? '-';
+    }
+    
+    /**
+     * Get nama guru
+     */
+    public function getNamaGuruAttribute()
+    {
+        return $this->guru->nama_lengkap ?? '-';
+    }
+    
+    /**
+     * Get nama kelas
+     */
+    public function getNamaKelasAttribute()
+    {
+        return $this->kelas->nama_kelas ?? '-';
+    }
+    
+    // ==================== SCOPES ====================
+    
+    /**
+     * Scope by guru
+     */
+    public function scopeByGuru($query, $guruId)
+    {
+        if ($guruId) {
+            return $query->where('guru_id', $guruId);
+        }
+        return $query;
+    }
+    
+    /**
+     * Scope by kelas
+     */
+    public function scopeByKelas($query, $kelasId)
+    {
+        if ($kelasId) {
+            return $query->where('kelas_id', $kelasId);
+        }
+        return $query;
+    }
+    
+    /**
+     * Scope by hari
+     */
+    public function scopeByHari($query, $hari)
+    {
+        if ($hari) {
+            return $query->where('hari', $hari);
+        }
+        return $query;
     }
 }
