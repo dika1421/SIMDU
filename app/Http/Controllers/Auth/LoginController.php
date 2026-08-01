@@ -47,8 +47,7 @@ class LoginController extends Controller
     }
 
     /**
-     * ✅ FIX: Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
-     * Mencari NUPTK langsung di tabel users
+     * Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
      */
     public function loginNuptk(Request $request)
     {
@@ -60,46 +59,27 @@ class LoginController extends Controller
         $nuptk = trim($request->nuptk);
         $password = $request->password;
         
-        // 🔍 LOG: Catat data yang masuk
-        Log::info('🔍 LOGIN NUPTK - Step 1: Data masuk:', [
+        Log::info('🔍 LOGIN NUPTK - Data masuk:', [
             'nuptk' => $nuptk,
-            'password' => $password,
             'ip' => $request->ip(),
         ]);
         
         // Cari user berdasarkan NUPTK di tabel users
         $user = User::where('nuptk', $nuptk)->first();
         
-        // 🔍 LOG: Catat hasil query
-        Log::info('🔍 LOGIN NUPTK - Step 2: Hasil query:', [
+        Log::info('🔍 LOGIN NUPTK - Hasil query:', [
             'nuptk' => $nuptk,
             'user_found' => $user ? 'YES' : 'NO',
-            'user_data' => $user ? [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'nuptk' => $user->nuptk,
-            ] : null,
         ]);
         
         if (!$user) {
-            Log::warning('🔍 LOGIN NUPTK - Step 3: User TIDAK ditemukan!', [
-                'nuptk' => $nuptk,
-            ]);
-            return back()->withErrors(['nuptk' => 'NUPTK tidak ditemukan'])->withInput();
+            Log::warning('🔍 LOGIN NUPTK - User TIDAK ditemukan!', ['nuptk' => $nuptk]);
+            return back()->with('error', 'NUPTK tidak ditemukan')->withInput();
         }
         
-        // 🔍 LOG: Cek password
-        $passwordMatch = Hash::check($password, $user->password);
-        Log::info('🔍 LOGIN NUPTK - Step 4: Password check:', [
-            'password_match' => $passwordMatch ? '✅ YES' : '❌ NO',
-            'password_hash_db' => $user->password,
-            'expected_password' => $this->generatePasswordByRole($user, $user->role),
-        ]);
-        
-        if ($passwordMatch) {
-            Log::info('🔍 LOGIN NUPTK - Step 5: ✅ LOGIN BERHASIL!', [
+        // Cek password
+        if (Hash::check($password, $user->password)) {
+            Log::info('🔍 LOGIN NUPTK - ✅ LOGIN BERHASIL!', [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'role' => $user->role,
@@ -109,11 +89,11 @@ class LoginController extends Controller
             return $this->redirectBasedOnRole($user);
         }
         
+        // Cek password default
         $expectedPassword = $this->generatePasswordByRole($user, $user->role);
         if ($password === $expectedPassword) {
-            Log::info('🔍 LOGIN NUPTK - Step 5b: Password default cocok!', [
+            Log::info('🔍 LOGIN NUPTK - Password default cocok!', [
                 'user_id' => $user->id,
-                'expected_password' => $expectedPassword,
             ]);
             $user->password = Hash::make($password);
             $user->save();
@@ -122,15 +102,15 @@ class LoginController extends Controller
             return $this->redirectBasedOnRole($user);
         }
         
-        Log::warning('🔍 LOGIN NUPTK - Step 6: ❌ Password SALAH!', [
+        Log::warning('🔍 LOGIN NUPTK - ❌ Password SALAH!', [
             'user_id' => $user->id,
             'user_name' => $user->name,
         ]);
-        return back()->withErrors(['password' => 'Password salah'])->withInput();
+        return back()->with('error', 'Password salah')->withInput();
     }
     
     /**
-     * Login khusus Guru (legacy - untuk kompatibilitas)
+     * Login khusus Guru (legacy)
      */
     public function loginGuru(Request $request)
     {
@@ -153,13 +133,13 @@ class LoginController extends Controller
         $siswa = Siswa::where('nis', $nis)->first();
         
         if (!$siswa) {
-            return back()->withErrors(['nis' => 'NIS tidak ditemukan'])->withInput();
+            return back()->with('error', 'NIS tidak ditemukan')->withInput();
         }
         
         $user = $siswa->user;
         
         if (!$user) {
-            return back()->withErrors(['nis' => 'User tidak ditemukan'])->withInput();
+            return back()->with('error', 'User tidak ditemukan')->withInput();
         }
         
         if (Hash::check($password, $user->password)) {
@@ -178,11 +158,11 @@ class LoginController extends Controller
             return redirect()->route('siswa.dashboard');
         }
         
-        return back()->withErrors(['password' => 'Password salah'])->withInput();
+        return back()->with('error', 'Password salah')->withInput();
     }
 
     /**
-     * Validasi password umum (untuk login email)
+     * Validasi password umum
      */
     private function validatePassword($user, $password)
     {
@@ -213,24 +193,24 @@ class LoginController extends Controller
         $prefix = 'simdu#';
         $roleNumber = $this->getRoleNumber($role);
         
-        // ✅ PRIORITAS 1: Cek NUPTK langsung dari tabel users
+        // PRIORITAS 1: Cek NUPTK dari tabel users
         if (!empty($user->nuptk)) {
             return $prefix . $roleNumber . substr($user->nuptk, -4);
         }
         
-        // ✅ PRIORITAS 2: Cek NUPTK dari relasi guru (jika ada)
+        // PRIORITAS 2: Cek NUPTK dari relasi guru
         $guru = Guru::where('user_id', $user->id)->first();
         if ($guru && !empty($guru->nuptk)) {
             return $prefix . $roleNumber . substr($guru->nuptk, -4);
         }
         
-        // ✅ PRIORITAS 3: Cek NIS dari relasi siswa (jika ada)
+        // PRIORITAS 3: Cek NIS dari relasi siswa
         $siswa = Siswa::where('user_id', $user->id)->first();
         if ($siswa && !empty($siswa->nis)) {
             return $prefix . $roleNumber . substr($siswa->nis, -4);
         }
         
-        // ✅ FALLBACK: Gunakan 4 digit terakhir ID
+        // FALLBACK: Gunakan 4 digit terakhir ID
         return $prefix . $roleNumber . substr((string)$user->id, -4);
     }
 
@@ -272,7 +252,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Logout user
+     * Logout user - Redirect ke landing page
      */
     public function logout(Request $request)
     {
@@ -280,7 +260,9 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login')->with('success', 'Berhasil logout.');
+        
+        // 🔥 REDIRECT KE LANDING PAGE
+        return redirect('/')->with('success', 'Berhasil logout.');
     }
 }
 
