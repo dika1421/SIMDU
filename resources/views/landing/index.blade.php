@@ -605,6 +605,7 @@
             cursor: pointer;
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            background: #f8f9fa;
         }
         
         .gallery-card:hover {
@@ -657,6 +658,14 @@
         .gallery-card .overlay .badge-date {
             color: rgba(255,255,255,0.7);
             font-size: 0.65rem;
+        }
+
+        /* ===== GALERI EMPTY STATE ===== */
+        .empty-state {
+            padding: 40px;
+        }
+        .empty-state i {
+            opacity: 0.3;
         }
         
         /* ===== CTA SECTION ===== */
@@ -1034,7 +1043,7 @@
     </div>
 </section>
 
-<!-- ===== GALERI KEGIATAN ===== 🔥 BARU -->
+<!-- ===== GALERI KEGIATAN ===== -->
 <section class="gallery-section" id="gallery">
     <div class="container">
         <div class="text-center" data-aos="fade-up">
@@ -1046,13 +1055,37 @@
             </p>
         </div>
 
+        <!-- 🔥 DEBUG: Tampilkan info jika tidak ada data -->
+        @if(isset($galleries) && $galleries->isEmpty())
+            <div class="alert alert-info text-center py-4">
+                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                <p class="mb-0">Belum ada galeri. Silakan tambahkan melalui menu <strong>Administrasi → Galeri</strong></p>
+            </div>
+        @endif
+
         <div class="row g-4">
             @forelse($galleries ?? [] as $gallery)
                 <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
                     <div class="gallery-card">
-                        <img src="{{ asset('storage/galleries/' . $gallery->image) }}" 
-                             alt="{{ $gallery->title }}"
-                             loading="lazy">
+                        @php
+                            $imagePath = 'storage/galleries/' . $gallery->image;
+                            $fullPath = public_path($imagePath);
+                            $imageExists = file_exists($fullPath);
+                        @endphp
+                        
+                        @if($imageExists)
+                            <img src="{{ asset($imagePath) }}" 
+                                 alt="{{ $gallery->title }}"
+                                 loading="lazy">
+                        @else
+                            <img src="https://via.placeholder.com/400x300/f0f0f0/999?text=Gambar+Tidak+Ada" 
+                                 alt="Gambar tidak tersedia"
+                                 style="object-fit: contain; background: #f0f0f0;">
+                            <div class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 small" style="z-index: 10;">
+                                <i class="fas fa-exclamation-triangle"></i> File hilang
+                            </div>
+                        @endif
+                        
                         <div class="overlay">
                             <h6>{{ Str::limit($gallery->title, 30) }}</h6>
                             <div class="d-flex justify-content-between align-items-center mt-1">
@@ -1071,7 +1104,7 @@
             @empty
                 <div class="col-12 text-center py-5">
                     <div class="empty-state">
-                        <i class="fas fa-images fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                        <i class="fas fa-images fa-4x text-muted mb-3"></i>
                         <h5 class="text-muted">Belum Ada Galeri</h5>
                         <p class="text-muted small">Dokumentasi kegiatan akan ditampilkan di sini</p>
                     </div>
