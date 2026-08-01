@@ -47,6 +47,8 @@ class Guru extends Model
         'deleted_at' => 'datetime',
     ];
     
+    // ==================== RELATIONS ====================
+    
     /**
      * Relasi ke User
      */
@@ -64,7 +66,8 @@ class Guru extends Model
     }
     
     /**
-     * Relasi ke Jadwal
+     * 🔥 Relasi ke Jadwal (HANYA SATU)
+     * Guru memiliki banyak jadwal mengajar
      */
     public function jadwal(): HasMany
     {
@@ -113,6 +116,8 @@ class Guru extends Model
         return $this->mataPelajaran();
     }
     
+    // ==================== ACCESSORS ====================
+    
     /**
      * Get daftar mata pelajaran yang diajar
      */
@@ -160,11 +165,51 @@ class Guru extends Model
     }
     
     /**
+     * Get status text dengan badge
+     */
+    public function getStatusTextAttribute(): string
+    {
+        if ($this->status == 'aktif') {
+            return '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Aktif</span>';
+        }
+        return '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Nonaktif</span>';
+    }
+    
+    /**
+     * Get status label
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status == 'aktif' ? 'Aktif' : 'Nonaktif';
+    }
+    
+    /**
+     * Get jenis kelamin label
+     */
+    public function getJenisKelaminLabelAttribute(): string
+    {
+        if ($this->jenis_kelamin == 'L') {
+            return 'Laki-laki';
+        }
+        return 'Perempuan';
+    }
+    
+    // ==================== SCOPES ====================
+    
+    /**
      * Scope untuk guru aktif
      */
     public function scopeActive($query)
     {
         return $query->where('status', 'aktif');
+    }
+    
+    /**
+     * Scope untuk guru nonaktif
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('status', 'nonaktif');
     }
     
     /**
@@ -184,5 +229,75 @@ class Guru extends Model
             });
         }
         return $query;
+    }
+    
+    /**
+     * Scope untuk guru berdasarkan jabatan
+     */
+    public function scopeByJabatan($query, $jabatanId)
+    {
+        if ($jabatanId) {
+            return $query->where('jabatan_id', $jabatanId);
+        }
+        return $query;
+    }
+    
+    /**
+     * Scope untuk guru berdasarkan mata pelajaran
+     */
+    public function scopeByMataPelajaran($query, $mapelId)
+    {
+        if ($mapelId) {
+            return $query->whereHas('mataPelajaran', function($q) use ($mapelId) {
+                $q->where('mapel_id', $mapelId);
+            });
+        }
+        return $query;
+    }
+    
+    // ==================== METHODS ====================
+    
+    /**
+     * Cek apakah guru aktif
+     */
+    public function isActive(): bool
+    {
+        return $this->status == 'aktif';
+    }
+    
+    /**
+     * Cek apakah guru adalah wali kelas
+     */
+    public function isWaliKelas(): bool
+    {
+        return $this->kelasWali()->count() > 0;
+    }
+    
+    /**
+     * Get kelas yang diampu sebagai wali kelas
+     */
+    public function getKelasWali()
+    {
+        return $this->kelasWali()->first();
+    }
+    
+    /**
+     * Get jadwal mengajar berdasarkan hari
+     */
+    public function getJadwalByHari($hari = null)
+    {
+        $query = $this->jadwal()->with(['kelas', 'mataPelajaran']);
+        if ($hari) {
+            $query->where('hari', $hari);
+        }
+        return $query->orderBy('jam_mulai')->get();
+    }
+    
+    /**
+     * Get total jam mengajar per minggu
+     */
+    public function getTotalJamMengajarAttribute(): int
+    {
+        return $this->jadwal()->count();
     }
 }
