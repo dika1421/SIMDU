@@ -34,14 +34,13 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
+            // 🔥 PERBAIKAN: Gunakan 'nama_kelas' bukan 'nama'
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
-            })->orderBy('nama')->get();
+            })->orderBy('nama_kelas')->get();
 
-            // Jika tidak ada kelas, ambil semua kelas
             if ($kelas->isEmpty()) {
-                $kelas = Kelas::orderBy('nama')->get();
+                $kelas = Kelas::orderBy('nama_kelas')->get();
             }
 
             $tanggal = $request->get('tanggal', date('Y-m-d'));
@@ -49,12 +48,12 @@ class AbsensiSiswaController extends Controller
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             $search = $request->get('search');
 
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
+            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id') sesuai database
             $mataPelajaranList = collect();
             if ($kelasId) {
                 $mataPelajaranList = DB::table('mata_pelajarans as mp')
                     ->select('mp.id', 'mp.nama_mapel as nama')
-                    ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                    ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran')
                     ->where('j.guru_id', $guru->id)
                     ->where('j.kelas_id', $kelasId)
                     ->whereNull('mp.deleted_at')
@@ -80,7 +79,8 @@ class AbsensiSiswaController extends Controller
                 });
             }
 
-            $siswa = $query->get();
+            // 🔥 PERBAIKAN: Gunakan orderBy 'nama' (kolom di tabel siswa)
+            $siswa = $query->orderBy('nama', 'asc')->get();
 
             // Ambil absensi untuk tanggal ini berdasarkan mata pelajaran
             foreach ($siswa as $s) {
@@ -243,7 +243,7 @@ class AbsensiSiswaController extends Controller
                         'id' => $siswa->id,
                         'nis' => $siswa->nis,
                         'nama' => $siswa->user->name ?? $siswa->nis,
-                        'kelas' => $siswa->kelas->nama ?? '-',
+                        'kelas' => $siswa->kelas->nama_kelas ?? '-',
                         'sudah_absen' => $sudahAbsen,
                         'sudah_checkout' => $absensi && $absensi->jam_keluar ? true : false,
                         'jam_masuk' => $absensi ? $absensi->jam_masuk : null,
@@ -353,7 +353,7 @@ class AbsensiSiswaController extends Controller
                 'data' => [
                     'nama' => $siswa->user->name ?? $siswa->nis,
                     'nis' => $siswa->nis,
-                    'kelas' => $siswa->kelas->nama ?? '-',
+                    'kelas' => $siswa->kelas->nama_kelas ?? '-',
                     'status' => $statusText[$request->status] ?? $request->status,
                     'waktu' => $waktuAbsen->format('H:i:s'),
                     'is_update' => $isUpdate,
@@ -387,10 +387,10 @@ class AbsensiSiswaController extends Controller
                 ], 404);
             }
             
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
+            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id')
             $mataPelajaran = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran')
                 ->where('j.guru_id', $guru->id)
                 ->where('j.kelas_id', $kelasId)
                 ->whereNull('mp.deleted_at')
@@ -432,13 +432,12 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
-            })->orderBy('nama')->get();
+            })->orderBy('nama_kelas')->get();
 
             if ($kelas->isEmpty()) {
-                $kelas = Kelas::orderBy('nama')->get();
+                $kelas = Kelas::orderBy('nama_kelas')->get();
             }
 
             $kelasId = $request->get('kelas_id');
@@ -447,10 +446,10 @@ class AbsensiSiswaController extends Controller
             $tahun = $request->get('tahun', date('Y'));
             $search = $request->get('search');
 
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
+            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id')
             $mataPelajaranList = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran')
                 ->where('j.guru_id', $guru->id)
                 ->when($kelasId, function($q) use ($kelasId) {
                     $q->where('j.kelas_id', $kelasId);
@@ -477,7 +476,7 @@ class AbsensiSiswaController extends Controller
                 });
             }
             
-            $siswa = $query->get();
+            $siswa = $query->orderBy('nama', 'asc')->get();
             
             $statistikSiswa = [];
             foreach ($siswa as $s) {
@@ -554,13 +553,12 @@ class AbsensiSiswaController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru. Hubungi administrator.');
             }
 
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
-            })->orderBy('nama')->get();
+            })->orderBy('nama_kelas')->get();
 
             if ($kelas->isEmpty()) {
-                $kelas = Kelas::orderBy('nama')->get();
+                $kelas = Kelas::orderBy('nama_kelas')->get();
             }
 
             $bulan = $request->get('bulan', date('m'));
@@ -568,10 +566,10 @@ class AbsensiSiswaController extends Controller
             $kelasId = $request->get('kelas_id');
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             
-            // ✅ PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
+            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id')
             $mataPelajaranList = DB::table('mata_pelajarans as mp')
                 ->select('mp.id', 'mp.nama_mapel as nama')
-                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran_id')
+                ->join('jadwal as j', 'mp.id', '=', 'j.mata_pelajaran')
                 ->where('j.guru_id', $guru->id)
                 ->when($kelasId, function($q) use ($kelasId) {
                     $q->where('j.kelas_id', $kelasId);
@@ -597,6 +595,7 @@ class AbsensiSiswaController extends Controller
                 $siswa = Siswa::with(['user', 'kelas'])
                     ->where('kelas_id', $kelasId)
                     ->where('status', 'aktif')
+                    ->orderBy('nama', 'asc')
                     ->get();
                 
                 $rekapKelas['total_siswa'] = $siswa->count();
@@ -681,7 +680,6 @@ class AbsensiSiswaController extends Controller
             $kelasId = $request->get('kelas_id');
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             
-            // TODO: Implement export to Excel
             return back()->with('info', 'Fitur export sedang dalam pengembangan');
             
         } catch (\Exception $e) {
