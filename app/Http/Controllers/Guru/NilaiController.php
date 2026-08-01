@@ -35,12 +35,10 @@ class NilaiController extends Controller
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai guru.');
             }
             
-            // 🔥 PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->get();
             
-            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id')
             $mapelIds = DB::table('jadwal')
                 ->where('guru_id', $guru->id)
                 ->whereNull('deleted_at')
@@ -49,7 +47,6 @@ class NilaiController extends Controller
             
             $mapel = Mapel::whereIn('id', $mapelIds)->get();
             
-            // Hitung statistik nilai
             $statistik = [];
             foreach ($kelas as $k) {
                 foreach ($mapel as $m) {
@@ -102,14 +99,6 @@ class NilaiController extends Controller
     public function input(Request $request)
     {
         try {
-            // 🔥 PERBAIKAN: Buat validasi nullable
-            $request->validate([
-                'kelas_id' => 'nullable|exists:kelas,id',
-                'mapel_id' => 'nullable|exists:mata_pelajarans,id',
-                'tahun_ajaran' => 'nullable|string',
-                'semester' => 'nullable|in:ganjil,genap'
-            ]);
-            
             $user = auth()->user();
             $guru = Guru::where('user_id', $user->id)->first();
             
@@ -118,10 +107,11 @@ class NilaiController extends Controller
                                ->with('error', 'Data guru tidak ditemukan.');
             }
             
-            // 🔥 PERBAIKAN: Jika tidak ada, ambil default
-            $kelasId = $request->kelas_id;
-            $mapelId = $request->mapel_id;
+            // 🔥 PERBAIKAN: Ambil dari request atau session
+            $kelasId = $request->kelas_id ?? session('nilai_kelas_id');
+            $mapelId = $request->mapel_id ?? session('nilai_mapel_id');
             
+            // Jika masih tidak ada, ambil yang pertama
             if (!$kelasId) {
                 $kelasPertama = Kelas::whereHas('jadwal', function($q) use ($guru) {
                     $q->where('guru_id', $guru->id);
@@ -136,12 +126,16 @@ class NilaiController extends Controller
                 $mapelId = $mapelPertama ? $mapelPertama->id : null;
             }
             
+            // Simpan ke session
+            session(['nilai_kelas_id' => $kelasId, 'nilai_mapel_id' => $mapelId]);
+            
+            // 🔥 PERBAIKAN: Jika masih tidak ada, redirect ke index dengan pesan
             if (!$kelasId || !$mapelId) {
                 return redirect()->route('guru.nilai.index')
-                               ->with('error', 'Silakan pilih kelas dan mata pelajaran terlebih dahulu.');
+                               ->with('warning', 'Silakan pilih kelas dan mata pelajaran terlebih dahulu.');
             }
             
-            // 🔥 PERBAIKAN: Cek apakah guru mengajar mapel ini di kelas ini
+            // Cek apakah guru mengajar mapel ini di kelas ini
             $isAuthorized = Jadwal::where('guru_id', $guru->id)
                                   ->where('kelas_id', $kelasId)
                                   ->where('mata_pelajaran', $mapelId)
@@ -152,7 +146,6 @@ class NilaiController extends Controller
                                ->with('error', 'Anda tidak memiliki akses untuk menginput nilai di kelas ini.');
             }
             
-            // 🔥 PERBAIKAN: Gunakan 'nama' bukan 'nama_lengkap'
             $siswa = Siswa::where('kelas_id', $kelasId)
                           ->where('status', 'aktif')
                           ->with('user')
@@ -167,14 +160,9 @@ class NilaiController extends Controller
             $mataPelajaran = Mapel::find($mapelId);
             $kelas = Kelas::find($kelasId);
             
-            if (!$mataPelajaran) {
+            if (!$mataPelajaran || !$kelas) {
                 return redirect()->route('guru.nilai.index')
-                               ->with('error', 'Mata pelajaran tidak ditemukan.');
-            }
-            
-            if (!$kelas) {
-                return redirect()->route('guru.nilai.index')
-                               ->with('error', 'Kelas tidak ditemukan.');
+                               ->with('error', 'Data kelas atau mata pelajaran tidak ditemukan.');
             }
             
             $tahunAjaran = $request->tahun_ajaran ?? date('Y') . '/' . (date('Y') + 1);
@@ -238,9 +226,9 @@ class NilaiController extends Controller
                 return redirect()->back()->with('error', 'Data guru tidak ditemukan');
             }
 
-            // 🔥 PERBAIKAN: Ambil nilai dari berbagai kemungkinan
-            $kelasId = $request->kelas_id;
-            $mapelId = $request->mapel_id;
+            // 🔥 PERBAIKAN: Ambil dari request atau session
+            $kelasId = $request->kelas_id ?? session('nilai_kelas_id');
+            $mapelId = $request->mapel_id ?? session('nilai_mapel_id');
             
             if (!$kelasId || !$mapelId) {
                 return redirect()->back()->with('error', 'Kelas dan Mata Pelajaran harus dipilih.');
@@ -351,7 +339,6 @@ class NilaiController extends Controller
             
             $semesterList = ['ganjil', 'genap'];
             
-            // 🔥 PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $kelasDiAjar = Kelas::whereHas('jadwal', function($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->get();
@@ -384,14 +371,12 @@ class NilaiController extends Controller
             
             $kelas = Kelas::with(['jurusan', 'waliKelas.user'])->find($selectedKelasId);
             
-            // 🔥 PERBAIKAN: Gunakan 'nama' bukan 'nama_lengkap'
             $siswa = Siswa::where('kelas_id', $selectedKelasId)
                 ->where('status', 'aktif')
                 ->with('user')
                 ->orderBy('nama')
                 ->get();
             
-            // 🔥 PERBAIKAN: Gunakan 'mata_pelajaran' (tanpa '_id')
             $mapel = Mapel::whereHas('jadwal', function($query) use ($guru, $selectedKelasId) {
                 $query->where('guru_id', $guru->id)
                       ->where('kelas_id', $selectedKelasId);
@@ -509,7 +494,6 @@ class NilaiController extends Controller
             
             $siswa = Siswa::with(['kelas', 'user'])->findOrFail($siswaId);
             
-            // 🔥 PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $isAuthorized = Jadwal::where('guru_id', $guru->id)
                 ->where('kelas_id', $siswa->kelas_id)
                 ->exists();
@@ -575,7 +559,6 @@ class NilaiController extends Controller
             
             $siswa = Siswa::with(['kelas', 'user'])->findOrFail($siswaId);
             
-            // 🔥 PERBAIKAN: Gunakan 'jadwal' (tanpa 's')
             $isAuthorized = Jadwal::where('guru_id', $guru->id)
                 ->where('kelas_id', $siswa->kelas_id)
                 ->exists();
@@ -635,8 +618,8 @@ class NilaiController extends Controller
                 return back()->with('error', 'Anda tidak terdaftar sebagai guru.');
             }
             
-            $kelasId = $request->kelas_id;
-            $mapelId = $request->mapel_id;
+            $kelasId = $request->kelas_id ?? session('nilai_kelas_id');
+            $mapelId = $request->mapel_id ?? session('nilai_mapel_id');
             
             if (!$kelasId || !$mapelId) {
                 return redirect()->route('guru.nilai.index')
@@ -697,7 +680,6 @@ class NilaiController extends Controller
      */
     private function hitungNilaiAkhir($data)
     {
-        // Kumpulkan nilai harian
         $nilaiHarian = array_filter([
             $data['nilai_harian_1'] ?? null,
             $data['nilai_harian_2'] ?? null,
@@ -707,7 +689,6 @@ class NilaiController extends Controller
         });
         $rataHarian = count($nilaiHarian) > 0 ? array_sum($nilaiHarian) / count($nilaiHarian) : 0;
         
-        // Kumpulkan nilai tugas
         $nilaiTugas = array_filter([
             $data['nilai_tugas_1'] ?? null,
             $data['nilai_tugas_2'] ?? null
@@ -720,7 +701,6 @@ class NilaiController extends Controller
         $uas = $data['nilai_uas'] ?? 0;
         $praktek = $data['nilai_praktek'] ?? 0;
         
-        // Bobot nilai
         $bobotHarian = 0.20;
         $bobotTugas = 0.20;
         $bobotUTS = 0.30;
