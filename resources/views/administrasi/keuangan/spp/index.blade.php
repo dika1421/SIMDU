@@ -215,8 +215,13 @@
 @push('scripts')
 <script>
     function deletePayment(id) {
+        // Buat form action dengan id yang benar
         var form = document.getElementById('deleteForm');
-        form.action = "{{ route('administrasi.keuangan.spp.destroy', '') }}/" + id;
+        var url = "{{ route('administrasi.keuangan.spp.destroy', ':id') }}";
+        url = url.replace(':id', id);
+        form.action = url;
+        
+        // Tampilkan modal
         var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
         modal.show();
     }
