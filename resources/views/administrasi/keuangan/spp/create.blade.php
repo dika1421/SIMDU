@@ -77,12 +77,35 @@
         font-size: 0.9rem;
     }
     
-    /* Highlight error */
     .is-invalid {
         border-color: #dc3545 !important;
     }
     .invalid-feedback {
         display: block !important;
+    }
+    
+    /* DEBUG VISUAL */
+    .debug-box {
+        background: #f8f9fa;
+        border: 2px solid #0d6efd;
+        border-radius: 8px;
+        padding: 12px 15px;
+        margin-top: 15px;
+        font-size: 14px;
+        display: none;
+    }
+    .debug-box .label {
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    .debug-box .value {
+        color: #198754;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .debug-box .empty {
+        color: #dc3545;
+        font-weight: bold;
     }
 </style>
 
@@ -183,6 +206,14 @@
                 </div>
             </div>
         </div>
+        
+        <!-- DEBUG VISUAL - TAMPILKAN NILAI SISWA_ID -->
+        <div class="debug-box" id="debugBox">
+            <span class="label">🔍 ID Siswa yang akan dikirim:</span>
+            <span class="value" id="debugSiswaId">(belum dipilih)</span>
+            <br>
+            <small class="text-muted">Jika kosong, silakan pilih siswa terlebih dahulu!</small>
+        </div>
     </div>
 </div>
 
@@ -191,7 +222,7 @@
         <form action="{{ route('administrasi.keuangan.spp.store') }}" method="POST" id="formSPP">
             @csrf
             
-            <!-- HIDDEN INPUT UNTUK SISWA_ID - PASTIKAN INI TERISI -->
+            <!-- HIDDEN INPUT UNTUK SISWA_ID -->
             <input type="hidden" name="siswa_id" id="siswa_id" value="{{ old('siswa_id') }}">
             <input type="hidden" name="kelas_id" id="selected_kelas_id" value="">
             
@@ -319,11 +350,17 @@ let currentSiswa = null;
 
 $(document).ready(function() {
     
+    // TAMPILKAN DEBUG BOX
+    $('#debugBox').show();
+    updateDebugInfo();
+    
     // LOAD SISWA BY KELAS
     $('#kelas_dropdown').on('change', function(){
         let kelasId = $(this).val();
         $('#selected_kelas_id').val(kelasId);
         $('#siswa_id').val('');
+        updateDebugInfo();
+        
         if(!kelasId){
             $('#siswa_dropdown').html('<option value="">-- Pilih Siswa --</option>');
             return;
@@ -344,8 +381,8 @@ $(document).ready(function() {
     // PILIH SISWA DARI DROPDOWN
     $('#siswa_dropdown').on('change', function(){
         let id = $(this).val();
-        $('#siswa_id').val(id); // ISI HIDDEN INPUT
-        console.log('siswa_id terpilih:', id); // DEBUG
+        $('#siswa_id').val(id);
+        updateDebugInfo();
         
         if(id){
             let nama = $(this).find(':selected').data('nama');
@@ -384,7 +421,6 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 Swal.close();
-                console.log('Response cari siswa:', response); // DEBUG
                 
                 if (response.success) {
                     currentSiswa = response.data;
@@ -394,14 +430,12 @@ $(document).ready(function() {
                     $('#displayKelas').text(currentSiswa.kelas_nama || 'Tidak ada kelas');
                     $('#displayWaliKelas').text('-');
                     
-                    // ISI HIDDEN INPUT
                     $('#siswa_id').val(currentSiswa.id);
                     $('#selected_kelas_id').val(currentSiswa.kelas_id);
                     $('#kelas_dropdown').val(currentSiswa.kelas_id);
                     
-                    console.log('siswa_id diisi:', $('#siswa_id').val()); // DEBUG
+                    updateDebugInfo();
 
-                    // Load siswa di dropdown
                     $.ajax({
                         url: '{{ route("administrasi.keuangan.get-siswa-by-kelas") }}',
                         data: {kelas_id: currentSiswa.kelas_id},
@@ -412,7 +446,6 @@ $(document).ready(function() {
                                 opts += `<option value="${s.id}" ${sel} data-nama="${s.nama}" data-nis="${s.nis}">${s.nama} - ${s.nis}</option>`;
                             });
                             $('#siswa_dropdown').html(opts);
-                            console.log('Dropdown siswa diisi dengan:', res2.data); // DEBUG
                         }
                     });
                     
@@ -432,6 +465,7 @@ $(document).ready(function() {
                     $('#siswaInfoCard').fadeOut();
                     currentSiswa = null;
                     $('#siswa_id').val('');
+                    updateDebugInfo();
                     
                     Swal.fire({
                         icon: 'error',
@@ -441,9 +475,8 @@ $(document).ready(function() {
                     $('#nis').focus();
                 }
             },
-            error: function(xhr) {
+            error: function() {
                 Swal.close();
-                console.error('AJAX Error:', xhr.responseText); // DEBUG
                 Swal.fire({icon: 'error', title: 'Terjadi Kesalahan', text: 'Gagal mencari siswa'});
             },
             complete: function() {
@@ -460,13 +493,12 @@ $(document).ready(function() {
         }
     });
     
-    // VALIDASI SEBELUM SUBMIT - CEK DENGAN KETAT
+    // VALIDASI SEBELUM SUBMIT
     $('#formSPP').on('submit', function(e) {
         var siswaId = $('#siswa_id').val();
-        console.log('Submit - siswa_id:', siswaId); // DEBUG
         
-        // CEK SISWA_ID - HARUS ADA
-        if (!siswaId || siswaId === '' || siswaId === '0' || siswaId === null) {
+        // CEK SISWA_ID
+        if (!siswaId || siswaId === '' || siswaId === '0') {
             e.preventDefault();
             Swal.fire({
                 icon: 'warning',
@@ -474,17 +506,6 @@ $(document).ready(function() {
                 text: 'Silakan cari dan pilih siswa terlebih dahulu!'
             });
             $('#nis').focus();
-            return false;
-        }
-        
-        // CEK APAKAH SISWA_ID VALID (integer)
-        if (isNaN(siswaId) || parseInt(siswaId) <= 0) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Validasi Gagal',
-                text: 'ID Siswa tidak valid! Silakan pilih ulang.'
-            });
             return false;
         }
         
@@ -524,11 +545,19 @@ $(document).ready(function() {
             return false;
         }
         
-        // Jika semua valid, submit
-        console.log('✅ Validasi sukses, submit form');
         return true;
     });
 });
+
+// FUNGSI UPDATE DEBUG INFO
+function updateDebugInfo() {
+    var id = $('#siswa_id').val();
+    if (id && id !== '') {
+        $('#debugSiswaId').text(id).removeClass('empty').addClass('value');
+    } else {
+        $('#debugSiswaId').text('(KOSONG - pilih siswa!)').removeClass('value').addClass('empty');
+    }
+}
 
 // FUNGSI RESET
 function resetForm() {
@@ -545,8 +574,8 @@ function resetForm() {
     $('#keterangan').val('');
     $('#nis').val('');
     $('#siswaInfoCard').fadeOut();
+    updateDebugInfo();
     $('#nis').focus();
-    console.log('Form direset'); // DEBUG
 }
 </script>
 @endpush
