@@ -289,7 +289,7 @@
             min-height: 65px;
         }
         
-        /* 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) */
+        /* 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) - PASTIKAN INI ADA */
         .btn-toggle-sidebar {
             background: none;
             border: none;
@@ -346,23 +346,6 @@
             flex: 1;
             overflow-y: auto;
             padding: 25px;
-        }
-        
-        .app-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .app-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        .app-content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-        
-        .app-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
         }
         
         /* ===== ALERT ===== */
@@ -1090,7 +1073,7 @@
         });
 
         // ================================================================
-        // 🔥 DEBUG: CEK APAKAH TOMBOL BERFUNGSI
+        // 🔥 DEBUG
         // ================================================================
         console.log('✅ Toggle Sidebar siap digunakan!');
         console.log('📌 Klik tombol ☰ di navbar untuk toggle sidebar.');
