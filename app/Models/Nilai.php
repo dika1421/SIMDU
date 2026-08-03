@@ -24,7 +24,7 @@ class Nilai extends Model
         'nilai_uts',
         'nilai_uas',
         'nilai_praktek',
-        'nilai_akhir',  // 🔥 PASTIKAN INI ADA
+        'nilai_lahir',  // 🔥 PERBAIKAN: ganti nilai_akhir menjadi nilai_lahir
         'predikat',
         'deskripsi',
         'catatan_guru',
@@ -44,9 +44,21 @@ class Nilai extends Model
         'nilai_uts' => 'decimal:2',
         'nilai_uas' => 'decimal:2',
         'nilai_praktek' => 'decimal:2',
-        'nilai_akhir' => 'decimal:2',
+        'nilai_lahir' => 'decimal:2',  // 🔥 PERBAIKAN
         'is_rapor' => 'boolean'
     ];
+    
+    // 🔥 ACCESSOR: Agar kode yang menggunakan 'nilai_akhir' tetap berfungsi
+    public function getNilaiAkhirAttribute()
+    {
+        return $this->nilai_lahir;
+    }
+    
+    // 🔥 MUTATOR: Agar kode yang menyimpan 'nilai_akhir' tetap berfungsi
+    public function setNilaiAkhirAttribute($value)
+    {
+        $this->attributes['nilai_lahir'] = $value;
+    }
     
     public function siswa()
     {

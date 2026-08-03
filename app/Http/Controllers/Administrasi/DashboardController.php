@@ -103,7 +103,6 @@ class DashboardController extends Controller
             ));
 
         } catch (\Exception $e) {
-            // Jika error, kirim data default
             return view('administrasi.dashboard', [
                 'totalSiswa' => 0,
                 'siswaAktif' => 0,
