@@ -299,7 +299,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             border-radius: 8px;
-            display: block;
+            display: block !important;
         }
         
         .btn-toggle-sidebar:hover {
@@ -309,6 +309,7 @@
         
         .btn-toggle-sidebar:focus {
             outline: none;
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.2);
         }
         
         .navbar-left {
@@ -987,20 +988,30 @@
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            // Cek apakah di mobile atau desktop
+            if (!sidebar) {
+                console.error('Sidebar tidak ditemukan!');
+                return;
+            }
+            
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
                 // MOBILE: toggle class mobile-open
                 sidebar.classList.toggle('mobile-open');
-                overlay.classList.toggle('active');
+                if (overlay) {
+                    overlay.classList.toggle('active');
+                }
             } else {
                 // DESKTOP: toggle class collapsed
                 sidebar.classList.toggle('collapsed');
                 
                 // Simpan state ke localStorage
                 const isCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+                try {
+                    localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
+                } catch(e) {
+                    // Ignore localStorage error
+                }
             }
         }
 
@@ -1013,14 +1024,16 @@
             const overlay = document.getElementById('sidebarOverlay');
             const isMobile = window.innerWidth <= 768;
             
-            if (isMobile && sidebar.classList.contains('mobile-open')) {
+            if (isMobile && sidebar && sidebar.classList.contains('mobile-open')) {
                 const isClickInsideSidebar = sidebar.contains(event.target);
-                const isClickOnToggle = toggleBtn.contains(event.target);
-                const isClickOnOverlay = overlay.contains(event.target);
+                const isClickOnToggle = toggleBtn && toggleBtn.contains(event.target);
+                const isClickOnOverlay = overlay && overlay.contains(event.target);
                 
                 if (!isClickInsideSidebar && !isClickOnToggle && !isClickOnOverlay) {
                     sidebar.classList.remove('mobile-open');
-                    overlay.classList.remove('active');
+                    if (overlay) {
+                        overlay.classList.remove('active');
+                    }
                 }
             }
         });
@@ -1034,8 +1047,12 @@
             
             if (window.innerWidth > 768) {
                 // Desktop: hapus state mobile
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.remove('active');
+                if (sidebar) {
+                    sidebar.classList.remove('mobile-open');
+                }
+                if (overlay) {
+                    overlay.classList.remove('active');
+                }
             }
         });
 
@@ -1045,8 +1062,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('appSidebar');
             
+            if (!sidebar) return;
+            
             // Cek di localStorage
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            let isCollapsed = false;
+            try {
+                isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            } catch(e) {
+                // Ignore localStorage error
+            }
             
             // Terapkan state (hanya jika desktop)
             if (window.innerWidth > 768 && isCollapsed) {
@@ -1064,6 +1088,12 @@
                 }
             });
         });
+
+        // ================================================================
+        // 🔥 DEBUG: CEK APAKAH TOMBOL BERFUNGSI
+        // ================================================================
+        console.log('✅ Toggle Sidebar siap digunakan!');
+        console.log('📌 Klik tombol ☰ di navbar untuk toggle sidebar.');
     </script>
     
     @stack('scripts')
