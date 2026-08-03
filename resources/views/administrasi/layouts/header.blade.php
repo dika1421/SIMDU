@@ -54,6 +54,30 @@
             flex-direction: column;
             height: 100vh;
             flex-shrink: 0;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1000;
+        }
+        
+        /* 🔥 SIDEBAR COLLAPSED */
+        .app-sidebar.collapsed {
+            margin-left: -280px;
+        }
+        
+        /* 🔥 OVERLAY UNTUK MOBILE */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
         }
         
         .sidebar-header {
@@ -244,6 +268,7 @@
             flex-direction: column;
             overflow: hidden;
             background-color: #f8f9fa;
+            transition: all 0.3s ease;
         }
         
         .app-navbar {
@@ -253,6 +278,29 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        
+        /* 🔥 TOGGLE SIDEBAR BUTTON */
+        .btn-toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #2c3e50;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .btn-toggle-sidebar:hover {
+            background-color: #f1f3f5;
+            color: #1a252f;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
         .navbar-actions {
@@ -351,15 +399,37 @@
             100% { opacity: 0.6; }
         }
         
+        /* 🔥 RESPONSIVE */
         @media (max-width: 768px) {
-            .app-wrapper {
-                flex-direction: column;
+            .app-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 1001;
+                transform: translateX(-100%);
             }
             
-            .app-sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 300px;
+            .app-sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .app-sidebar.collapsed {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .btn-toggle-sidebar {
+                display: block !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .btn-toggle-sidebar {
+                display: block;
             }
         }
     </style>
@@ -368,8 +438,11 @@
 </head>
 <body>
     <div class="app-wrapper">
+        <!-- 🔥 OVERLAY UNTUK MOBILE -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
         <!-- SIDEBAR -->
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="appSidebar">
             <div class="sidebar-header">
                 <i class="fas fa-school"></i>
                 <h5>SIM Sekolah</h5>
@@ -689,7 +762,7 @@
                         </a>
                     </li>
                     
-                    <!-- ==================== GALERI (BARU) ==================== -->
+                    <!-- GALERI -->
                     <li class="menu-section">GALERI</li>
                     <li>
                         <a href="{{ route('administrasi.galeri.index') }}" 
@@ -759,12 +832,16 @@
         <!-- MAIN CONTENT -->
         <main class="app-main">
             <div class="app-navbar">
-                <div>
+                <div class="navbar-left">
+                    <!-- 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) -->
+                    <button class="btn-toggle-sidebar" id="toggleSidebarBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <span class="h5 mb-0">Selamat Datang, {{ Auth::user()->name ?? 'User' }}</span>
                 </div>
                 
                 <div class="navbar-actions">
-                    <!-- Notifikasi (opsional) -->
+                    <!-- Notifikasi -->
                     <div class="dropdown">
                         <button class="btn btn-light position-relative" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bell"></i>
@@ -831,7 +908,7 @@
     
     <script>
         $(document).ready(function() {
-            // Inisialisasi DataTable untuk elemen dengan class datatable
+            // Inisialisasi DataTable
             $('.datatable').each(function() {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
@@ -853,6 +930,70 @@
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
+        });
+
+        // ===== FUNGSI TOGGLE SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            // Untuk desktop
+            if (window.innerWidth > 768) {
+                sidebar.classList.toggle('collapsed');
+            } 
+            // Untuk mobile
+            else {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            }
+        }
+
+        // ===== TUTUP SIDEBAR KETIKA KLIK DI LUAR (MOBILE) =====
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('appSidebar');
+            const toggleBtn = document.getElementById('toggleSidebarBtn');
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile && sidebar.classList.contains('mobile-open')) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnToggle = toggleBtn.contains(event.target);
+                
+                if (!isClickInsideSidebar && !isClickOnToggle) {
+                    sidebar.classList.remove('mobile-open');
+                    document.getElementById('sidebarOverlay').classList.remove('active');
+                }
+            }
+        });
+
+        // ===== RESIZE WINDOW =====
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('appSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // ===== SIDEBAR COLLAPSE STATE (DESKTOP) =====
+        // Simpan state di localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('appSidebar');
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            
+            if (window.innerWidth > 768 && isCollapsed) {
+                sidebar.classList.add('collapsed');
+            }
+        });
+
+        // Simpan state saat toggle (desktop)
+        document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
+            if (window.innerWidth > 768) {
+                const sidebar = document.getElementById('appSidebar');
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', !isCollapsed);
+            }
         });
     </script>
     
