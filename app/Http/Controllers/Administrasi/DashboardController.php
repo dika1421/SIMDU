@@ -9,7 +9,7 @@ use App\Models\Kelas;
 use App\Models\Spp;
 use App\Models\Absensi;
 use App\Models\Jadwal;
-use App\Models\Nilai;
+// use App\Models\Nilai; // 🔥 COMMENT DULU JIKA ERROR
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -53,7 +53,6 @@ class DashboardController extends Controller
                 ->where('status', 'alfa')
                 ->count();
 
-            $totalAbsensi = $hadirSiswa + $sakitSiswa + $izinSiswa + $alfaSiswa;
             $kehadiranPersen = $totalSiswa > 0 ? round(($hadirSiswa / max($totalSiswa, 1)) * 100, 2) : 0;
 
             // Pembayaran Terbaru
@@ -70,7 +69,7 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
 
-            // 🔥 PERBAIKAN: Data untuk grafik distribusi kelas
+            // 🔥 Data untuk grafik distribusi kelas
             $kelasData = [];
             $kelasLabels = [];
             $kelasList = Kelas::withCount('siswa')->get();

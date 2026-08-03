@@ -15,7 +15,7 @@ class Nilai extends Model
         'siswa_id',
         'mapel_id',
         'guru_id',
-        'kelas_id',
+        'kelas_id',  // 🔥 PASTIKAN INI ADA
         'nilai_harian_1',
         'nilai_harian_2',
         'nilai_harian_3',
@@ -24,7 +24,7 @@ class Nilai extends Model
         'nilai_uts',
         'nilai_uas',
         'nilai_praktek',
-        'nilai_lahir',  // 🔥 PERBAIKAN: ganti nilai_akhir menjadi nilai_lahir
+        'nilai_lahir',
         'predikat',
         'deskripsi',
         'catatan_guru',
@@ -44,21 +44,9 @@ class Nilai extends Model
         'nilai_uts' => 'decimal:2',
         'nilai_uas' => 'decimal:2',
         'nilai_praktek' => 'decimal:2',
-        'nilai_lahir' => 'decimal:2',  // 🔥 PERBAIKAN
+        'nilai_lahir' => 'decimal:2',
         'is_rapor' => 'boolean'
     ];
-    
-    // 🔥 ACCESSOR: Agar kode yang menggunakan 'nilai_akhir' tetap berfungsi
-    public function getNilaiAkhirAttribute()
-    {
-        return $this->nilai_lahir;
-    }
-    
-    // 🔥 MUTATOR: Agar kode yang menyimpan 'nilai_akhir' tetap berfungsi
-    public function setNilaiAkhirAttribute($value)
-    {
-        $this->attributes['nilai_lahir'] = $value;
-    }
     
     public function siswa()
     {
