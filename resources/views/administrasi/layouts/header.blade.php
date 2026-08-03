@@ -45,7 +45,7 @@
             width: 100%;
         }
         
-        /* SIDEBAR */
+        /* ===== SIDEBAR ===== */
         .app-sidebar {
             width: 280px;
             background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
@@ -59,9 +59,14 @@
             z-index: 1000;
         }
         
-        /* 🔥 SIDEBAR COLLAPSED */
+        /* 🔥 SIDEBAR COLLAPSED (DESKTOP) */
         .app-sidebar.collapsed {
             margin-left: -280px;
+        }
+        
+        /* 🔥 SIDEBAR MOBILE */
+        .app-sidebar.mobile-open {
+            transform: translateX(0);
         }
         
         /* 🔥 OVERLAY UNTUK MOBILE */
@@ -95,6 +100,7 @@
         .sidebar-header h5 {
             margin: 10px 0 5px;
             color: white;
+            font-weight: 700;
         }
         
         .sidebar-header small {
@@ -135,6 +141,7 @@
             font-weight: 600;
             text-transform: uppercase;
             padding: 20px 10px 5px 10px;
+            letter-spacing: 0.5px;
         }
         
         .sidebar-menu .menu-item {
@@ -261,7 +268,7 @@
             background-color: #34495e;
         }
         
-        /* MAIN CONTENT */
+        /* ===== MAIN CONTENT ===== */
         .app-main {
             flex: 1;
             display: flex;
@@ -271,25 +278,28 @@
             transition: all 0.3s ease;
         }
         
+        /* ===== NAVBAR ===== */
         .app-navbar {
-            padding: 15px 25px;
+            padding: 12px 25px;
             background-color: white;
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-height: 65px;
         }
         
-        /* 🔥 TOGGLE SIDEBAR BUTTON */
+        /* 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) */
         .btn-toggle-sidebar {
             background: none;
             border: none;
             font-size: 1.5rem;
             color: #2c3e50;
-            padding: 5px 10px;
+            padding: 8px 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             border-radius: 8px;
+            display: block;
         }
         
         .btn-toggle-sidebar:hover {
@@ -297,10 +307,19 @@
             color: #1a252f;
         }
         
+        .btn-toggle-sidebar:focus {
+            outline: none;
+        }
+        
         .navbar-left {
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+        
+        .navbar-left .h5 {
+            margin: 0;
+            font-size: 1.1rem;
         }
         
         .navbar-actions {
@@ -328,6 +347,24 @@
             padding: 25px;
         }
         
+        .app-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .app-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .app-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .app-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* ===== ALERT ===== */
         .alert {
             padding: 15px 20px;
             border-radius: 5px;
@@ -346,6 +383,7 @@
             border-left: 4px solid #dc3545;
         }
         
+        /* ===== CARD ===== */
         .card {
             border: none;
             border-radius: 10px;
@@ -399,7 +437,7 @@
             100% { opacity: 0.6; }
         }
         
-        /* 🔥 RESPONSIVE */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .app-sidebar {
                 position: fixed;
@@ -408,6 +446,7 @@
                 bottom: 0;
                 z-index: 1001;
                 transform: translateX(-100%);
+                transition: transform 0.3s ease;
             }
             
             .app-sidebar.mobile-open {
@@ -422,14 +461,28 @@
                 display: block;
             }
             
+            .navbar-left .h5 {
+                font-size: 0.9rem;
+            }
+            
+            .app-navbar {
+                padding: 10px 15px;
+                min-height: 55px;
+            }
+            
+            .app-content {
+                padding: 15px;
+            }
+            
             .btn-toggle-sidebar {
-                display: block !important;
+                font-size: 1.3rem;
+                padding: 5px 10px;
             }
         }
         
         @media (min-width: 769px) {
-            .btn-toggle-sidebar {
-                display: block;
+            .app-sidebar.mobile-open {
+                transform: none;
             }
         }
     </style>
@@ -568,15 +621,12 @@
                         </a>
                         <div class="collapse {{ request()->routeIs('administrasi.absensi.*') || request()->routeIs('administrasi.rfid.*') ? 'show' : '' }}" id="absensiMenu">
                             <ul class="nav flex-column">
-                                <!-- Scan RFID -->
                                 <li>
                                     <a href="{{ route('administrasi.absensi.scan') }}" 
                                     class="menu-item {{ request()->routeIs('administrasi.absensi.scan') ? 'active' : '' }}">
                                         <i class="fas fa-rss"></i> Scan RFID
                                     </a>
                                 </li>
-                                
-                                <!-- Input Absensi -->
                                 <li>
                                     <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#inputAbsensiMenu">
                                         <i class="fas fa-edit"></i> Input Manual
@@ -599,8 +649,6 @@
                                         </ul>
                                     </div>
                                 </li>
-                                
-                                <!-- Rekap Absensi -->
                                 <li>
                                     <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#rekapAbsensiMenu">
                                         <i class="fas fa-chart-line"></i> Rekap Absensi
@@ -932,68 +980,89 @@
             }, 5000);
         });
 
-        // ===== FUNGSI TOGGLE SIDEBAR =====
+        // ================================================================
+        // 🔥 FUNGSI TOGGLE SIDEBAR
+        // ================================================================
         function toggleSidebar() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            // Untuk desktop
-            if (window.innerWidth > 768) {
-                sidebar.classList.toggle('collapsed');
-            } 
-            // Untuk mobile
-            else {
+            // Cek apakah di mobile atau desktop
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // MOBILE: toggle class mobile-open
                 sidebar.classList.toggle('mobile-open');
                 overlay.classList.toggle('active');
+            } else {
+                // DESKTOP: toggle class collapsed
+                sidebar.classList.toggle('collapsed');
+                
+                // Simpan state ke localStorage
+                const isCollapsed = sidebar.classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
             }
         }
 
-        // ===== TUTUP SIDEBAR KETIKA KLIK DI LUAR (MOBILE) =====
+        // ================================================================
+        // 🔥 TUTUP SIDEBAR KETIKA KLIK DI LUAR (MOBILE)
+        // ================================================================
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('appSidebar');
             const toggleBtn = document.getElementById('toggleSidebarBtn');
+            const overlay = document.getElementById('sidebarOverlay');
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile && sidebar.classList.contains('mobile-open')) {
                 const isClickInsideSidebar = sidebar.contains(event.target);
                 const isClickOnToggle = toggleBtn.contains(event.target);
+                const isClickOnOverlay = overlay.contains(event.target);
                 
-                if (!isClickInsideSidebar && !isClickOnToggle) {
+                if (!isClickInsideSidebar && !isClickOnToggle && !isClickOnOverlay) {
                     sidebar.classList.remove('mobile-open');
-                    document.getElementById('sidebarOverlay').classList.remove('active');
+                    overlay.classList.remove('active');
                 }
             }
         });
 
-        // ===== RESIZE WINDOW =====
+        // ================================================================
+        // 🔥 RESIZE WINDOW
+        // ================================================================
         window.addEventListener('resize', function() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
             if (window.innerWidth > 768) {
+                // Desktop: hapus state mobile
                 sidebar.classList.remove('mobile-open');
                 overlay.classList.remove('active');
             }
         });
 
-        // ===== SIDEBAR COLLAPSE STATE (DESKTOP) =====
-        // Simpan state di localStorage
+        // ================================================================
+        // 🔥 SIDEBAR COLLAPSE STATE (DESKTOP) - Local Storage
+        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('appSidebar');
+            
+            // Cek di localStorage
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             
+            // Terapkan state (hanya jika desktop)
             if (window.innerWidth > 768 && isCollapsed) {
                 sidebar.classList.add('collapsed');
             }
         });
 
-        // Simpan state saat toggle (desktop)
-        document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
-            if (window.innerWidth > 768) {
-                const sidebar = document.getElementById('appSidebar');
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                localStorage.setItem('sidebarCollapsed', !isCollapsed);
-            }
+        // ================================================================
+        // 🔥 LOGOUT CONFIRMATION
+        // ================================================================
+        document.querySelectorAll('.menu-item.logout, .dropdown-item.text-danger').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                if (!confirm('Apakah Anda yakin ingin logout?')) {
+                    e.preventDefault();
+                }
+            });
         });
     </script>
     
