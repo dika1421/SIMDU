@@ -20,17 +20,14 @@ class PersetujuanController extends Controller
         try {
             $query = Pengajuan::with('pengaju');
 
-            // Filter berdasarkan status
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
 
-            // Filter berdasarkan tipe
             if ($request->filled('tipe')) {
                 $query->where('tipe', $request->tipe);
             }
 
-            // Pencarian
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
@@ -44,8 +41,6 @@ class PersetujuanController extends Controller
 
             $pengajuan = $query->orderBy('created_at', 'desc')->paginate(20);
 
-            // Statistik
-            $total = Pengajuan::count();
             $menunggu = Pengajuan::where('status', 'menunggu')->count();
             $disetujui = Pengajuan::where('status', 'disetujui')->count();
             $ditolak = Pengajuan::where('status', 'ditolak')->count();
@@ -53,7 +48,6 @@ class PersetujuanController extends Controller
 
             return view('kepala-sekolah.persetujuan.index', compact(
                 'pengajuan',
-                'total',
                 'menunggu',
                 'disetujui',
                 'ditolak',
@@ -65,7 +59,6 @@ class PersetujuanController extends Controller
             
             return view('kepala-sekolah.persetujuan.index', [
                 'pengajuan' => collect(),
-                'total' => 0,
                 'menunggu' => 0,
                 'disetujui' => 0,
                 'ditolak' => 0,
@@ -173,7 +166,10 @@ class PersetujuanController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            return view('kepala-sekolah.persetujuan.edit', compact('pengajuan', 'pengajuList'));
+            $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
+            $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
+
+            return view('kepala-sekolah.persetujuan.edit', compact('pengajuan', 'pengajuList', 'statuses', 'tipes'));
         } catch (\Exception $e) {
             Log::error('Persetujuan Edit Error: ' . $e->getMessage());
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -400,7 +396,7 @@ class PersetujuanController extends Controller
     }
 
     /**
-     * 🔥 TAMBAHKAN METHOD PRINT (jika digunakan)
+     * Mencetak detail pengajuan
      */
     public function print($id)
     {
@@ -415,7 +411,7 @@ class PersetujuanController extends Controller
     }
 
     /**
-     * 🔥 TAMBAHKAN METHOD BULK APPROVE
+     * Bulk approve pengajuan
      */
     public function bulkApprove(Request $request)
     {
@@ -443,7 +439,7 @@ class PersetujuanController extends Controller
     }
 
     /**
-     * 🔥 TAMBAHKAN METHOD BULK REJECT
+     * Bulk reject pengajuan
      */
     public function bulkReject(Request $request)
     {
@@ -470,7 +466,7 @@ class PersetujuanController extends Controller
     }
 
     /**
-     * 🔥 TAMBAHKAN METHOD UNTUK CEK DATA (Opsional)
+     * Get statistik via AJAX
      */
     public function getStatistik()
     {
@@ -483,9 +479,28 @@ class PersetujuanController extends Controller
                 'total' => Pengajuan::count(),
             ];
 
-            return response()->json($statistik);
+            return response()->json([
+                'success' => true,
+                'data' => $statistik
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Export data (opsional)
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Implementasi export
+            return back()->with('info', 'Fitur export sedang dalam pengembangan.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal export: ' . $e->getMessage());
         }
     }
 }
