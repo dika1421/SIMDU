@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\KepalaSekolah;
 
 use App\Http\Controllers\Controller;
-use App\Models\Persetujuan;
+use App\Models\Pengajuan;  // 🔥 GUNAKAN MODEL PENGAJUAN
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,47 +18,52 @@ class PersetujuanController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Persetujuan::with('user');
+            $query = Pengajuan::with('pengaju');  // 🔥 GUNAKAN RELASI 'pengaju'
 
+            // Filter berdasarkan status
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
 
-            if ($request->filled('jenis')) {
-                $query->where('jenis', $request->jenis);
+            // Filter berdasarkan tipe
+            if ($request->filled('tipe')) {
+                $query->where('tipe', $request->tipe);
             }
 
+            // Pencarian
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
                     $q->where('judul', 'like', "%{$search}%")
                       ->orWhere('deskripsi', 'like', "%{$search}%")
-                      ->orWhereHas('user', function($sub) use ($search) {
+                      ->orWhereHas('pengaju', function($sub) use ($search) {
                           $sub->where('name', 'like', "%{$search}%");
                       });
                 });
             }
 
-            $persetujuan = $query->orderBy('created_at', 'desc')->paginate(20);
+            $pengajuan = $query->orderBy('created_at', 'desc')->paginate(20);
 
-            $total = Persetujuan::count();
-            $pending = Persetujuan::where('status', 'pending')->count();
-            $approved = Persetujuan::where('status', 'approved')->count();
-            $rejected = Persetujuan::where('status', 'rejected')->count();
-            $revised = Persetujuan::where('status', 'revised')->count();
+            // Statistik
+            $total = Pengajuan::count();
+            $menunggu = Pengajuan::where('status', 'menunggu')->count();
+            $disetujui = Pengajuan::where('status', 'disetujui')->count();
+            $ditolak = Pengajuan::where('status', 'ditolak')->count();
+            $revisi = Pengajuan::where('status', 'revisi')->count();
 
-            $statuses = ['pending', 'approved', 'rejected', 'revised'];
-            $jenisList = ['kegiatan', 'anggaran', 'laporan', 'izin', 'lainnya'];
+            // Data untuk filter dropdown
+            $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
+            $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
 
             return view('kepala-sekolah.persetujuan.index', compact(
-                'persetujuan', 
+                'pengajuan', 
                 'statuses', 
-                'jenisList',
+                'tipes',
                 'total',
-                'pending',
-                'approved',
-                'rejected',
-                'revised'
+                'menunggu',
+                'disetujui',
+                'ditolak',
+                'revisi'
             ));
 
         } catch (\Exception $e) {
@@ -67,6 +72,9 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menampilkan form untuk membuat pengajuan baru
+     */
     public function create()
     {
         try {
@@ -81,15 +89,18 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menyimpan pengajuan baru ke database
+     */
     public function store(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
+                'pengaju_id' => 'required|exists:users,id',
                 'judul' => 'required|string|max:255',
-                'jenis' => 'required|string|in:kegiatan,anggaran,laporan,izin,lainnya',
+                'tipe' => 'required|string|in:anggaran,izin,proyek,lainnya',
                 'deskripsi' => 'required|string|min:10',
-                'nominal' => 'nullable|numeric|min:0',
-                'tanggal_pelaksanaan' => 'nullable|date',
+                'jumlah_anggaran' => 'nullable|numeric|min:0',
                 'lampiran' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             ]);
 
@@ -103,17 +114,17 @@ class PersetujuanController extends Controller
             if ($request->hasFile('lampiran')) {
                 $file = $request->file('lampiran');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $lampiranPath = $file->storeAs('uploads/persetujuan', $filename, 'public');
+                $lampiranPath = $file->storeAs('uploads/pengajuan', $filename, 'public');
             }
 
-            $persetujuan = Persetujuan::create([
+            $pengajuan = Pengajuan::create([
+                'pengaju_id' => $request->pengaju_id,
                 'judul' => $request->judul,
-                'jenis' => $request->jenis,
+                'tipe' => $request->tipe,
                 'deskripsi' => $request->deskripsi,
-                'nominal' => $request->nominal ?? 0,
-                'tanggal_pelaksanaan' => $request->tanggal_pelaksanaan,
+                'jumlah_anggaran' => $request->jumlah_anggaran ?? 0,
                 'lampiran' => $lampiranPath,
-                'status' => 'pending',
+                'status' => 'menunggu',
                 'created_by' => Auth::id(),
             ]);
 
@@ -128,11 +139,14 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menampilkan detail pengajuan
+     */
     public function show($id)
     {
         try {
-            $persetujuan = Persetujuan::with(['user', 'approver'])->findOrFail($id);
-            return view('kepala-sekolah.persetujuan.show', compact('persetujuan'));
+            $pengajuan = Pengajuan::with(['pengaju', 'penyetuju'])->findOrFail($id);
+            return view('kepala-sekolah.persetujuan.show', compact('pengajuan'));
         } catch (\Exception $e) {
             Log::error('Persetujuan Show Error: ' . $e->getMessage());
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -140,28 +154,31 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menampilkan form edit pengajuan
+     */
     public function edit($id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if ($persetujuan->status !== 'pending') {
+            if ($pengajuan->status !== 'menunggu') {
                 return redirect()->route('kepala-sekolah.persetujuan.index')
-                    ->with('error', '⚠️ Pengajuan dengan status "' . $persetujuan->status . '" tidak dapat diedit.');
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat diedit.');
             }
 
             $pengajuList = User::where('role', '!=', 'kepala_sekolah')
                 ->orderBy('name')
                 ->get();
 
-            $statuses = ['pending', 'approved', 'rejected', 'revised'];
-            $jenisList = ['kegiatan', 'anggaran', 'laporan', 'izin', 'lainnya'];
+            $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
+            $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
 
             return view('kepala-sekolah.persetujuan.edit', compact(
-                'persetujuan', 
+                'pengajuan', 
                 'pengajuList', 
                 'statuses', 
-                'jenisList'
+                'tipes'
             ));
         } catch (\Exception $e) {
             Log::error('Persetujuan Edit Error: ' . $e->getMessage());
@@ -170,22 +187,25 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Mengupdate data pengajuan
+     */
     public function update(Request $request, $id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if ($persetujuan->status !== 'pending') {
+            if ($pengajuan->status !== 'menunggu') {
                 return redirect()->route('kepala-sekolah.persetujuan.index')
-                    ->with('error', '⚠️ Pengajuan dengan status "' . $persetujuan->status . '" tidak dapat diupdate.');
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat diupdate.');
             }
 
             $validator = Validator::make($request->all(), [
+                'pengaju_id' => 'required|exists:users,id',
                 'judul' => 'required|string|max:255',
-                'jenis' => 'required|string|in:kegiatan,anggaran,laporan,izin,lainnya',
+                'tipe' => 'required|string|in:anggaran,izin,proyek,lainnya',
                 'deskripsi' => 'required|string|min:10',
-                'nominal' => 'nullable|numeric|min:0',
-                'tanggal_pelaksanaan' => 'nullable|date',
+                'jumlah_anggaran' => 'nullable|numeric|min:0',
                 'lampiran' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             ]);
 
@@ -195,23 +215,23 @@ class PersetujuanController extends Controller
                     ->withInput();
             }
 
-            $lampiranPath = $persetujuan->lampiran;
+            $lampiranPath = $pengajuan->lampiran;
             if ($request->hasFile('lampiran')) {
-                if ($persetujuan->lampiran && file_exists(storage_path('app/public/' . $persetujuan->lampiran))) {
-                    unlink(storage_path('app/public/' . $persetujuan->lampiran));
+                if ($pengajuan->lampiran && file_exists(storage_path('app/public/' . $pengajuan->lampiran))) {
+                    unlink(storage_path('app/public/' . $pengajuan->lampiran));
                 }
                 
                 $file = $request->file('lampiran');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $lampiranPath = $file->storeAs('uploads/persetujuan', $filename, 'public');
+                $lampiranPath = $file->storeAs('uploads/pengajuan', $filename, 'public');
             }
 
-            $persetujuan->update([
+            $pengajuan->update([
+                'pengaju_id' => $request->pengaju_id,
                 'judul' => $request->judul,
-                'jenis' => $request->jenis,
+                'tipe' => $request->tipe,
                 'deskripsi' => $request->deskripsi,
-                'nominal' => $request->nominal ?? 0,
-                'tanggal_pelaksanaan' => $request->tanggal_pelaksanaan,
+                'jumlah_anggaran' => $request->jumlah_anggaran ?? 0,
                 'lampiran' => $lampiranPath,
             ]);
 
@@ -226,21 +246,24 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menghapus pengajuan
+     */
     public function destroy($id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if (!in_array($persetujuan->status, ['pending', 'rejected'])) {
+            if (!in_array($pengajuan->status, ['menunggu', 'ditolak'])) {
                 return redirect()->route('kepala-sekolah.persetujuan.index')
-                    ->with('error', '⚠️ Pengajuan dengan status "' . $persetujuan->status . '" tidak dapat dihapus.');
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat dihapus.');
             }
 
-            if ($persetujuan->lampiran && file_exists(storage_path('app/public/' . $persetujuan->lampiran))) {
-                unlink(storage_path('app/public/' . $persetujuan->lampiran));
+            if ($pengajuan->lampiran && file_exists(storage_path('app/public/' . $pengajuan->lampiran))) {
+                unlink(storage_path('app/public/' . $pengajuan->lampiran));
             }
 
-            $persetujuan->delete();
+            $pengajuan->delete();
 
             return redirect()->route('kepala-sekolah.persetujuan.index')
                 ->with('success', '🗑️ Pengajuan berhasil dihapus.');
@@ -252,24 +275,22 @@ class PersetujuanController extends Controller
         }
     }
 
-    public function approve(Request $request, $id)
+    /**
+     * Menyetujui pengajuan
+     */
+    public function approve($id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if ($persetujuan->status !== 'pending') {
+            if ($pengajuan->status !== 'menunggu') {
                 return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
             }
 
-            $request->validate([
-                'catatan' => 'nullable|string|max:1000',
-            ]);
-
-            $persetujuan->update([
-                'status' => 'approved',
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-                'catatan' => $request->catatan,
+            $pengajuan->update([
+                'status' => 'disetujui',
+                'disetujui_oleh' => Auth::id(),
+                'tanggal_disetujui' => now(),
             ]);
 
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -281,12 +302,15 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Menolak pengajuan
+     */
     public function reject(Request $request, $id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if ($persetujuan->status !== 'pending') {
+            if ($pengajuan->status !== 'menunggu') {
                 return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
             }
 
@@ -294,11 +318,10 @@ class PersetujuanController extends Controller
                 'catatan' => 'required|string|max:1000',
             ]);
 
-            $persetujuan->update([
-                'status' => 'rejected',
-                'rejected_by' => Auth::id(),
-                'rejected_at' => now(),
+            $pengajuan->update([
+                'status' => 'ditolak',
                 'catatan' => $request->catatan,
+                'disetujui_oleh' => Auth::id(),
             ]);
 
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -310,21 +333,24 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Mengembalikan pengajuan untuk revisi
+     */
     public function revise(Request $request, $id)
     {
         try {
-            $persetujuan = Persetujuan::findOrFail($id);
+            $pengajuan = Pengajuan::findOrFail($id);
             
-            if ($persetujuan->status !== 'pending') {
+            if ($pengajuan->status !== 'menunggu') {
                 return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
             }
 
             $request->validate([
-                'catatan' => 'nullable|string|max:1000',
+                'catatan' => 'required|string|max:1000',
             ]);
 
-            $persetujuan->update([
-                'status' => 'revised',
+            $pengajuan->update([
+                'status' => 'revisi',
                 'catatan' => $request->catatan,
             ]);
 
@@ -337,20 +363,25 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Dashboard statistik persetujuan
+     */
     public function dashboard()
     {
         try {
             $statistik = [
-                'pending' => Persetujuan::where('status', 'pending')->count(),
-                'approved' => Persetujuan::where('status', 'approved')->count(),
-                'rejected' => Persetujuan::where('status', 'rejected')->count(),
-                'revised' => Persetujuan::where('status', 'revised')->count(),
-                'total' => Persetujuan::count(),
-                'total_nominal' => Persetujuan::where('status', 'approved')->sum('nominal'),
+                'menunggu' => Pengajuan::where('status', 'menunggu')->count(),
+                'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+                'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
+                'revisi' => Pengajuan::where('status', 'revisi')->count(),
+                'total' => Pengajuan::count(),
+                'total_anggaran' => Pengajuan::where('tipe', 'anggaran')
+                    ->where('status', 'disetujui')
+                    ->sum('jumlah_anggaran'),
             ];
 
-            $recent = Persetujuan::with('user')
-                ->where('status', 'pending')
+            $recent = Pengajuan::with('pengaju')
+                ->where('status', 'menunggu')
                 ->orderBy('created_at', 'desc')
                 ->take(10)
                 ->get();
@@ -361,23 +392,26 @@ class PersetujuanController extends Controller
             Log::error('Persetujuan Dashboard Error: ' . $e->getMessage());
             return view('kepala-sekolah.persetujuan.dashboard', [
                 'statistik' => [
-                    'pending' => 0,
-                    'approved' => 0,
-                    'rejected' => 0,
-                    'revised' => 0,
+                    'menunggu' => 0,
+                    'disetujui' => 0,
+                    'ditolak' => 0,
+                    'revisi' => 0,
                     'total' => 0,
-                    'total_nominal' => 0,
+                    'total_anggaran' => 0,
                 ],
                 'recent' => collect(),
             ]);
         }
     }
 
+    /**
+     * Mencetak detail pengajuan
+     */
     public function print($id)
     {
         try {
-            $persetujuan = Persetujuan::with(['user', 'approver'])->findOrFail($id);
-            return view('kepala-sekolah.persetujuan.print', compact('persetujuan'));
+            $pengajuan = Pengajuan::with(['pengaju', 'penyetuju'])->findOrFail($id);
+            return view('kepala-sekolah.persetujuan.print', compact('pengajuan'));
         } catch (\Exception $e) {
             Log::error('Persetujuan Print Error: ' . $e->getMessage());
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -385,20 +419,23 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Bulk approve pengajuan
+     */
     public function bulkApprove(Request $request)
     {
         try {
             $request->validate([
                 'ids' => 'required|array',
-                'ids.*' => 'exists:persetujuan,id',
+                'ids.*' => 'exists:pengajuan,id',
             ]);
 
-            $updated = Persetujuan::whereIn('id', $request->ids)
-                ->where('status', 'pending')
+            $updated = Pengajuan::whereIn('id', $request->ids)
+                ->where('status', 'menunggu')
                 ->update([
-                    'status' => 'approved',
-                    'approved_by' => Auth::id(),
-                    'approved_at' => now(),
+                    'status' => 'disetujui',
+                    'disetujui_oleh' => Auth::id(),
+                    'tanggal_disetujui' => now(),
                 ]);
 
             return redirect()->back()
@@ -410,20 +447,22 @@ class PersetujuanController extends Controller
         }
     }
 
+    /**
+     * Bulk reject pengajuan
+     */
     public function bulkReject(Request $request)
     {
         try {
             $request->validate([
                 'ids' => 'required|array',
-                'ids.*' => 'exists:persetujuan,id',
+                'ids.*' => 'exists:pengajuan,id',
             ]);
 
-            $updated = Persetujuan::whereIn('id', $request->ids)
-                ->where('status', 'pending')
+            $updated = Pengajuan::whereIn('id', $request->ids)
+                ->where('status', 'menunggu')
                 ->update([
-                    'status' => 'rejected',
-                    'rejected_by' => Auth::id(),
-                    'rejected_at' => now(),
+                    'status' => 'ditolak',
+                    'disetujui_oleh' => Auth::id(),
                 ]);
 
             return redirect()->back()
