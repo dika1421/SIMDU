@@ -18,7 +18,7 @@ class PersetujuanController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Pengajuan::with('pengaju');  // 🔥 GUNAKAN RELASI 'pengaju'
+            $query = Pengajuan::with('pengaju');
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
@@ -51,14 +51,8 @@ class PersetujuanController extends Controller
             $ditolak = Pengajuan::where('status', 'ditolak')->count();
             $revisi = Pengajuan::where('status', 'revisi')->count();
 
-            // Data untuk filter dropdown
-            $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
-            $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
-
             return view('kepala-sekolah.persetujuan.index', compact(
-                'pengajuan', 
-                'statuses', 
-                'tipes',
+                'pengajuan',
                 'total',
                 'menunggu',
                 'disetujui',
@@ -68,7 +62,16 @@ class PersetujuanController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Persetujuan Index Error: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            
+            // 🔥 KIRIM DATA KOSONG JIKA ERROR
+            return view('kepala-sekolah.persetujuan.index', [
+                'pengajuan' => collect(),
+                'total' => 0,
+                'menunggu' => 0,
+                'disetujui' => 0,
+                'ditolak' => 0,
+                'revisi' => 0,
+            ])->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -171,15 +174,7 @@ class PersetujuanController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            $statuses = ['menunggu', 'disetujui', 'ditolak', 'revisi'];
-            $tipes = ['anggaran', 'izin', 'proyek', 'lainnya'];
-
-            return view('kepala-sekolah.persetujuan.edit', compact(
-                'pengajuan', 
-                'pengajuList', 
-                'statuses', 
-                'tipes'
-            ));
+            return view('kepala-sekolah.persetujuan.edit', compact('pengajuan', 'pengajuList'));
         } catch (\Exception $e) {
             Log::error('Persetujuan Edit Error: ' . $e->getMessage());
             return redirect()->route('kepala-sekolah.persetujuan.index')
@@ -401,76 +396,6 @@ class PersetujuanController extends Controller
                 ],
                 'recent' => collect(),
             ]);
-        }
-    }
-
-    /**
-     * Mencetak detail pengajuan
-     */
-    public function print($id)
-    {
-        try {
-            $pengajuan = Pengajuan::with(['pengaju', 'penyetuju'])->findOrFail($id);
-            return view('kepala-sekolah.persetujuan.print', compact('pengajuan'));
-        } catch (\Exception $e) {
-            Log::error('Persetujuan Print Error: ' . $e->getMessage());
-            return redirect()->route('kepala-sekolah.persetujuan.index')
-                ->with('error', 'Data tidak ditemukan');
-        }
-    }
-
-    /**
-     * Bulk approve pengajuan
-     */
-    public function bulkApprove(Request $request)
-    {
-        try {
-            $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'exists:pengajuan,id',
-            ]);
-
-            $updated = Pengajuan::whereIn('id', $request->ids)
-                ->where('status', 'menunggu')
-                ->update([
-                    'status' => 'disetujui',
-                    'disetujui_oleh' => Auth::id(),
-                    'tanggal_disetujui' => now(),
-                ]);
-
-            return redirect()->back()
-                ->with('success', "✅ {$updated} pengajuan berhasil disetujui.");
-
-        } catch (\Exception $e) {
-            Log::error('Persetujuan BulkApprove Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memproses: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Bulk reject pengajuan
-     */
-    public function bulkReject(Request $request)
-    {
-        try {
-            $request->validate([
-                'ids' => 'required|array',
-                'ids.*' => 'exists:pengajuan,id',
-            ]);
-
-            $updated = Pengajuan::whereIn('id', $request->ids)
-                ->where('status', 'menunggu')
-                ->update([
-                    'status' => 'ditolak',
-                    'disetujui_oleh' => Auth::id(),
-                ]);
-
-            return redirect()->back()
-                ->with('success', "❌ {$updated} pengajuan berhasil ditolak.");
-
-        } catch (\Exception $e) {
-            Log::error('Persetujuan BulkReject Error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memproses: ' . $e->getMessage());
         }
     }
 }

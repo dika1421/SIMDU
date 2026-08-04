@@ -45,7 +45,7 @@
                 <div class="stat-card warning">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">{{ $pending ?? 0 }}</div>
+                            <div class="stat-number">{{ $menunggu ?? 0 }}</div>
                             <div class="stat-label">⏳ Menunggu Persetujuan</div>
                         </div>
                         <div class="stat-icon">
@@ -58,7 +58,7 @@
                 <div class="stat-card success">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">{{ $approved ?? 0 }}</div>
+                            <div class="stat-number">{{ $disetujui ?? 0 }}</div>
                             <div class="stat-label">✅ Disetujui</div>
                         </div>
                         <div class="stat-icon">
@@ -71,7 +71,7 @@
                 <div class="stat-card danger">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">{{ $rejected ?? 0 }}</div>
+                            <div class="stat-number">{{ $ditolak ?? 0 }}</div>
                             <div class="stat-label">❌ Ditolak</div>
                         </div>
                         <div class="stat-icon">
@@ -84,7 +84,7 @@
                 <div class="stat-card info">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">{{ $revised ?? 0 }}</div>
+                            <div class="stat-number">{{ $revisi ?? 0 }}</div>
                             <div class="stat-label">📝 Revisi</div>
                         </div>
                         <div class="stat-icon">
@@ -120,20 +120,19 @@
                         <div class="col-md-3">
                             <select name="status" class="form-select form-select-sm">
                                 <option value="">Semua Status</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Menunggu</option>
-                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>✅ Disetujui</option>
-                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Ditolak</option>
-                                <option value="revised" {{ request('status') == 'revised' ? 'selected' : '' }}>📝 Revisi</option>
+                                <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>⏳ Menunggu</option>
+                                <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>✅ Disetujui</option>
+                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>❌ Ditolak</option>
+                                <option value="revisi" {{ request('status') == 'revisi' ? 'selected' : '' }}>📝 Revisi</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select name="jenis" class="form-select form-select-sm">
-                                <option value="">Semua Jenis</option>
-                                <option value="kegiatan" {{ request('jenis') == 'kegiatan' ? 'selected' : '' }}>🎯 Kegiatan</option>
-                                <option value="anggaran" {{ request('jenis') == 'anggaran' ? 'selected' : '' }}>💰 Anggaran</option>
-                                <option value="laporan" {{ request('jenis') == 'laporan' ? 'selected' : '' }}>📊 Laporan</option>
-                                <option value="izin" {{ request('jenis') == 'izin' ? 'selected' : '' }}>📋 Izin</option>
-                                <option value="lainnya" {{ request('jenis') == 'lainnya' ? 'selected' : '' }}>📌 Lainnya</option>
+                            <select name="tipe" class="form-select form-select-sm">
+                                <option value="">Semua Tipe</option>
+                                <option value="anggaran" {{ request('tipe') == 'anggaran' ? 'selected' : '' }}>💰 Anggaran</option>
+                                <option value="izin" {{ request('tipe') == 'izin' ? 'selected' : '' }}>📋 Izin</option>
+                                <option value="proyek" {{ request('tipe') == 'proyek' ? 'selected' : '' }}>🔨 Proyek</option>
+                                <option value="lainnya" {{ request('tipe') == 'lainnya' ? 'selected' : '' }}>📌 Lainnya</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -156,53 +155,50 @@
                                 <th width="40">No</th>
                                 <th>Judul</th>
                                 <th>Pengaju</th>
-                                <th>Jenis</th>
+                                <th>Tipe</th>
                                 <th>Status</th>
                                 <th>Tanggal</th>
                                 <th width="220">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($persetujuan ?? [] as $key => $item)
+                            @forelse($pengajuan ?? [] as $key => $item)
                             <tr>
-                                <td>{{ $persetujuan->firstItem() + $key ?? $loop->iteration }}</td>
+                                <td>{{ $pengajuan->firstItem() + $key ?? $loop->iteration }}</td>
                                 <td>{{ Str::limit($item->judul ?? '-', 40) }}</td>
                                 <td>
-                                    @if($item->user)
-                                        {{ $item->user->name ?? 'Tidak Diketahui' }}
-                                    @elseif($item->created_by)
-                                        {{ $item->created_by }}
+                                    @if($item->pengaju)
+                                        {{ $item->pengaju->name ?? 'Tidak Diketahui' }}
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>
                                     @php
-                                        $jenisColors = [
-                                            'kegiatan' => 'primary',
-                                            'anggaran' => 'warning',
-                                            'laporan' => 'info',
-                                            'izin' => 'success',
+                                        $tipeColors = [
+                                            'anggaran' => 'primary',
+                                            'izin' => 'warning',
+                                            'proyek' => 'info',
                                             'lainnya' => 'secondary'
                                         ];
                                     @endphp
-                                    <span class="badge bg-{{ $jenisColors[$item->jenis] ?? 'secondary' }}">
-                                        {{ ucfirst($item->jenis ?? '-') }}
+                                    <span class="badge bg-{{ $tipeColors[$item->tipe] ?? 'secondary' }}">
+                                        {{ ucfirst($item->tipe ?? '-') }}
                                     </span>
                                 </td>
                                 <td>
                                     @php
                                         $statusColors = [
-                                            'pending' => 'warning',
-                                            'approved' => 'success',
-                                            'rejected' => 'danger',
-                                            'revised' => 'info'
+                                            'menunggu' => 'warning',
+                                            'disetujui' => 'success',
+                                            'ditolak' => 'danger',
+                                            'revisi' => 'info'
                                         ];
                                         $statusLabels = [
-                                            'pending' => '⏳ Menunggu',
-                                            'approved' => '✅ Disetujui',
-                                            'rejected' => '❌ Ditolak',
-                                            'revised' => '📝 Revisi'
+                                            'menunggu' => '⏳ Menunggu',
+                                            'disetujui' => '✅ Disetujui',
+                                            'ditolak' => '❌ Ditolak',
+                                            'revisi' => '📝 Revisi'
                                         ];
                                     @endphp
                                     <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">
@@ -217,7 +213,7 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         
-                                        @if($item->status == 'pending')
+                                        @if($item->status == 'menunggu')
                                             <a href="{{ route('kepala-sekolah.persetujuan.edit', $item->id) }}" 
                                                class="btn btn-warning" title="Edit">
                                                 <i class="fas fa-edit"></i>
@@ -268,7 +264,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-3">
-                    {{ $persetujuan->appends(request()->query())->links() ?? '' }}
+                    {{ $pengajuan->appends(request()->query())->links() ?? '' }}
                 </div>
             </div>
         </div>
