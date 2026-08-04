@@ -1,256 +1,491 @@
-@extends('kepala-sekolah.layouts.header')
+<?php
 
-@section('title', 'Daftar Persetujuan')
+namespace App\Http\Controllers\KepalaSekolah;
 
-@section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4><i class="fas fa-check-double me-2"></i> Daftar Persetujuan</h4>
-                <div>
-                    <a href="{{ route('kepala-sekolah.persetujuan.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Tambah
-                    </a>
-                </div>
-            </div>
+use App\Http\Controllers\Controller;
+use App\Models\Pengajuan;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
-            <!-- Statistik -->
-            <div class="row mb-3">
-                <div class="col-md-3 col-6">
-                    <div class="card bg-warning text-dark">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $menunggu ?? 0 }}</h5>
-                            <p class="card-text">⏳ Menunggu</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $disetujui ?? 0 }}</h5>
-                            <p class="card-text">✅ Disetujui</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $ditolak ?? 0 }}</h5>
-                            <p class="card-text">❌ Ditolak</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $revisi ?? 0 }}</h5>
-                            <p class="card-text">📝 Revisi</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+class PersetujuanController extends Controller
+{
+    /**
+     * Menampilkan daftar pengajuan dengan filter
+     */
+    public function index(Request $request)
+    {
+        try {
+            $query = Pengajuan::with('pengaju');
 
-            <!-- Filter -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <form method="GET" action="{{ route('kepala-sekolah.persetujuan.index') }}" class="row g-2">
-                        <div class="col-md-3">
-                            <select name="status" class="form-select form-select-sm">
-                                <option value="">Semua Status</option>
-                                <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                <option value="revisi" {{ request('status') == 'revisi' ? 'selected' : '' }}>Revisi</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select name="tipe" class="form-select form-select-sm">
-                                <option value="">Semua Tipe</option>
-                                <option value="anggaran" {{ request('tipe') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
-                                <option value="izin" {{ request('tipe') == 'izin' ? 'selected' : '' }}>Izin</option>
-                                <option value="proyek" {{ request('tipe') == 'proyek' ? 'selected' : '' }}>Proyek</option>
-                                <option value="lainnya" {{ request('tipe') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" name="search" class="form-control form-control-sm" 
-                                   placeholder="Cari..." value="{{ request('search') }}">
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            // Filter berdasarkan status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
 
-            <!-- Tabel -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Judul</th>
-                                    <th>Pengaju</th>
-                                    <th>Tipe</th>
-                                    <th>Status</th>
-                                    <th>Tanggal</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($pengajuan ?? [] as $key => $item)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $item->judul ?? '-' }}</td>
-                                    <td>{{ $item->pengaju->name ?? '-' }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">{{ $item->tipe ?? '-' }}</span>
-                                    </td>
-                                    <td>
-                                        @if($item->status == 'menunggu')
-                                            <span class="badge bg-warning text-dark">⏳ Menunggu</span>
-                                        @elseif($item->status == 'disetujui')
-                                            <span class="badge bg-success">✅ Disetujui</span>
-                                        @elseif($item->status == 'ditolak')
-                                            <span class="badge bg-danger">❌ Ditolak</span>
-                                        @elseif($item->status == 'revisi')
-                                            <span class="badge bg-info">📝 Revisi</span>
-                                        @else
-                                            <span class="badge bg-secondary">{{ $item->status }}</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('kepala-sekolah.persetujuan.show', $item->id) }}" 
-                                               class="btn btn-info" title="Detail">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            
-                                            @if($item->status == 'menunggu')
-                                                <a href="{{ route('kepala-sekolah.persetujuan.edit', $item->id) }}" 
-                                                   class="btn btn-warning" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                
-                                                <button type="button" class="btn btn-success" 
-                                                        onclick="approvePengajuan({{ $item->id }})" title="Setujui">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                                
-                                                <button type="button" class="btn btn-danger" 
-                                                        onclick="rejectPengajuan({{ $item->id }})" title="Tolak">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            @endif
-                                            
-                                            <form action="{{ route('kepala-sekolah.persetujuan.destroy', $item->id) }}" 
-                                                  method="POST" class="d-inline" 
-                                                  onsubmit="return confirm('⚠️ Yakin ingin menghapus data ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <i class="fas fa-inbox fa-3x text-muted"></i>
-                                        <p class="mt-2 text-muted">Belum ada data pengajuan</p>
-                                        <a href="{{ route('kepala-sekolah.persetujuan.create') }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-plus"></i> Buat Pengajuan
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    {{ $pengajuan->links() ?? '' }}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+            // Filter berdasarkan tipe
+            if ($request->filled('tipe')) {
+                $query->where('tipe', $request->tipe);
+            }
 
-<!-- Modal Approve -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="approveForm" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-check-circle text-success me-2"></i>Setujui Pengajuan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menyetujui pengajuan ini?</p>
-                    <div class="mb-3">
-                        <label for="approveCatatan" class="form-label">Catatan (Opsional)</label>
-                        <textarea name="catatan" id="approveCatatan" class="form-control" rows="3" 
-                                  placeholder="Tambahkan catatan jika perlu..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Setujui</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+            // Pencarian
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                      ->orWhere('deskripsi', 'like', "%{$search}%")
+                      ->orWhereHas('pengaju', function($sub) use ($search) {
+                          $sub->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
 
-<!-- Modal Reject -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="rejectForm" method="POST">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-times-circle text-danger me-2"></i>Tolak Pengajuan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menolak pengajuan ini?</p>
-                    <div class="mb-3">
-                        <label for="rejectCatatan" class="form-label">Catatan Alasan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="catatan" id="rejectCatatan" class="form-control" rows="3" 
-                                  placeholder="Berikan alasan penolakan..." required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">Tolak</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endsection
+            $pengajuan = $query->orderBy('created_at', 'desc')->paginate(20);
 
-@push('scripts')
-<script>
-    function approvePengajuan(id) {
-        var form = document.getElementById('approveForm');
-        // 🔥 PERBAIKAN: Gunakan route helper, bukan hardcode
-        form.action = "{{ url('kepala-sekolah/persetujuan') }}/" + id + "/approve";
-        var modal = new bootstrap.Modal(document.getElementById('approveModal'));
-        modal.show();
+            // Statistik
+            $total = Pengajuan::count();
+            $menunggu = Pengajuan::where('status', 'menunggu')->count();
+            $disetujui = Pengajuan::where('status', 'disetujui')->count();
+            $ditolak = Pengajuan::where('status', 'ditolak')->count();
+            $revisi = Pengajuan::where('status', 'revisi')->count();
+
+            return view('kepala-sekolah.persetujuan.index', compact(
+                'pengajuan',
+                'total',
+                'menunggu',
+                'disetujui',
+                'ditolak',
+                'revisi'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Index Error: ' . $e->getMessage());
+            
+            return view('kepala-sekolah.persetujuan.index', [
+                'pengajuan' => collect(),
+                'total' => 0,
+                'menunggu' => 0,
+                'disetujui' => 0,
+                'ditolak' => 0,
+                'revisi' => 0,
+            ])->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
-    function rejectPengajuan(id) {
-        var form = document.getElementById('rejectForm');
-        // 🔥 PERBAIKAN: Gunakan route helper, bukan hardcode
-        form.action = "{{ url('kepala-sekolah/persetujuan') }}/" + id + "/reject";
-        var modal = new bootstrap.Modal(document.getElementById('rejectModal'));
-        modal.show();
+    /**
+     * Menampilkan form untuk membuat pengajuan baru
+     */
+    public function create()
+    {
+        try {
+            $pengajuList = User::where('role', '!=', 'kepala_sekolah')
+                ->orderBy('name')
+                ->get();
+
+            return view('kepala-sekolah.persetujuan.create', compact('pengajuList'));
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Create Error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
-</script>
-@endpush
+
+    /**
+     * Menyimpan pengajuan baru ke database
+     */
+    public function store(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'pengaju_id' => 'required|exists:users,id',
+                'judul' => 'required|string|max:255',
+                'tipe' => 'required|string|in:anggaran,izin,proyek,lainnya',
+                'deskripsi' => 'required|string|min:10',
+                'jumlah_anggaran' => 'nullable|numeric|min:0',
+                'lampiran' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            $lampiranPath = null;
+            if ($request->hasFile('lampiran')) {
+                $file = $request->file('lampiran');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $lampiranPath = $file->storeAs('uploads/pengajuan', $filename, 'public');
+            }
+
+            $pengajuan = Pengajuan::create([
+                'pengaju_id' => $request->pengaju_id,
+                'judul' => $request->judul,
+                'tipe' => $request->tipe,
+                'deskripsi' => $request->deskripsi,
+                'jumlah_anggaran' => $request->jumlah_anggaran ?? 0,
+                'lampiran' => $lampiranPath,
+                'status' => 'menunggu',
+                'created_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '✅ Pengajuan berhasil dibuat dan menunggu persetujuan.');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Store Error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal menyimpan: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
+     * Menampilkan detail pengajuan
+     */
+    public function show($id)
+    {
+        try {
+            $pengajuan = Pengajuan::with(['pengaju', 'penyetuju'])->findOrFail($id);
+            return view('kepala-sekolah.persetujuan.show', compact('pengajuan'));
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Show Error: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('error', 'Data tidak ditemukan');
+        }
+    }
+
+    /**
+     * Menampilkan form edit pengajuan
+     */
+    public function edit($id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if ($pengajuan->status !== 'menunggu') {
+                return redirect()->route('kepala-sekolah.persetujuan.index')
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat diedit.');
+            }
+
+            $pengajuList = User::where('role', '!=', 'kepala_sekolah')
+                ->orderBy('name')
+                ->get();
+
+            return view('kepala-sekolah.persetujuan.edit', compact('pengajuan', 'pengajuList'));
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Edit Error: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('error', 'Data tidak ditemukan');
+        }
+    }
+
+    /**
+     * Mengupdate data pengajuan
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if ($pengajuan->status !== 'menunggu') {
+                return redirect()->route('kepala-sekolah.persetujuan.index')
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat diupdate.');
+            }
+
+            $validator = Validator::make($request->all(), [
+                'pengaju_id' => 'required|exists:users,id',
+                'judul' => 'required|string|max:255',
+                'tipe' => 'required|string|in:anggaran,izin,proyek,lainnya',
+                'deskripsi' => 'required|string|min:10',
+                'jumlah_anggaran' => 'nullable|numeric|min:0',
+                'lampiran' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            $lampiranPath = $pengajuan->lampiran;
+            if ($request->hasFile('lampiran')) {
+                if ($pengajuan->lampiran && file_exists(storage_path('app/public/' . $pengajuan->lampiran))) {
+                    unlink(storage_path('app/public/' . $pengajuan->lampiran));
+                }
+                
+                $file = $request->file('lampiran');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $lampiranPath = $file->storeAs('uploads/pengajuan', $filename, 'public');
+            }
+
+            $pengajuan->update([
+                'pengaju_id' => $request->pengaju_id,
+                'judul' => $request->judul,
+                'tipe' => $request->tipe,
+                'deskripsi' => $request->deskripsi,
+                'jumlah_anggaran' => $request->jumlah_anggaran ?? 0,
+                'lampiran' => $lampiranPath,
+            ]);
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '✅ Pengajuan berhasil diupdate.');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Update Error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal mengupdate: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    /**
+     * Menghapus pengajuan
+     */
+    public function destroy($id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if (!in_array($pengajuan->status, ['menunggu', 'ditolak'])) {
+                return redirect()->route('kepala-sekolah.persetujuan.index')
+                    ->with('error', '⚠️ Pengajuan dengan status "' . $pengajuan->status . '" tidak dapat dihapus.');
+            }
+
+            if ($pengajuan->lampiran && file_exists(storage_path('app/public/' . $pengajuan->lampiran))) {
+                unlink(storage_path('app/public/' . $pengajuan->lampiran));
+            }
+
+            $pengajuan->delete();
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '🗑️ Pengajuan berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Destroy Error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menyetujui pengajuan
+     */
+    public function approve($id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if ($pengajuan->status !== 'menunggu') {
+                return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
+            }
+
+            $pengajuan->update([
+                'status' => 'disetujui',
+                'disetujui_oleh' => Auth::id(),
+                'tanggal_disetujui' => now(),
+            ]);
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '✅ Pengajuan berhasil disetujui');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Approve Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menyetujui: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menolak pengajuan
+     */
+    public function reject(Request $request, $id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if ($pengajuan->status !== 'menunggu') {
+                return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
+            }
+
+            $request->validate([
+                'catatan' => 'required|string|max:1000',
+            ]);
+
+            $pengajuan->update([
+                'status' => 'ditolak',
+                'catatan' => $request->catatan,
+                'disetujui_oleh' => Auth::id(),
+            ]);
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '❌ Pengajuan ditolak');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Reject Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menolak: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mengembalikan pengajuan untuk revisi
+     */
+    public function revise(Request $request, $id)
+    {
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
+            
+            if ($pengajuan->status !== 'menunggu') {
+                return back()->with('error', '⚠️ Pengajuan ini sudah diproses sebelumnya.');
+            }
+
+            $request->validate([
+                'catatan' => 'required|string|max:1000',
+            ]);
+
+            $pengajuan->update([
+                'status' => 'revisi',
+                'catatan' => $request->catatan,
+            ]);
+
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('success', '🔄 Pengajuan dikembalikan untuk revisi');
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Revise Error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal meminta revisi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Dashboard statistik persetujuan
+     */
+    public function dashboard()
+    {
+        try {
+            $statistik = [
+                'menunggu' => Pengajuan::where('status', 'menunggu')->count(),
+                'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+                'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
+                'revisi' => Pengajuan::where('status', 'revisi')->count(),
+                'total' => Pengajuan::count(),
+                'total_anggaran' => Pengajuan::where('tipe', 'anggaran')
+                    ->where('status', 'disetujui')
+                    ->sum('jumlah_anggaran'),
+            ];
+
+            $recent = Pengajuan::with('pengaju')
+                ->where('status', 'menunggu')
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+
+            return view('kepala-sekolah.persetujuan.dashboard', compact('statistik', 'recent'));
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Dashboard Error: ' . $e->getMessage());
+            
+            return view('kepala-sekolah.persetujuan.dashboard', [
+                'statistik' => [
+                    'menunggu' => 0,
+                    'disetujui' => 0,
+                    'ditolak' => 0,
+                    'revisi' => 0,
+                    'total' => 0,
+                    'total_anggaran' => 0,
+                ],
+                'recent' => collect(),
+            ])->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 🔥 TAMBAHKAN METHOD PRINT (jika digunakan)
+     */
+    public function print($id)
+    {
+        try {
+            $pengajuan = Pengajuan::with(['pengaju', 'penyetuju'])->findOrFail($id);
+            return view('kepala-sekolah.persetujuan.print', compact('pengajuan'));
+        } catch (\Exception $e) {
+            Log::error('Persetujuan Print Error: ' . $e->getMessage());
+            return redirect()->route('kepala-sekolah.persetujuan.index')
+                ->with('error', 'Data tidak ditemukan');
+        }
+    }
+
+    /**
+     * 🔥 TAMBAHKAN METHOD BULK APPROVE
+     */
+    public function bulkApprove(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:pengajuan,id',
+            ]);
+
+            $updated = Pengajuan::whereIn('id', $request->ids)
+                ->where('status', 'menunggu')
+                ->update([
+                    'status' => 'disetujui',
+                    'disetujui_oleh' => Auth::id(),
+                    'tanggal_disetujui' => now(),
+                ]);
+
+            return redirect()->back()
+                ->with('success', "✅ {$updated} pengajuan berhasil disetujui.");
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan BulkApprove Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 🔥 TAMBAHKAN METHOD BULK REJECT
+     */
+    public function bulkReject(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:pengajuan,id',
+            ]);
+
+            $updated = Pengajuan::whereIn('id', $request->ids)
+                ->where('status', 'menunggu')
+                ->update([
+                    'status' => 'ditolak',
+                    'disetujui_oleh' => Auth::id(),
+                ]);
+
+            return redirect()->back()
+                ->with('success', "❌ {$updated} pengajuan berhasil ditolak.");
+
+        } catch (\Exception $e) {
+            Log::error('Persetujuan BulkReject Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * 🔥 TAMBAHKAN METHOD UNTUK CEK DATA (Opsional)
+     */
+    public function getStatistik()
+    {
+        try {
+            $statistik = [
+                'menunggu' => Pengajuan::where('status', 'menunggu')->count(),
+                'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+                'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
+                'revisi' => Pengajuan::where('status', 'revisi')->count(),
+                'total' => Pengajuan::count(),
+            ];
+
+            return response()->json($statistik);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+}
