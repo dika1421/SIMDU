@@ -3,94 +3,92 @@
 @section('title', 'Daftar Persetujuan')
 
 @section('content')
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        border-left: 4px solid #6c757d;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .stat-card .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .stat-card .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .stat-card.warning { border-left-color: #f39c12; }
+    .stat-card.success { border-left-color: #27ae60; }
+    .stat-card.danger { border-left-color: #e74c3c; }
+    .stat-card.info { border-left-color: #3498db; }
+    .stat-card .stat-icon {
+        font-size: 2rem;
+        opacity: 0.5;
+    }
+</style>
+
 <div class="row">
     <div class="col-12">
         <!-- Statistik Cards -->
         <div class="row">
             <div class="col-lg-3 col-6">
-                <div class="stat-card">
+                <div class="stat-card warning">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">
-                                @php
-                                    try {
-                                        $menunggu = \App\Models\Pengajuan::where('status', 'menunggu')->count();
-                                    } catch (\Exception $e) {
-                                        $menunggu = 0;
-                                    }
-                                @endphp
-                                {{ $menunggu }}
-                            </div>
-                            <div class="stat-label">Menunggu Persetujuan</div>
+                            <div class="stat-number">{{ $pending ?? 0 }}</div>
+                            <div class="stat-label">⏳ Menunggu Persetujuan</div>
                         </div>
-                        <div style="font-size: 2rem; color: #f39c12;">
-                            <i class="fas fa-clock"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock" style="color: #f39c12;"></i>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="stat-card">
+                <div class="stat-card success">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">
-                                @php
-                                    try {
-                                        $disetujui = \App\Models\Pengajuan::where('status', 'disetujui')->count();
-                                    } catch (\Exception $e) {
-                                        $disetujui = 0;
-                                    }
-                                @endphp
-                                {{ $disetujui }}
-                            </div>
-                            <div class="stat-label">Disetujui</div>
+                            <div class="stat-number">{{ $approved ?? 0 }}</div>
+                            <div class="stat-label">✅ Disetujui</div>
                         </div>
-                        <div style="font-size: 2rem; color: #27ae60;">
-                            <i class="fas fa-check-circle"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle" style="color: #27ae60;"></i>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="stat-card">
+                <div class="stat-card danger">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">
-                                @php
-                                    try {
-                                        $ditolak = \App\Models\Pengajuan::where('status', 'ditolak')->count();
-                                    } catch (\Exception $e) {
-                                        $ditolak = 0;
-                                    }
-                                @endphp
-                                {{ $ditolak }}
-                            </div>
-                            <div class="stat-label">Ditolak</div>
+                            <div class="stat-number">{{ $rejected ?? 0 }}</div>
+                            <div class="stat-label">❌ Ditolak</div>
                         </div>
-                        <div style="font-size: 2rem; color: #e74c3c;">
-                            <i class="fas fa-times-circle"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-times-circle" style="color: #e74c3c;"></i>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-6">
-                <div class="stat-card">
+                <div class="stat-card info">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="stat-number">
-                                @php
-                                    try {
-                                        $revisi = \App\Models\Pengajuan::where('status', 'revisi')->count();
-                                    } catch (\Exception $e) {
-                                        $revisi = 0;
-                                    }
-                                @endphp
-                                {{ $revisi }}
-                            </div>
-                            <div class="stat-label">Revisi</div>
+                            <div class="stat-number">{{ $revised ?? 0 }}</div>
+                            <div class="stat-label">📝 Revisi</div>
                         </div>
-                        <div style="font-size: 2rem; color: #3498db;">
-                            <i class="fas fa-edit"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-edit" style="color: #3498db;"></i>
                         </div>
                     </div>
                 </div>
@@ -99,15 +97,20 @@
 
         <!-- Card Daftar Pengajuan -->
         <div class="card">
-            <div class="card-header">
-                <i class="fas fa-list me-2"></i> Daftar Pengajuan
-                <div class="float-end">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-list me-2"></i> Daftar Pengajuan
+                </div>
+                <div>
                     <a href="{{ route('kepala-sekolah.persetujuan.create') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah Pengajuan
                     </a>
                     <a href="{{ route('kepala-sekolah.persetujuan.dashboard') }}" class="btn btn-info btn-sm text-white">
                         <i class="fas fa-chart-bar"></i> Dashboard
                     </a>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="window.location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
                 </div>
             </div>
             <div class="card-body">
@@ -117,19 +120,20 @@
                         <div class="col-md-3">
                             <select name="status" class="form-select form-select-sm">
                                 <option value="">Semua Status</option>
-                                <option value="menunggu" {{ request('status') == 'menunggu' ? 'selected' : '' }}>Menunggu</option>
-                                <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
-                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                                <option value="revisi" {{ request('status') == 'revisi' ? 'selected' : '' }}>Revisi</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Menunggu</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>✅ Disetujui</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Ditolak</option>
+                                <option value="revised" {{ request('status') == 'revised' ? 'selected' : '' }}>📝 Revisi</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select name="tipe" class="form-select form-select-sm">
-                                <option value="">Semua Tipe</option>
-                                <option value="anggaran" {{ request('tipe') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
-                                <option value="izin" {{ request('tipe') == 'izin' ? 'selected' : '' }}>Izin</option>
-                                <option value="proyek" {{ request('tipe') == 'proyek' ? 'selected' : '' }}>Proyek</option>
-                                <option value="lainnya" {{ request('tipe') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                            <select name="jenis" class="form-select form-select-sm">
+                                <option value="">Semua Jenis</option>
+                                <option value="kegiatan" {{ request('jenis') == 'kegiatan' ? 'selected' : '' }}>🎯 Kegiatan</option>
+                                <option value="anggaran" {{ request('jenis') == 'anggaran' ? 'selected' : '' }}>💰 Anggaran</option>
+                                <option value="laporan" {{ request('jenis') == 'laporan' ? 'selected' : '' }}>📊 Laporan</option>
+                                <option value="izin" {{ request('jenis') == 'izin' ? 'selected' : '' }}>📋 Izin</option>
+                                <option value="lainnya" {{ request('jenis') == 'lainnya' ? 'selected' : '' }}>📌 Lainnya</option>
                             </select>
                         </div>
                         <div class="col-md-4">
@@ -147,58 +151,73 @@
                 <!-- Tabel -->
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped">
-                        <thead>
+                        <thead class="table-primary">
                             <tr>
                                 <th width="40">No</th>
                                 <th>Judul</th>
                                 <th>Pengaju</th>
-                                <th>Tipe</th>
+                                <th>Jenis</th>
                                 <th>Status</th>
                                 <th>Tanggal</th>
-                                <th width="200">Aksi</th>
+                                <th width="220">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($pengajuan as $key => $item)
+                            @forelse($persetujuan ?? [] as $key => $item)
                             <tr>
-                                <td>{{ $pengajuan->firstItem() + $key }}</td>
-                                <td>{{ Str::limit($item->judul, 40) }}</td>
-                                <td>{{ $item->pengaju->name ?? 'Tidak Diketahui' }}</td>
+                                <td>{{ $persetujuan->firstItem() + $key ?? $loop->iteration }}</td>
+                                <td>{{ Str::limit($item->judul ?? '-', 40) }}</td>
+                                <td>
+                                    @if($item->user)
+                                        {{ $item->user->name ?? 'Tidak Diketahui' }}
+                                    @elseif($item->created_by)
+                                        {{ $item->created_by }}
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @php
-                                        $tipeColors = [
-                                            'anggaran' => 'primary',
-                                            'izin' => 'warning',
-                                            'proyek' => 'info',
+                                        $jenisColors = [
+                                            'kegiatan' => 'primary',
+                                            'anggaran' => 'warning',
+                                            'laporan' => 'info',
+                                            'izin' => 'success',
                                             'lainnya' => 'secondary'
                                         ];
                                     @endphp
-                                    <span class="badge bg-{{ $tipeColors[$item->tipe] ?? 'secondary' }}">
-                                        {{ ucfirst($item->tipe) }}
+                                    <span class="badge bg-{{ $jenisColors[$item->jenis] ?? 'secondary' }}">
+                                        {{ ucfirst($item->jenis ?? '-') }}
                                     </span>
                                 </td>
                                 <td>
                                     @php
                                         $statusColors = [
-                                            'menunggu' => 'warning',
-                                            'disetujui' => 'success',
-                                            'ditolak' => 'danger',
-                                            'revisi' => 'info'
+                                            'pending' => 'warning',
+                                            'approved' => 'success',
+                                            'rejected' => 'danger',
+                                            'revised' => 'info'
+                                        ];
+                                        $statusLabels = [
+                                            'pending' => '⏳ Menunggu',
+                                            'approved' => '✅ Disetujui',
+                                            'rejected' => '❌ Ditolak',
+                                            'revised' => '📝 Revisi'
                                         ];
                                     @endphp
                                     <span class="badge bg-{{ $statusColors[$item->status] ?? 'secondary' }}">
-                                        {{ ucfirst($item->status) }}
+                                        {{ $statusLabels[$item->status] ?? ucfirst($item->status ?? '-') }}
                                     </span>
                                 </td>
-                                <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ $item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') : '-' }}</td>
                                 <td>
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn-group btn-group-sm" role="group">
                                         <a href="{{ route('kepala-sekolah.persetujuan.show', $item->id) }}" 
                                            class="btn btn-info" title="Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         
-                                        @if($item->status == 'menunggu')
+                                        @if($item->status == 'pending')
                                             <a href="{{ route('kepala-sekolah.persetujuan.edit', $item->id) }}" 
                                                class="btn btn-warning" title="Edit">
                                                 <i class="fas fa-edit"></i>
@@ -213,11 +232,16 @@
                                                     onclick="rejectPengajuan({{ $item->id }})" title="Tolak">
                                                 <i class="fas fa-times"></i>
                                             </button>
+                                            
+                                            <button type="button" class="btn btn-info" 
+                                                    onclick="revisePengajuan({{ $item->id }})" title="Revisi">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
                                         @endif
                                         
                                         <form action="{{ route('kepala-sekolah.persetujuan.destroy', $item->id) }}" 
                                               method="POST" class="d-inline" 
-                                              onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                              onsubmit="return confirm('⚠️ Yakin ingin menghapus data ini? Data yang dihapus tidak dapat dikembalikan!')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger" title="Hapus">
@@ -244,7 +268,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-3">
-                    {{ $pengajuan->appends(request()->query())->links() }}
+                    {{ $persetujuan->appends(request()->query())->links() ?? '' }}
                 </div>
             </div>
         </div>
@@ -304,6 +328,33 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Revise -->
+<div class="modal fade" id="reviseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reviseForm" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit text-info me-2"></i>Minta Revisi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin meminta revisi pengajuan ini?</p>
+                    <div class="mb-3">
+                        <label for="reviseCatatan" class="form-label">Catatan Revisi <span class="text-danger">*</span></label>
+                        <textarea name="catatan" id="reviseCatatan" class="form-control" rows="3" 
+                                  placeholder="Berikan catatan revisi..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-info text-white">Minta Revisi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -319,6 +370,13 @@
         var form = document.getElementById('rejectForm');
         form.action = "{{ url('kepala-sekolah/persetujuan') }}/" + id + "/reject";
         var modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+        modal.show();
+    }
+
+    function revisePengajuan(id) {
+        var form = document.getElementById('reviseForm');
+        form.action = "{{ url('kepala-sekolah/persetujuan') }}/" + id + "/revise";
+        var modal = new bootstrap.Modal(document.getElementById('reviseModal'));
         modal.show();
     }
 </script>
