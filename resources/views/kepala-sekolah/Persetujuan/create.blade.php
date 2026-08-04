@@ -1,81 +1,96 @@
 @extends('kepala-sekolah.layouts.header')
 
-@section('title', 'Tambah Pengajuan')
+@section('title', 'Buat Pengajuan')
 
 @section('content')
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-plus me-2"></i> Tambah Pengajuan Baru
-                <div class="float-end">
-                    <a href="{{ route('kepala-sekolah.persetujuan.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-arrow-left"></i> Kembali
-                    </a>
-                </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="fas fa-plus me-2"></i> Buat Pengajuan</h4>
+                <a href="{{ route('kepala-sekolah.persetujuan.index') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
             </div>
-            <div class="card-body">
-                <form action="{{ route('kepala-sekolah.persetujuan.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="mb-3">
-                        <label class="form-label">Pengaju <span class="text-danger">*</span></label>
-                        <select name="pengaju_id" class="form-select" required>
-                            <option value="">Pilih Pengaju</option>
-                            @foreach($pengajuList as $user)
-                            <option value="{{ $user->id }}" {{ old('pengaju_id') == $user->id ? 'selected' : '' }}>
-                                {{ $user->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('pengaju_id')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Judul <span class="text-danger">*</span></label>
-                        <input type="text" name="judul" class="form-control" value="{{ old('judul') }}" required>
-                        @error('judul')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tipe <span class="text-danger">*</span></label>
-                        <select name="tipe" class="form-select" required>
-                            <option value="anggaran" {{ old('tipe') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
-                            <option value="izin" {{ old('tipe') == 'izin' ? 'selected' : '' }}>Izin</option>
-                            <option value="proyek" {{ old('tipe') == 'proyek' ? 'selected' : '' }}>Proyek</option>
-                            <option value="lainnya" {{ old('tipe') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
-                        </select>
-                        @error('tipe')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
-                        <textarea name="deskripsi" class="form-control" rows="4" required>{{ old('deskripsi') }}</textarea>
-                        @error('deskripsi')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Jumlah Anggaran</label>
-                        <input type="number" name="jumlah_anggaran" class="form-control" value="{{ old('jumlah_anggaran', 0) }}">
-                        @error('jumlah_anggaran')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Prioritas</label>
-                        <select name="prioritas" class="form-select">
-                            <option value="rendah" {{ old('prioritas') == 'rendah' ? 'selected' : '' }}>Rendah</option>
-                            <option value="sedang" {{ old('prioritas') == 'sedang' ? 'selected' : '' }} selected>Sedang</option>
-                            <option value="tinggi" {{ old('prioritas') == 'tinggi' ? 'selected' : '' }}>Tinggi</option>
-                        </select>
-                        @error('prioritas')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Lampiran</label>
-                        <input type="file" name="lampiran" class="form-control">
-                        <small class="text-muted">PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
-                        @error('lampiran')<small class="text-danger">{{ $message }}</small>@enderror
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Simpan
-                    </button>
-                    <a href="{{ route('kepala-sekolah.persetujuan.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Batal
-                    </a>
-                </form>
+
+            <div class="card">
+                <div class="card-body">
+                    <form action="{{ route('kepala-sekolah.persetujuan.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Judul <span class="text-danger">*</span></label>
+                                <input type="text" name="judul" class="form-control @error('judul') is-invalid @enderror" 
+                                       value="{{ old('judul') }}" required>
+                                @error('judul')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Pengaju <span class="text-danger">*</span></label>
+                                <select name="pengaju_id" class="form-select @error('pengaju_id') is-invalid @enderror" required>
+                                    <option value="">Pilih Pengaju</option>
+                                    @foreach($pengajuList ?? [] as $p)
+                                        <option value="{{ $p->id }}" {{ old('pengaju_id') == $p->id ? 'selected' : '' }}>
+                                            {{ $p->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('pengaju_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipe <span class="text-danger">*</span></label>
+                                <select name="tipe" class="form-select @error('tipe') is-invalid @enderror" required>
+                                    <option value="">Pilih Tipe</option>
+                                    <option value="anggaran" {{ old('tipe') == 'anggaran' ? 'selected' : '' }}>Anggaran</option>
+                                    <option value="izin" {{ old('tipe') == 'izin' ? 'selected' : '' }}>Izin</option>
+                                    <option value="proyek" {{ old('tipe') == 'proyek' ? 'selected' : '' }}>Proyek</option>
+                                    <option value="lainnya" {{ old('tipe') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                </select>
+                                @error('tipe')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jumlah Anggaran</label>
+                                <input type="number" name="jumlah_anggaran" class="form-control @error('jumlah_anggaran') is-invalid @enderror" 
+                                       value="{{ old('jumlah_anggaran') }}" step="0.01" min="0">
+                                @error('jumlah_anggaran')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Deskripsi <span class="text-danger">*</span></label>
+                                <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" 
+                                          rows="4" required>{{ old('deskripsi') }}</textarea>
+                                @error('deskripsi')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Lampiran</label>
+                                <input type="file" name="lampiran" class="form-control @error('lampiran') is-invalid @enderror">
+                                <small class="text-muted">Format: PDF, DOC, DOCX, JPG, JPEG, PNG. Max 5MB</small>
+                                @error('lampiran')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="reset" class="btn btn-secondary">Reset</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
