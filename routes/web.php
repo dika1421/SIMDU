@@ -23,7 +23,7 @@ use App\Http\Controllers\Administrasi\ArsipController;
 use App\Http\Controllers\Administrasi\KomunikasiController as AdministrasiKomunikasi;
 use App\Http\Controllers\Administrasi\AbsensiSholatController;
 use App\Http\Controllers\Administrasi\MapelController;
-use App\Http\Controllers\Administrasi\GaleriController; // 🔥 TAMBAHKAN INI
+use App\Http\Controllers\Administrasi\GaleriController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -222,7 +222,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
 
-    // ================== GALERI (BARU) ================== 🔥 TAMBAHKAN INI
+    // ================== GALERI ==================
     Route::prefix('galeri')->name('galeri.')->group(function () {
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
@@ -298,33 +298,46 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
 
 // ================== SISWA ==================
 Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    // Dashboard
     Route::get('/dashboard', [SiswaDashboard::class, 'index'])->name('dashboard');
-    Route::prefix('nilai')->name('nilai.')->group(function () {
-        Route::get('/', [SiswaNilai::class, 'index'])->name('index');
-        Route::get('/raport', [SiswaNilai::class, 'raport'])->name('raport');
-        Route::get('/detail/{mapel_id}', [SiswaNilai::class, 'detail'])->name('detail');
-    });
-    Route::prefix('absensi')->name('absensi.')->group(function () {
-        Route::get('/', [SiswaAbsensi::class, 'index'])->name('index');
-        Route::get('/riwayat', [SiswaAbsensi::class, 'riwayat'])->name('riwayat');
-        Route::get('/rekap', [SiswaAbsensi::class, 'rekap'])->name('rekap');
-    });
-    Route::prefix('tugas')->name('tugas.')->group(function () {
-        Route::get('/', [SiswaTugas::class, 'index'])->name('index');
-        Route::get('/{id}', [SiswaTugas::class, 'show'])->name('show');
-        Route::post('/{id}/kumpul', [SiswaTugas::class, 'kumpul'])->name('kumpul');
-        Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
-    });
-    Route::prefix('kalender')->name('kalender.')->group(function () {
-        Route::get('/', [SiswaKalender::class, 'index'])->name('index');
-        Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');
-    });
+    
+    // Profil Siswa
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [ProfilController::class, 'index'])->name('index');
         Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
         Route::put('/', [ProfilController::class, 'update'])->name('update');
         Route::post('/change-password', [ProfilController::class, 'changePassword'])->name('change-password');
     });
+    
+    // Nilai
+    Route::prefix('nilai')->name('nilai.')->group(function () {
+        Route::get('/', [SiswaNilai::class, 'index'])->name('index');
+        Route::get('/raport', [SiswaNilai::class, 'raport'])->name('raport');
+        Route::get('/detail/{mapel_id}', [SiswaNilai::class, 'detail'])->name('detail');
+    });
+    
+    // Absensi
+    Route::prefix('absensi')->name('absensi.')->group(function () {
+        Route::get('/', [SiswaAbsensi::class, 'index'])->name('index');
+        Route::get('/riwayat', [SiswaAbsensi::class, 'riwayat'])->name('riwayat');
+        Route::get('/rekap', [SiswaAbsensi::class, 'rekap'])->name('rekap');
+    });
+    
+    // Tugas
+    Route::prefix('tugas')->name('tugas.')->group(function () {
+        Route::get('/', [SiswaTugas::class, 'index'])->name('index');
+        Route::get('/{id}', [SiswaTugas::class, 'show'])->name('show');
+        Route::post('/{id}/kumpul', [SiswaTugas::class, 'kumpul'])->name('kumpul');
+        Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
+    });
+    
+    // Kalender
+    Route::prefix('kalender')->name('kalender.')->group(function () {
+        Route::get('/', [SiswaKalender::class, 'index'])->name('index');
+        Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');
+    });
+    
+    // Pembayaran
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('index');
         Route::get('/riwayat', [PembayaranController::class, 'riwayat'])->name('riwayat');
