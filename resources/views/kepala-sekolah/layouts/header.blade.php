@@ -486,6 +486,7 @@
                         </a>
                     </li>
                     
+                    <!-- PERSETUJUAN -->
                     <li class="menu-section">PERSETUJUAN</li>
                     <li>
                         <a href="{{ route('kepala-sekolah.persetujuan.index') }}" 
@@ -493,16 +494,12 @@
                             <i class="fas fa-clipboard-list"></i> Daftar Pengajuan
                             @php
                                 try {
-                                    if (class_exists('App\\Models\\Pengajuan')) {
-                                        $menunggu = \App\Models\Pengajuan::where('status', 'menunggu')->count();
-                                    } else {
-                                        $menunggu = 0;
-                                    }
+                                    $menunggu = \App\Models\Pengajuan::where('status', 'menunggu')->count();
                                 } catch (\Exception $e) {
                                     $menunggu = 0;
                                 }
                             @endphp
-                            @if(isset($menunggu) && $menunggu > 0)
+                            @if($menunggu > 0)
                                 <span class="badge">{{ $menunggu }}</span>
                             @endif
                         </a>
