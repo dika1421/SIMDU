@@ -114,6 +114,7 @@
             border: none;
             position: relative;
             overflow: hidden;
+            text-decoration: none;
         }
         
         .btn-login-nav::before {
@@ -135,6 +136,7 @@
             transform: translateY(-3px) scale(1.02);
             box-shadow: 0 10px 35px rgba(26, 35, 126, 0.35);
             background: linear-gradient(135deg, #283593, #1a237e);
+            color: white !important;
         }
         
         /* ===== HERO SECTION ===== */
@@ -592,7 +594,151 @@
             transform: translateX(5px);
         }
         
-        /* ===== GALERI SECTION ===== */
+        /* ===== VISI & MISI ===== */
+        .visi-misi-section {
+            padding: 100px 0;
+            background: #ffffff;
+        }
+        
+        .vision-card, .mission-card {
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+        }
+        
+        .vision-card:hover, .mission-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+        }
+        
+        .vision-card .visi-text {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.9;
+            font-style: italic;
+            padding-left: 20px;
+            border-left: 3px solid rgba(26,35,126,0.2);
+        }
+        
+        .mission-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .mission-list li {
+            padding: 8px 0;
+            color: #444;
+            font-size: 0.98rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        
+        .mission-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .mission-list .num {
+            color: #4caf50;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        /* ===== STRUKTUR ORGANISASI ===== */
+        .struktur-section {
+            padding: 100px 0;
+            background: #f8faff;
+        }
+        
+        .struktur-card {
+            background: white;
+            padding: 25px 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: all 0.4s ease;
+            border-top: 4px solid #1a237e;
+        }
+        
+        .struktur-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.10);
+        }
+        
+        .struktur-card .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 26px;
+            color: white;
+        }
+        
+        .struktur-card .avatar.blue { background: linear-gradient(135deg, #1a237e, #3949ab); }
+        .struktur-card .avatar.green { background: linear-gradient(135deg, #4caf50, #66bb6a); }
+        .struktur-card .avatar.orange { background: linear-gradient(135deg, #ff8a65, #ff6b6b); }
+        .struktur-card .avatar.cyan { background: linear-gradient(135deg, #4dd0e1, #26c6da); }
+        
+        .struktur-card h6 {
+            font-weight: 700;
+            color: #1a237e;
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+        
+        .struktur-card .nama {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        
+        .struktur-card .jabatan {
+            font-size: 0.7rem;
+            color: #999;
+        }
+        
+        .kepala-sekolah-box {
+            display: inline-block;
+            background: linear-gradient(135deg, #1a237e, #283593);
+            padding: 20px 45px;
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(26,35,126,0.25);
+            text-align: center;
+        }
+        
+        .kepala-sekolah-box h5 {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        
+        .kepala-sekolah-box p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .garis-hubung {
+            display: flex;
+            justify-content: center;
+            gap: 100px;
+            flex-wrap: wrap;
+            margin: 20px 0 30px;
+        }
+        
+        .garis-hubung .garis {
+            width: 2px;
+            height: 30px;
+            background: #1a237e;
+            opacity: 0.2;
+        }
+        
+        /* ===== GALERI ===== */
         .gallery-section {
             padding: 100px 0;
             background: #ffffff;
@@ -660,8 +806,7 @@
             color: rgba(255,255,255,0.7);
             font-size: 0.65rem;
         }
-
-        /* ===== GALERI EMPTY STATE ===== */
+        
         .empty-state {
             padding: 40px;
         }
@@ -669,7 +814,7 @@
             opacity: 0.3;
         }
         
-        /* ===== CTA SECTION ===== */
+        /* ===== CTA ===== */
         .cta-section {
             padding: 80px 0;
             background: linear-gradient(135deg, #1a237e, #0d1445);
@@ -814,6 +959,9 @@
             .stat-item:not(:last-child)::after {
                 display: none;
             }
+            .garis-hubung {
+                gap: 30px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -841,6 +989,9 @@
             }
             .gallery-card {
                 height: 200px;
+            }
+            .kepala-sekolah-box {
+                padding: 15px 25px;
             }
         }
         
@@ -878,10 +1029,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{{ route('landing') }}">Beranda</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('landing.features') }}">Fitur</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('landing.about') }}">Tentang</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('landing.contact') }}">Kontak</a></li>
+                <li class="nav-item"><a class="nav-link" href="#home">Beranda</a></li>
+                <li class="nav-item"><a class="nav-link" href="#features">Fitur</a></li>
+                <li class="nav-item"><a class="nav-link" href="#visi-misi">Visi & Misi</a></li>
+                <li class="nav-item"><a class="nav-link" href="#struktur">Struktur</a></li>
+                <li class="nav-item"><a class="nav-link" href="#gallery">Galeri</a></li>
             </ul>
             <a href="{{ route('login') }}" class="btn btn-login-nav ms-3">
                 <i class="fas fa-sign-in-alt me-2"></i>Login
@@ -921,8 +1073,8 @@
                     <a href="{{ route('login') }}" class="btn btn-primary-custom">
                         <i class="fas fa-sign-in-alt"></i>Login Sekarang
                     </a>
-                    <a href="{{ route('landing.features') }}" class="btn btn-outline-custom">
-                        <i class="fas fa-play-circle"></i>Lihat Demo
+                    <a href="#features" class="btn btn-outline-custom">
+                        <i class="fas fa-play-circle"></i>Lihat Fitur
                     </a>
                 </div>
             </div>
@@ -1038,6 +1190,164 @@
                     <h5>Komunikasi Terintegrasi</h5>
                     <p>Komunikasi antara guru, siswa, dan orang tua melalui chat dan broadcast dengan mudah.</p>
                     <a href="#" class="learn-more">Pelajari <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== VISI & MISI ===== -->
+<section class="visi-misi-section" id="visi-misi">
+    <div class="container">
+        <div class="text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Visi & <span class="highlight">Misi</span>
+            </h2>
+            <p class="section-subtitle">
+                Menjadi lembaga pendidikan unggul yang berkarakter dan berdaya saing global
+            </p>
+        </div>
+
+        <div class="row g-4 mt-4">
+            <!-- VISI -->
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="800">
+                <div class="vision-card" style="background: linear-gradient(135deg, #f0f2ff, #e8ecf8); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #1a237e;">
+                    <div class="d-flex align-items-center mb-4">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a237e, #3949ab); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; flex-shrink: 0;">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 style="font-weight: 800; color: #1a237e; margin-left: 18px; margin-bottom: 0;">Visi</h3>
+                    </div>
+                    <p class="visi-text">
+                        "Terwujudnya generasi yang beriman, bertakwa, berilmu, terampil, mandiri, dan berakhlak mulia serta mampu bersaing di era global."
+                    </p>
+                </div>
+            </div>
+
+            <!-- MISI -->
+            <div class="col-lg-6" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
+                <div class="mission-card" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #4caf50;">
+                    <div class="d-flex align-items-center mb-4">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #4caf50, #66bb6a); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; flex-shrink: 0;">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 style="font-weight: 800; color: #2e7d32; margin-left: 18px; margin-bottom: 0;">Misi</h3>
+                    </div>
+                    <ul class="mission-list">
+                        <li><span class="num">1.</span> Menyelenggarakan pendidikan yang berkualitas dan berorientasi pada pengembangan potensi siswa secara optimal.</li>
+                        <li><span class="num">2.</span> Membentuk karakter siswa yang religius, disiplin, jujur, dan bertanggung jawab.</li>
+                        <li><span class="num">3.</span> Mengembangkan kompetensi siswa sesuai dengan kebutuhan dunia kerja dan industri.</li>
+                        <li><span class="num">4.</span> Membangun kerjasama yang harmonis antara sekolah, orang tua, dan masyarakat.</li>
+                        <li><span class="num">5.</span> Meningkatkan kualitas tenaga pendidik dan kependidikan secara berkelanjutan.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== STRUKTUR ORGANISASI ===== -->
+<section class="struktur-section" id="struktur">
+    <div class="container">
+        <div class="text-center" data-aos="fade-up">
+            <h2 class="section-title">
+                Struktur <span class="highlight">Organisasi</span>
+            </h2>
+            <p class="section-subtitle">
+                Susunan pengelola dan tenaga pendidik SMK Darul Ulum
+            </p>
+        </div>
+
+        <div class="struktur-tree" data-aos="fade-up" data-aos-delay="100">
+            <!-- Kepala Sekolah -->
+            <div class="text-center mb-4">
+                <div class="kepala-sekolah-box">
+                    <i class="fas fa-user-tie fa-2x d-block mb-2"></i>
+                    <h5>Kepala Sekolah</h5>
+                    <p>Drs. H. Ahmad Fauzi, M.Pd.</p>
+                </div>
+            </div>
+
+            <!-- Garis Hubung -->
+            <div class="garis-hubung">
+                <div class="garis"></div>
+                <div class="garis"></div>
+                <div class="garis"></div>
+            </div>
+
+            <!-- Wakil Kepala Sekolah -->
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="struktur-card" style="border-top-color: #3949ab;">
+                        <div class="avatar blue"><i class="fas fa-user-graduate"></i></div>
+                        <h6>Wakil Kepala Sekolah</h6>
+                        <p class="nama">Drs. Budi Santoso, M.M.</p>
+                        <span class="jabatan">Bidang Kurikulum</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="struktur-card" style="border-top-color: #4caf50;">
+                        <div class="avatar green"><i class="fas fa-users"></i></div>
+                        <h6>Wakil Kepala Sekolah</h6>
+                        <p class="nama">Dra. Siti Rahayu, M.Pd.</p>
+                        <span class="jabatan">Bidang Kesiswaan</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="struktur-card" style="border-top-color: #ff8a65;">
+                        <div class="avatar orange"><i class="fas fa-handshake"></i></div>
+                        <h6>Wakil Kepala Sekolah</h6>
+                        <p class="nama">H. M. Ikhsan, S.Ag., M.Pd.I.</p>
+                        <span class="jabatan">Bidang Humas & Industri</span>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="struktur-card" style="border-top-color: #4dd0e1;">
+                        <div class="avatar cyan"><i class="fas fa-clipboard-list"></i></div>
+                        <h6>Wakil Kepala Sekolah</h6>
+                        <p class="nama">Drs. Agus Supriyadi, M.Si.</p>
+                        <span class="jabatan">Bidang Sarana & Prasarana</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Koordinator -->
+            <div class="row g-3 mt-4 justify-content-center">
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="600">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">PKL & Bursa Kerja</p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="700">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">BK & Konseling</p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="800">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Ekstrakurikuler</p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="900">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Perpustakaan</p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1000">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Laboratorium</p>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1100">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Tata Usaha</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1166,10 +1476,11 @@
             <div class="col-lg-2 col-6">
                 <h5>Tautan</h5>
                 <ul class="list-unstyled" style="color: rgba(255,255,255,0.6);">
-                    <li class="mb-2"><a href="{{ route('landing') }}">Beranda</a></li>
-                    <li class="mb-2"><a href="{{ route('landing.features') }}">Fitur</a></li>
-                    <li class="mb-2"><a href="{{ route('landing.about') }}">Tentang</a></li>
-                    <li class="mb-2"><a href="{{ route('landing.contact') }}">Kontak</a></li>
+                    <li class="mb-2"><a href="#home">Beranda</a></li>
+                    <li class="mb-2"><a href="#features">Fitur</a></li>
+                    <li class="mb-2"><a href="#visi-misi">Visi & Misi</a></li>
+                    <li class="mb-2"><a href="#struktur">Struktur</a></li>
+                    <li class="mb-2"><a href="#gallery">Galeri</a></li>
                 </ul>
             </div>
             <div class="col-lg-3 col-6">
