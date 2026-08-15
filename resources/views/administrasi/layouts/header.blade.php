@@ -59,17 +59,14 @@
             z-index: 1000;
         }
         
-        /* 🔥 SIDEBAR COLLAPSED (DESKTOP) */
         .app-sidebar.collapsed {
             margin-left: -280px;
         }
         
-        /* 🔥 SIDEBAR MOBILE */
         .app-sidebar.mobile-open {
             transform: translateX(0);
         }
         
-        /* 🔥 OVERLAY UNTUK MOBILE */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -234,7 +231,6 @@
             font-size: 0.9rem;
         }
         
-        /* Submenu level 2 */
         .dropdown-submenu {
             position: static;
         }
@@ -289,7 +285,6 @@
             min-height: 65px;
         }
         
-        /* 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) - PASTIKAN INI ADA */
         .btn-toggle-sidebar {
             background: none;
             border: none;
@@ -404,7 +399,6 @@
             margin: 10px 0 5px;
         }
 
-        /* Badge untuk menu baru */
         .menu-new-badge {
             background-color: #e74c3c;
             color: white;
@@ -475,7 +469,7 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- 🔥 OVERLAY UNTUK MOBILE -->
+        <!-- OVERLAY UNTUK MOBILE -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
         
         <!-- SIDEBAR -->
@@ -498,102 +492,38 @@
                     
                     <!-- MANAJEMEN JURUSAN -->
                     <li class="menu-section">MANAJEMEN JURUSAN</li>
-                    <li class="dropdown-submenu">
-                        <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#jurusanMenu">
-                            <i class="fas fa-graduation-cap"></i> Jurusan
-                            <i class="fas fa-chevron-down chevron float-end mt-1"></i>
+                    <li>
+                        <a href="{{ route('administrasi.jurusan.index') }}" 
+                           class="menu-item {{ request()->routeIs('administrasi.jurusan.*') ? 'active' : '' }}">
+                            <i class="fas fa-graduation-cap"></i> Data Jurusan
                         </a>
-                        <div class="collapse {{ request()->routeIs('administrasi.jurusan.*') ? 'show' : '' }}" id="jurusanMenu">
-                            <ul class="nav flex-column">
-                                <li>
-                                    <a href="{{ route('administrasi.jurusan.index') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.jurusan.index') || request()->routeIs('administrasi.jurusan.show') ? 'active' : '' }}">
-                                        <i class="fas fa-list"></i> Data Jurusan
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('administrasi.jurusan.create') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.jurusan.create') ? 'active' : '' }}">
-                                        <i class="fas fa-plus"></i> Tambah Jurusan
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
                     
                     <!-- MANAJEMEN KELAS -->
                     <li class="menu-section">MANAJEMEN KELAS</li>
-                    <li class="dropdown-submenu">
-                        <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#kelasMenu">
-                            <i class="fas fa-school"></i> Kelas
-                            <i class="fas fa-chevron-down chevron float-end mt-1"></i>
+                    <li>
+                        <a href="{{ route('administrasi.kelas.index') }}" 
+                           class="menu-item {{ request()->routeIs('administrasi.kelas.*') ? 'active' : '' }}">
+                            <i class="fas fa-school"></i> Data Kelas
                         </a>
-                        <div class="collapse {{ request()->routeIs('administrasi.kelas.*') ? 'show' : '' }}" id="kelasMenu">
-                            <ul class="nav flex-column">
-                                <li>
-                                    <a href="{{ route('administrasi.kelas.index') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.kelas.index') || request()->routeIs('administrasi.kelas.show') ? 'active' : '' }}">
-                                        <i class="fas fa-list"></i> Data Kelas
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('administrasi.kelas.create') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.kelas.create') ? 'active' : '' }}">
-                                        <i class="fas fa-plus"></i> Tambah Kelas
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
                     
                     <!-- MANAJEMEN SISWA -->
                     <li class="menu-section">MANAJEMEN SISWA</li>
-                    <li class="dropdown-submenu">
-                        <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#siswaMenu">
-                            <i class="fas fa-user-graduate"></i> Siswa
-                            <i class="fas fa-chevron-down chevron float-end mt-1"></i>
+                    <li>
+                        <a href="{{ route('administrasi.siswa.index') }}" 
+                           class="menu-item {{ request()->routeIs('administrasi.siswa.*') ? 'active' : '' }}">
+                            <i class="fas fa-user-graduate"></i> Data Siswa
                         </a>
-                        <div class="collapse {{ request()->routeIs('administrasi.siswa.*') ? 'show' : '' }}" id="siswaMenu">
-                            <ul class="nav flex-column">
-                                <li>
-                                    <a href="{{ route('administrasi.siswa.index') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.siswa.index') ? 'active' : '' }}">
-                                        <i class="fas fa-list"></i> Data Siswa
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('administrasi.siswa.create') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.siswa.create') ? 'active' : '' }}">
-                                        <i class="fas fa-plus"></i> Tambah Siswa
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
                     
                     <!-- MANAJEMEN GURU -->
                     <li class="menu-section">MANAJEMEN GURU</li>
-                    <li class="dropdown-submenu">
-                        <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#guruMenu">
-                            <i class="fas fa-chalkboard-user"></i> Guru
-                            <i class="fas fa-chevron-down chevron float-end mt-1"></i>
+                    <li>
+                        <a href="{{ route('administrasi.guru.index') }}" 
+                           class="menu-item {{ request()->routeIs('administrasi.guru.*') ? 'active' : '' }}">
+                            <i class="fas fa-chalkboard-user"></i> Data Guru
                         </a>
-                        <div class="collapse {{ request()->routeIs('administrasi.guru.*') ? 'show' : '' }}" id="guruMenu">
-                            <ul class="nav flex-column">
-                                <li>
-                                    <a href="{{ route('administrasi.guru.index') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.guru.index') ? 'active' : '' }}">
-                                        <i class="fas fa-list"></i> Data Guru
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('administrasi.guru.create') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.guru.create') ? 'active' : '' }}">
-                                        <i class="fas fa-plus"></i> Tambah Guru
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
                     
                     <!-- ABSENSI -->
@@ -607,53 +537,33 @@
                             <ul class="nav flex-column">
                                 <li>
                                     <a href="{{ route('administrasi.absensi.scan') }}" 
-                                    class="menu-item {{ request()->routeIs('administrasi.absensi.scan') ? 'active' : '' }}">
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi.scan') ? 'active' : '' }}">
                                         <i class="fas fa-rss"></i> Scan RFID
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#inputAbsensiMenu">
-                                        <i class="fas fa-edit"></i> Input Manual
-                                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                                    <a href="{{ route('administrasi.absensi.siswa') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi.siswa') ? 'active' : '' }}">
+                                        <i class="fas fa-user-graduate"></i> Absensi Siswa
                                     </a>
-                                    <div class="collapse {{ request()->routeIs('administrasi.absensi.siswa') || request()->routeIs('administrasi.absensi.guru') ? 'show' : '' }}" id="inputAbsensiMenu">
-                                        <ul class="nav flex-column">
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi.siswa') }}" 
-                                                class="menu-item {{ request()->routeIs('administrasi.absensi.siswa') ? 'active' : '' }}">
-                                                    <i class="fas fa-user-graduate"></i> Absensi Siswa
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi.guru') }}" 
-                                                class="menu-item {{ request()->routeIs('administrasi.absensi.guru') ? 'active' : '' }}">
-                                                    <i class="fas fa-chalkboard-user"></i> Absensi Guru
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
                                 </li>
                                 <li>
-                                    <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#rekapAbsensiMenu">
-                                        <i class="fas fa-chart-line"></i> Rekap Absensi
-                                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                                    <a href="{{ route('administrasi.absensi.guru') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi.guru') ? 'active' : '' }}">
+                                        <i class="fas fa-chalkboard-user"></i> Absensi Guru
                                     </a>
-                                    <div class="collapse {{ request()->routeIs('administrasi.absensi.rekap-siswa') || request()->routeIs('administrasi.absensi.rekap-guru') ? 'show' : '' }}" id="rekapAbsensiMenu">
-                                        <ul class="nav flex-column">
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi.rekap-siswa') }}" 
-                                                class="menu-item {{ request()->routeIs('administrasi.absensi.rekap-siswa') ? 'active' : '' }}">
-                                                    <i class="fas fa-user-graduate"></i> Rekap Siswa
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi.rekap-guru') }}" 
-                                                class="menu-item {{ request()->routeIs('administrasi.absensi.rekap-guru') ? 'active' : '' }}">
-                                                    <i class="fas fa-chalkboard-user"></i> Rekap Guru
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.absensi.rekap-siswa') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi.rekap-siswa') ? 'active' : '' }}">
+                                        <i class="fas fa-chart-line"></i> Rekap Siswa
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.absensi.rekap-guru') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi.rekap-guru') ? 'active' : '' }}">
+                                        <i class="fas fa-chart-line"></i> Rekap Guru
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -670,8 +580,8 @@
                         <div class="collapse {{ request()->routeIs('administrasi.absensi-sholat.*') ? 'show' : '' }}" id="absensiSholatMenu">
                             <ul class="nav flex-column">
                                 <li>
-                                    <a href="{{ route('administrasi.absensi-sholat.index') }}" 
-                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.index') || request()->routeIs('administrasi.absensi-sholat.dashboard') ? 'active' : '' }}">
+                                    <a href="{{ route('administrasi.absensi-sholat.dashboard') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.dashboard') ? 'active' : '' }}">
                                         <i class="fas fa-chart-line"></i> Dashboard Sholat
                                     </a>
                                 </li>
@@ -682,48 +592,28 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#inputSholatMenu">
-                                        <i class="fas fa-edit"></i> Input Manual
-                                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                                    <a href="{{ route('administrasi.absensi-sholat.siswa') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.siswa') ? 'active' : '' }}">
+                                        <i class="fas fa-user-graduate"></i> Absensi Siswa
                                     </a>
-                                    <div class="collapse {{ request()->routeIs('administrasi.absensi-sholat.siswa') || request()->routeIs('administrasi.absensi-sholat.guru') ? 'show' : '' }}" id="inputSholatMenu">
-                                        <ul class="nav flex-column">
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi-sholat.siswa') }}" 
-                                                   class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.siswa') ? 'active' : '' }}">
-                                                    <i class="fas fa-user-graduate"></i> Absensi Siswa
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi-sholat.guru') }}" 
-                                                   class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.guru') ? 'active' : '' }}">
-                                                    <i class="fas fa-chalkboard-user"></i> Absensi Guru
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
                                 </li>
                                 <li>
-                                    <a href="#" class="dropdown-toggle-sub" data-bs-toggle="collapse" data-bs-target="#rekapSholatMenu">
-                                        <i class="fas fa-chart-line"></i> Rekap Sholat
-                                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                                    <a href="{{ route('administrasi.absensi-sholat.guru') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.guru') ? 'active' : '' }}">
+                                        <i class="fas fa-chalkboard-user"></i> Absensi Guru
                                     </a>
-                                    <div class="collapse {{ request()->routeIs('administrasi.absensi-sholat.rekap-siswa') || request()->routeIs('administrasi.absensi-sholat.rekap-guru') ? 'show' : '' }}" id="rekapSholatMenu">
-                                        <ul class="nav flex-column">
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi-sholat.rekap-siswa') }}" 
-                                                   class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.rekap-siswa') ? 'active' : '' }}">
-                                                    <i class="fas fa-user-graduate"></i> Rekap Siswa
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="{{ route('administrasi.absensi-sholat.rekap-guru') }}" 
-                                                   class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.rekap-guru') ? 'active' : '' }}">
-                                                    <i class="fas fa-chalkboard-user"></i> Rekap Guru
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.absensi-sholat.rekap-siswa') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.rekap-siswa') ? 'active' : '' }}">
+                                        <i class="fas fa-chart-line"></i> Rekap Siswa
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.absensi-sholat.rekap-guru') }}" 
+                                       class="menu-item {{ request()->routeIs('administrasi.absensi-sholat.rekap-guru') ? 'active' : '' }}">
+                                        <i class="fas fa-chart-line"></i> Rekap Guru
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -865,7 +755,6 @@
         <main class="app-main">
             <div class="app-navbar">
                 <div class="navbar-left">
-                    <!-- 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) -->
                     <button class="btn-toggle-sidebar" id="toggleSidebarBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -873,7 +762,6 @@
                 </div>
                 
                 <div class="navbar-actions">
-                    <!-- Notifikasi -->
                     <div class="dropdown">
                         <button class="btn btn-light position-relative" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bell"></i>
@@ -940,7 +828,6 @@
     
     <script>
         $(document).ready(function() {
-            // Inisialisasi DataTable
             $('.datatable').each(function() {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
@@ -951,56 +838,38 @@
                 }
             });
             
-            // Menjaga dropdown menu di sidebar tetap terbuka saat active
             $('.collapse').each(function() {
                 if ($(this).find('.active').length) {
                     $(this).addClass('show');
                 }
             });
             
-            // Auto close alert setelah 5 detik
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
         });
 
-        // ================================================================
-        // 🔥 FUNGSI TOGGLE SIDEBAR
-        // ================================================================
         function toggleSidebar() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            if (!sidebar) {
-                console.error('Sidebar tidak ditemukan!');
-                return;
-            }
+            if (!sidebar) return;
             
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                // MOBILE: toggle class mobile-open
                 sidebar.classList.toggle('mobile-open');
                 if (overlay) {
                     overlay.classList.toggle('active');
                 }
             } else {
-                // DESKTOP: toggle class collapsed
                 sidebar.classList.toggle('collapsed');
-                
-                // Simpan state ke localStorage
-                const isCollapsed = sidebar.classList.contains('collapsed');
                 try {
-                    localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
-                } catch(e) {
-                    // Ignore localStorage error
-                }
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? 'true' : 'false');
+                } catch(e) {}
             }
         }
 
-        // ================================================================
-        // 🔥 TUTUP SIDEBAR KETIKA KLIK DI LUAR (MOBILE)
-        // ================================================================
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('appSidebar');
             const toggleBtn = document.getElementById('toggleSidebarBtn');
@@ -1021,15 +890,11 @@
             }
         });
 
-        // ================================================================
-        // 🔥 RESIZE WINDOW
-        // ================================================================
         window.addEventListener('resize', function() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
             if (window.innerWidth > 768) {
-                // Desktop: hapus state mobile
                 if (sidebar) {
                     sidebar.classList.remove('mobile-open');
                 }
@@ -1039,31 +904,20 @@
             }
         });
 
-        // ================================================================
-        // 🔥 SIDEBAR COLLAPSE STATE (DESKTOP) - Local Storage
-        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('appSidebar');
-            
             if (!sidebar) return;
             
-            // Cek di localStorage
             let isCollapsed = false;
             try {
                 isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            } catch(e) {
-                // Ignore localStorage error
-            }
+            } catch(e) {}
             
-            // Terapkan state (hanya jika desktop)
             if (window.innerWidth > 768 && isCollapsed) {
                 sidebar.classList.add('collapsed');
             }
         });
 
-        // ================================================================
-        // 🔥 LOGOUT CONFIRMATION
-        // ================================================================
         document.querySelectorAll('.menu-item.logout, .dropdown-item.text-danger').forEach(function(el) {
             el.addEventListener('click', function(e) {
                 if (!confirm('Apakah Anda yakin ingin logout?')) {
@@ -1072,11 +926,7 @@
             });
         });
 
-        // ================================================================
-        // 🔥 DEBUG
-        // ================================================================
         console.log('✅ Toggle Sidebar siap digunakan!');
-        console.log('📌 Klik tombol ☰ di navbar untuk toggle sidebar.');
     </script>
     
     @stack('scripts')
