@@ -490,7 +490,7 @@
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN JURUSAN -->
+                    <!-- ===== MANAJEMEN JURUSAN ===== -->
                     <li class="menu-section">MANAJEMEN JURUSAN</li>
                     <li>
                         <a href="{{ route('administrasi.jurusan.index') }}" 
@@ -499,7 +499,7 @@
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN KELAS -->
+                    <!-- ===== MANAJEMEN KELAS ===== -->
                     <li class="menu-section">MANAJEMEN KELAS</li>
                     <li>
                         <a href="{{ route('administrasi.kelas.index') }}" 
@@ -508,7 +508,7 @@
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN SISWA -->
+                    <!-- ===== MANAJEMEN SISWA ===== -->
                     <li class="menu-section">MANAJEMEN SISWA</li>
                     <li>
                         <a href="{{ route('administrasi.siswa.index') }}" 
@@ -517,7 +517,7 @@
                         </a>
                     </li>
                     
-                    <!-- MANAJEMEN GURU -->
+                    <!-- ===== MANAJEMEN GURU ===== -->
                     <li class="menu-section">MANAJEMEN GURU</li>
                     <li>
                         <a href="{{ route('administrasi.guru.index') }}" 
@@ -526,7 +526,7 @@
                         </a>
                     </li>
                     
-                    <!-- ABSENSI -->
+                    <!-- ===== ABSENSI ===== -->
                     <li class="menu-section">ABSENSI</li>
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#absensiMenu">
@@ -569,7 +569,7 @@
                         </div>
                     </li>
 
-                    <!-- ABSENSI SHOLAT -->
+                    <!-- ===== ABSENSI SHOLAT ===== -->
                     <li class="menu-section">ABSENSI SHOLAT</li>
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#absensiSholatMenu">
@@ -619,7 +619,7 @@
                         </div>
                     </li>
                     
-                    <!-- KEUANGAN -->
+                    <!-- ===== KEUANGAN ===== -->
                     <li class="menu-section">KEUANGAN</li>
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#keuanganMenu">
@@ -650,7 +650,7 @@
                         </div>
                     </li>
                     
-                    <!-- JADWAL -->
+                    <!-- ===== JADWAL ===== -->
                     <li class="menu-section">JADWAL</li>
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#jadwalMenu">
@@ -675,7 +675,7 @@
                         </div>
                     </li>
                     
-                    <!-- ARSIP -->
+                    <!-- ===== ARSIP ===== -->
                     <li class="menu-section">ARSIP</li>
                     <li>
                         <a href="{{ route('administrasi.arsip.index') }}" 
@@ -684,7 +684,7 @@
                         </a>
                     </li>
                     
-                    <!-- GALERI -->
+                    <!-- ===== GALERI ===== -->
                     <li class="menu-section">GALERI</li>
                     <li>
                         <a href="{{ route('administrasi.galeri.index') }}" 
@@ -694,7 +694,7 @@
                         </a>
                     </li>
                     
-                    <!-- KOMUNIKASI -->
+                    <!-- ===== KOMUNIKASI ===== -->
                     <li class="menu-section">KOMUNIKASI</li>
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#komunikasiMenu">
@@ -721,7 +721,7 @@
                     
                     <li><hr></li>
                     
-                    <!-- PROFIL -->
+                    <!-- ===== PROFIL ===== -->
                     <li>
                         <a href="{{ route('administrasi.profil.index') }}" 
                            class="menu-item {{ request()->routeIs('administrasi.profil.*') ? 'active' : '' }}">
@@ -729,7 +729,7 @@
                         </a>
                     </li>
                     
-                    <!-- PENGATURAN -->
+                    <!-- ===== PENGATURAN ===== -->
                     <li>
                         <a href="{{ route('administrasi.pengaturan') }}" 
                            class="menu-item {{ request()->routeIs('administrasi.pengaturan') ? 'active' : '' }}">
@@ -737,7 +737,7 @@
                         </a>
                     </li>
                     
-                    <!-- LOGOUT -->
+                    <!-- ===== LOGOUT ===== -->
                     <li>
                         <a href="#" class="menu-item logout" 
                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
