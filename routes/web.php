@@ -24,6 +24,7 @@ use App\Http\Controllers\Administrasi\KomunikasiController as AdministrasiKomuni
 use App\Http\Controllers\Administrasi\AbsensiSholatController;
 use App\Http\Controllers\Administrasi\MapelController;
 use App\Http\Controllers\Administrasi\GaleriController;
+use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -146,6 +147,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::post('/jadwal/copy', [JadwalController::class, 'copy'])->name('jadwal.copy');
     Route::post('/jadwal/check-conflict', [JadwalController::class, 'checkConflict'])->name('jadwal.check-conflict');
     Route::get('/jadwal/export', [JadwalController::class, 'export'])->name('jadwal.export');
+    
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', function() { return redirect()->route('administrasi.absensi.scan'); })->name('index');
         Route::get('/scan', [RfidController::class, 'index'])->name('scan');
@@ -158,6 +160,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/export-siswa', [AdministrasiAbsensi::class, 'exportSiswa'])->name('export-siswa');
         Route::get('/export-guru', [AdministrasiAbsensi::class, 'exportGuru'])->name('export-guru');
     });
+    
     Route::prefix('absensi-sholat')->name('absensi-sholat.')->group(function () {
         Route::get('/', [AbsensiSholatController::class, 'index'])->name('index');
         Route::get('/dashboard', [AbsensiSholatController::class, 'dashboard'])->name('dashboard');
@@ -174,11 +177,13 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/export-siswa', [AbsensiSholatController::class, 'exportSiswa'])->name('export-siswa');
         Route::get('/export-guru', [AbsensiSholatController::class, 'exportGuru'])->name('export-guru');
     });
+    
     Route::prefix('rfid')->name('rfid.')->group(function () {
         Route::post('/scan/siswa', [RfidController::class, 'scanSiswa'])->name('scan.siswa');
         Route::post('/scan/guru', [RfidController::class, 'scanGuru'])->name('scan.guru');
         Route::get('/card-info', [RfidController::class, 'getCardInfo'])->name('card-info');
     });
+    
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])->name('get-siswa-by-kelas');
         Route::get('/cari-siswa', [KeuanganController::class, 'cariSiswa'])->name('cari-siswa');
@@ -198,6 +203,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/laporan', [KeuanganController::class, 'laporanKeuangan'])->name('laporan');
         Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
     });
+    
     Route::prefix('arsip')->name('arsip.')->group(function () {
         Route::get('/', [ArsipController::class, 'index'])->name('index');
         Route::get('/create', [ArsipController::class, 'create'])->name('create');
@@ -211,6 +217,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/restore', [ArsipController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [ArsipController::class, 'forceDelete'])->name('force-delete');
     });
+    
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
@@ -233,13 +240,18 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
+    // ================== PROFIL ADMINISTRASI ==================
     Route::prefix('profil')->name('profil.')->group(function () {
-        Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
-        Route::get('/edit', [AdministrasiDashboard::class, 'editProfil'])->name('edit');
-        Route::put('/', [AdministrasiDashboard::class, 'updateProfil'])->name('update');
-        Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
+        Route::get('/', [AdministrasiProfil::class, 'index'])->name('index');
+        Route::get('/edit', [AdministrasiProfil::class, 'edit'])->name('edit');
+        Route::put('/', [AdministrasiProfil::class, 'update'])->name('update');
+        Route::post('/change-password', [AdministrasiProfil::class, 'changePassword'])->name('change-password');
     });
-    Route::get('/pengaturan', function () { return view('administrasi.pengaturan.index'); })->name('pengaturan');
+
+    // ================== PENGATURAN ADMINISTRASI ==================
+    Route::get('/pengaturan', function () { 
+        return view('administrasi.pengaturan.index'); 
+    })->name('pengaturan');
 });
 
 // ================== GURU ==================
@@ -298,10 +310,8 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
 
 // ================== SISWA ==================
 Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    // Dashboard
     Route::get('/dashboard', [SiswaDashboard::class, 'index'])->name('dashboard');
     
-    // Profil Siswa
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [ProfilController::class, 'index'])->name('index');
         Route::get('/edit', [ProfilController::class, 'edit'])->name('edit');
@@ -309,21 +319,18 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
         Route::post('/change-password', [ProfilController::class, 'changePassword'])->name('change-password');
     });
     
-    // Nilai
     Route::prefix('nilai')->name('nilai.')->group(function () {
         Route::get('/', [SiswaNilai::class, 'index'])->name('index');
         Route::get('/raport', [SiswaNilai::class, 'raport'])->name('raport');
         Route::get('/detail/{mapel_id}', [SiswaNilai::class, 'detail'])->name('detail');
     });
     
-    // Absensi
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', [SiswaAbsensi::class, 'index'])->name('index');
         Route::get('/riwayat', [SiswaAbsensi::class, 'riwayat'])->name('riwayat');
         Route::get('/rekap', [SiswaAbsensi::class, 'rekap'])->name('rekap');
     });
     
-    // Tugas
     Route::prefix('tugas')->name('tugas.')->group(function () {
         Route::get('/', [SiswaTugas::class, 'index'])->name('index');
         Route::get('/{id}', [SiswaTugas::class, 'show'])->name('show');
@@ -331,13 +338,11 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
         Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
     });
     
-    // Kalender
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [SiswaKalender::class, 'index'])->name('index');
         Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');
     });
     
-    // Pembayaran
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])->name('index');
         Route::get('/riwayat', [PembayaranController::class, 'riwayat'])->name('riwayat');
