@@ -24,6 +24,7 @@ use App\Http\Controllers\Administrasi\KomunikasiController as AdministrasiKomuni
 use App\Http\Controllers\Administrasi\AbsensiSholatController;
 use App\Http\Controllers\Administrasi\MapelController;
 use App\Http\Controllers\Administrasi\GaleriController;
+use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -265,7 +266,9 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
-    // Profil Administrasi
+    // =============================================
+    // PROFIL ADMINISTRASI (DIPERBAIKI)
+    // =============================================
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
         Route::get('/edit', [AdministrasiDashboard::class, 'editProfil'])->name('edit');
