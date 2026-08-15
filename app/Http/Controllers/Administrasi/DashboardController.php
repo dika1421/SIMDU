@@ -128,6 +128,12 @@ class DashboardController extends Controller
     }
 
     /**
+     * =============================================
+     * METHOD PROFIL (DITAMBAHKAN)
+     * =============================================
+     */
+
+    /**
      * Tampilkan halaman profil
      */
     public function profil()
