@@ -25,9 +25,9 @@ class ArsipController extends Controller
                 $query->where('kategori', $request->kategori);
             }
 
-            // Filter tahun
+            // Filter tahun (use year of tanggal_dokumen if `tahun` column not present)
             if ($request->filled('tahun')) {
-                $query->where('tahun', $request->tahun);
+                $query->whereYear('tanggal_dokumen', $request->tahun);
             }
 
             // Pencarian
@@ -56,8 +56,8 @@ class ArsipController extends Controller
                 'keuangan' => 'Keuangan'
             ];
 
-            $tahunList = ArsipDokumen::select('tahun')
-                ->whereNotNull('tahun')
+            $tahunList = ArsipDokumen::selectRaw("EXTRACT(YEAR FROM tanggal_dokumen) AS tahun")
+                ->whereNotNull('tanggal_dokumen')
                 ->distinct()
                 ->orderBy('tahun', 'desc')
                 ->pluck('tahun');

@@ -9,13 +9,17 @@ use App\Models\Kelas;
 use App\Models\Spp;
 use App\Models\Absensi;
 use App\Models\Jadwal;
-// use App\Models\Nilai; // 🔥 COMMENT DULU JIKA ERROR
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    /**
+     * Dashboard Administrasi
+     */
     public function index()
     {
         try {
@@ -69,7 +73,7 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
 
-            // 🔥 Data untuk grafik distribusi kelas
+            // Data untuk grafik distribusi kelas
             $kelasData = [];
             $kelasLabels = [];
             $kelasList = Kelas::withCount('siswa')->get();
@@ -121,5 +125,72 @@ class DashboardController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * Tampilkan halaman profil
+     */
+    public function profil()
+    {
+        $user = Auth::user();
+        return view('administrasi.profil.index', compact('user'));
+    }
+
+    /**
+     * Tampilkan halaman edit profil
+     */
+    public function editProfil()
+    {
+        $user = Auth::user();
+        return view('administrasi.profil.edit', compact('user'));
+    }
+
+    /**
+     * Update profil user
+     */
+    public function updateProfil(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'no_hp' => 'nullable|string|max:15',
+            'alamat' => 'nullable|string|max:255',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'no_hp' => $request->no_hp,
+            'alamat' => $request->alamat,
+        ]);
+
+        return redirect()
+            ->route('administrasi.profil.index')
+            ->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    /**
+     * Ganti password
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = Auth::user();
+        
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Password saat ini salah!');
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return back()->with('success', 'Password berhasil diubah!');
     }
 }
