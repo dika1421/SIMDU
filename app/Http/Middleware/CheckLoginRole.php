@@ -1,5 +1,4 @@
 <?php
-// app/Http/Middleware/CheckLoginRole.php
 
 namespace App\Http\Middleware;
 
@@ -7,49 +6,61 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckLoginRole
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string  ...$roles
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
         $user = Auth::user();
-        
-        if (!$user) {
-            return redirect()->route('login');
-        }
-        
-        // Ambil role dari session (jika ada), atau gunakan role user
-        $loginRole = session('login_role', $user->role);
-        
-        // Jika user adalah kepala_sekolah dan ingin mengakses guru, cek session
-        // Jika tidak ada session login_role, gunakan role user
-        if ($user->role === 'kepala_sekolah' && !session()->has('login_role')) {
-            // Default ke kepala_sekolah jika tidak ada session
-            $loginRole = 'kepala_sekolah';
-        }
-        
+        $loginRole = session('login_role');
+
         // Log untuk debugging
         Log::info('CheckLoginRole:', [
             'user_id' => $user->id,
             'user_role' => $user->role,
             'login_role' => $loginRole,
-            'allowed_roles' => $roles,
-            'session' => session()->all()
+            'required_roles' => $roles,
+            'url' => $request->fullUrl(),
         ]);
-        
+
+        // Jika tidak ada session login_role, set dari user role
+        if (empty($loginRole)) {
+            $loginRole = $user->role;
+            session(['login_role' => $loginRole]);
+            Log::info('Session login_role tidak ada, di-set ke:', ['login_role' => $loginRole]);
+        }
+
         // Cek apakah role yang digunakan untuk login diizinkan
         if (!in_array($loginRole, $roles)) {
+            Log::warning('Akses ditolak:', [
+                'user_id' => $user->id,
+                'login_role' => $loginRole,
+                'required_roles' => $roles,
+            ]);
+            
             abort(403, 'Anda tidak memiliki akses ke halaman ini. Role Anda: ' . $loginRole . ', Role yang diizinkan: ' . implode(', ', $roles));
         }
-        
+
+        // Cek apakah user memiliki role yang sesuai dengan login_role
+        if ($user->role !== $loginRole) {
+            Log::warning('Role mismatch:', [
+                'user_id' => $user->id,
+                'user_role' => $user->role,
+                'login_role' => $loginRole,
+            ]);
+        }
+
         return $next($request);
     }
 }
