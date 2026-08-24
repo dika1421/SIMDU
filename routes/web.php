@@ -267,7 +267,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // =============================================
-    // PROFIL ADMINISTRASI (DIPERBAIKI)
+    // PROFIL ADMINISTRASI
     // =============================================
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');

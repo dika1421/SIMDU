@@ -300,4 +300,4 @@ class Guru extends Model
     {
         return $this->jadwal()->count();
     }
-}
+}   

@@ -130,4 +130,4 @@ class Jadwal extends Model
         }
         return $query;
     }
-}
+}   
