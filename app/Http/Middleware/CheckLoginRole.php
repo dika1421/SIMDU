@@ -1,104 +1,39 @@
-/**
- * Login dengan NUPTK (untuk Guru, Kepala Sekolah, Administrasi)
- */
-public function loginNuptk(Request $request)
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class CheckLoginRole
 {
-    $request->validate([
-        'nuptk' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    public function handle(Request $request, Closure $next)
+    {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
-    $nuptk = trim($request->nuptk);
-    $password = $request->password;
-    
-    $user = User::where('nuptk', $nuptk)->first();
-    
-    if (!$user) {
-        return back()->with('error', 'NUPTK tidak ditemukan')->withInput();
-    }
-    
-    if (Hash::check($password, $user->password)) {
-        Auth::login($user, $request->has('remember'));
-        
-        // 🔥 SET SESSION LOGIN_ROLE
-        session(['login_role' => $user->role]);
-        
-        Log::info('Login berhasil:', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-            'login_role' => session('login_role'),
-        ]);
-        
-        return $this->redirectBasedOnRole($user);
-    }
-    
-    // Cek password default
-    $expectedPassword = $this->generatePasswordByRole($user, $user->role);
-    if ($password === $expectedPassword) {
-        $user->password = Hash::make($password);
-        $user->save();
-        
-        Auth::login($user, $request->has('remember'));
-        session(['login_role' => $user->role]);
-        
-        Log::info('Login dengan password default:', [
-            'user_id' => $user->id,
-            'role' => $user->role,
-        ]);
-        
-        return $this->redirectBasedOnRole($user);
-    }
-    
-    return back()->with('error', 'Password salah')->withInput();
-}
+        // Ambil user yang login
+        $user = Auth::user();
 
-/**
- * Login dengan NIS (untuk Siswa)
- */
-public function loginSiswa(Request $request)
-{
-    $request->validate([
-        'nis' => 'required|string',
-        'password' => 'required|string',
-    ]);
+        // Cek apakah session login_role ada
+        if (!session()->has('login_role')) {
+            return redirect()->route('login')->with('error', 'Sesi tidak valid. Silakan login ulang.');
+        }
 
-    $nis = trim($request->nis);
-    $password = $request->password;
-    
-    $siswa = Siswa::where('nis', $nis)->first();
-    
-    if (!$siswa) {
-        return back()->with('error', 'NIS tidak ditemukan')->withInput();
+        // Ambil role dari session
+        $loginRole = session('login_role');
+
+        // Cek apakah role user sesuai dengan session
+        if ($user->role !== $loginRole) {
+            // Logout dan redirect ke login
+            Auth::logout();
+            session()->flush();
+            return redirect()->route('login')->with('error', 'Akses ditolak. Role tidak sesuai.');
+        }
+
+        return $next($request);
     }
-    
-    $user = $siswa->user;
-    
-    if (!$user) {
-        return back()->with('error', 'User tidak ditemukan')->withInput();
-    }
-    
-    if (Hash::check($password, $user->password)) {
-        Auth::login($user, $request->has('remember_siswa'));
-        session(['login_role' => 'siswa']);
-        
-        Log::info('Login siswa berhasil:', [
-            'user_id' => $user->id,
-            'role' => 'siswa',
-        ]);
-        
-        return redirect()->route('siswa.dashboard');
-    }
-    
-    $expectedPassword = $this->generatePasswordByRole($user, 'siswa');
-    if ($password === $expectedPassword) {
-        $user->password = Hash::make($password);
-        $user->save();
-        
-        Auth::login($user, $request->has('remember_siswa'));
-        session(['login_role' => 'siswa']);
-        
-        return redirect()->route('siswa.dashboard');
-    }
-    
-    return back()->with('error', 'Password salah')->withInput();
 }
