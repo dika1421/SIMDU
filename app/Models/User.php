@@ -50,7 +50,6 @@ class User extends Authenticatable
         return $this->hasOne(Siswa::class, 'user_id');
     }
 
-    // ✅ METHOD INI YANG DITAMBAHKAN
     public function hasRole($roleName)
     {
         if ($this->role) {

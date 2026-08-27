@@ -15,9 +15,6 @@ class Permission extends Model
         'group'
     ];
 
-    /**
-     * Relasi ke Role
-     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_permission');
