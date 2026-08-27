@@ -61,19 +61,19 @@
                         <table class="table table-borderless mb-0">
                             <tr>
                                 <td class="text-muted" style="width: 120px;">Kelas</td>
-                                <td class="fw-bold">: {{ $siswa->kelas->nama ?? $siswa->kelas->nama_kelas ?? '-' }}</td>
+                                <td class="fw-bold">: {{ $siswa->kelas->display_name ?? $siswa->kelas->nama_kelas ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Jurusan</td>
-                                <td class="fw-bold">: {{ $siswa->kelas->jurusan ?? '-' }}</td>
+                                <td class="fw-bold">: {{ $siswa->kelas->jurusan->nama_jurusan ?? $siswa->kelas->jurusan->nama ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">NISN</td>
                                 <td class="fw-bold">: {{ $siswa->nisn ?? '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Tahun Masuk</td>
-                                <td class="fw-bold">: {{ $siswa->tahun_masuk ?? '-' }}</td>
+                                <td class="text-muted">Agama</td>
+                                <td class="fw-bold">: {{ $siswa->agama ?? '-' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -81,21 +81,34 @@
                         <table class="table table-borderless mb-0">
                             <tr>
                                 <td class="text-muted" style="width: 120px;">Jenis Kelamin</td>
-                                <td class="fw-bold">: {{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : ($siswa->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">Tempat, Tgl Lahir</td>
-                                <td class="fw-bold">: {{ $siswa->tempat_lahir ?? '-' }}, 
-                                    @if($siswa->tanggal_lahir)
-                                        {{ \Carbon\Carbon::parse($siswa->tanggal_lahir)->translatedFormat('d F Y') }}
+                                <td class="fw-bold">: 
+                                    @if($siswa->jenis_kelamin == 'L')
+                                        Laki-laki
+                                    @elseif($siswa->jenis_kelamin == 'P')
+                                        Perempuan
                                     @else
                                         -
                                     @endif
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Agama</td>
-                                <td class="fw-bold">: {{ $siswa->agama ?? '-' }}</td>
+                                <td class="text-muted">Tempat, Tgl Lahir</td>
+                                <td class="fw-bold">: 
+                                    @if($siswa->tempat_lahir || $siswa->tanggal_lahir)
+                                        {{ $siswa->tempat_lahir ?? '-' }}, 
+                                        @if($siswa->tanggal_lahir)
+                                            {{ \Carbon\Carbon::parse($siswa->tanggal_lahir)->translatedFormat('d F Y') }}
+                                        @else
+                                            -
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Tahun Masuk</td>
+                                <td class="fw-bold">: {{ $siswa->tahun_masuk ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Status</td>

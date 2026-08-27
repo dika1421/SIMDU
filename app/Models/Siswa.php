@@ -29,6 +29,11 @@ class Siswa extends Model
         'rfid_card',
         'status',
         'tahun_masuk',
+        'nama_ayah',
+        'nama_ibu',
+        'no_telepon_orangtua',
+        'pekerjaan_orangtua',
+        'alamat_orangtua',
     ];
 
     protected $casts = [
@@ -72,9 +77,9 @@ class Siswa extends Model
     {
         if ($search) {
             return $query->where(function($q) use ($search) {
-                $q->where('nama', 'ILIKE', "%{$search}%")
-                  ->orWhere('nis', 'ILIKE', "%{$search}%")
-                  ->orWhere('nama_lengkap', 'ILIKE', "%{$search}%");
+                $q->where('nama', 'LIKE', "%{$search}%")
+                  ->orWhere('nis', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%");
             });
         }
         return $query;
@@ -84,5 +89,30 @@ class Siswa extends Model
     public function getNamaLengkapAttribute()
     {
         return $this->nama_lengkap ?? $this->nama ?? 'Siswa';
+    }
+
+    // ✅ Accessor untuk mendapatkan nama kelas
+    public function getNamaKelasAttribute()
+    {
+        return $this->kelas->display_name ?? $this->kelas->nama_kelas ?? '-';
+    }
+
+    // ✅ Accessor untuk mendapatkan nama jurusan
+    public function getNamaJurusanAttribute()
+    {
+        if ($this->kelas && $this->kelas->jurusan) {
+            return $this->kelas->jurusan->nama_jurusan ?? 
+                   $this->kelas->jurusan->nama ?? 
+                   '-';
+        }
+        return '-';
+    }
+
+    // ✅ Accessor untuk mendapatkan jenis kelamin dalam teks
+    public function getJenisKelaminTextAttribute()
+    {
+        if ($this->jenis_kelamin == 'L') return 'Laki-laki';
+        if ($this->jenis_kelamin == 'P') return 'Perempuan';
+        return '-';
     }
 }
