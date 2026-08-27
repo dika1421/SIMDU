@@ -6,7 +6,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -19,6 +18,7 @@ class User extends Authenticatable
         'role_id',
         'no_hp',
         'alamat',
+        'role', // Untuk field role lama (jika masih ada)
     ];
 
     protected $hidden = [
@@ -37,29 +37,49 @@ class User extends Authenticatable
     /**
      * Relasi ke Role
      */
-    public function role(): BelongsTo
+    public function role()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
+    // ================================================================
+    // ✅ TAMBAHKAN METHOD INI
+    // ================================================================
+
     /**
-     * Cek apakah user memiliki role
+     * Cek apakah user memiliki role tertentu
+     * 
+     * @param string|array $roleName
+     * @return bool
      */
-    public function hasRole($roleName): bool
+    public function hasRole($roleName)
     {
+        // Cek dari relasi role (jika pakai role_id)
         if ($this->role) {
             if (is_array($roleName)) {
                 return in_array($this->role->name, $roleName);
             }
             return $this->role->name === $roleName;
         }
+
+        // Fallback: cek dari field role (jika masih pakai field role di tabel users)
+        if (isset($this->role) && is_string($this->role)) {
+            if (is_array($roleName)) {
+                return in_array($this->role, $roleName);
+            }
+            return $this->role === $roleName;
+        }
+
         return false;
     }
 
     /**
      * Cek apakah user memiliki permission
+     * 
+     * @param string $permissionName
+     * @return bool
      */
-    public function hasPermission($permissionName): bool
+    public function hasPermission($permissionName)
     {
         if ($this->role) {
             return $this->role->hasPermission($permissionName);
