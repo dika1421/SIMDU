@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="row">
-    <!-- Sidebar Profil -->
+    <!-- Sidebar Kiri -->
     <div class="col-lg-4 mb-4">
         <div class="card border-0 shadow-sm" style="border-radius: 15px;">
             <div class="card-body text-center p-4">
@@ -34,7 +34,9 @@
                     </p>
                     <p class="mb-0">
                         <i class="fas fa-flag me-2 text-secondary" style="width: 20px;"></i> 
-                        {{ $siswa->status ?? 'Aktif' }}
+                        <span class="badge bg-{{ ($siswa->status ?? 'aktif') == 'aktif' ? 'success' : 'secondary' }}">
+                            {{ ucfirst($siswa->status ?? 'Aktif') }}
+                        </span>
                     </p>
                 </div>
                 <a href="{{ route('siswa.profil.edit') }}" class="btn btn-primary mt-3 rounded-pill px-4">
@@ -59,11 +61,11 @@
                         <table class="table table-borderless mb-0">
                             <tr>
                                 <td class="text-muted" style="width: 120px;">Kelas</td>
-                                <td class="fw-bold">: {{ $siswa->kelas->nama_kelas ?? $siswa->kelas->nama ?? '-' }}</td>
+                                <td class="fw-bold">: {{ $siswa->kelas->nama ?? $siswa->kelas->nama_kelas ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Jurusan</td>
-                                <td class="fw-bold">: {{ $siswa->kelas->jurusan ?? $siswa->kelas->nama_jurusan ?? '-' }}</td>
+                                <td class="fw-bold">: {{ $siswa->kelas->jurusan ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">NISN</td>
@@ -98,7 +100,7 @@
                             <tr>
                                 <td class="text-muted">Status</td>
                                 <td class="fw-bold">
-                                    <span class="badge bg-{{ $siswa->status == 'aktif' ? 'success' : 'secondary' }}">
+                                    <span class="badge bg-{{ ($siswa->status ?? 'aktif') == 'aktif' ? 'success' : 'secondary' }}">
                                         {{ ucfirst($siswa->status ?? 'Aktif') }}
                                     </span>
                                 </td>
@@ -164,13 +166,13 @@
                         <div class="col-md-4">
                             <input type="password" name="current_password" class="form-control" placeholder="Password Saat Ini" required>
                             @error('current_password')
-                                <small class="text-danger">{{ $message }}</small>
+                                <small class="text-danger d-block mt-1">{{ $message }}</small>
                             @enderror
                         </div>
                         <div class="col-md-4">
-                            <input type="password" name="new_password" class="form-control" placeholder="Password Baru" required>
+                            <input type="password" name="new_password" class="form-control" placeholder="Password Baru (min 6)" required>
                             @error('new_password')
-                                <small class="text-danger">{{ $message }}</small>
+                                <small class="text-danger d-block mt-1">{{ $message }}</small>
                             @enderror
                         </div>
                         <div class="col-md-4">
