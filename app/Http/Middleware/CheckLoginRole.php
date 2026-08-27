@@ -1,4 +1,5 @@
 <?php
+// app/Http/Middleware/CheckLoginRole.php
 
 namespace App\Http\Middleware;
 
@@ -24,7 +25,7 @@ class CheckLoginRole
 
         $user = Auth::user();
 
-        // Cek login_role dari session (untuk multi-role login)
+        // Cek login_role dari session
         if (!session()->has('login_role')) {
             Auth::logout();
             session()->flush();
@@ -34,7 +35,6 @@ class CheckLoginRole
         $loginRole = session('login_role');
 
         // Cek apakah user memiliki role yang sesuai
-        // Gunakan method hasRole() dari model User
         if (!$user->hasRole($loginRole)) {
             Auth::logout();
             session()->flush();

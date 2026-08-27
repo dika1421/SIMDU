@@ -11,6 +11,11 @@ class CheckPermission
 {
     /**
      * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  ...$permissions
+     * @return mixed
      */
     public function handle(Request $request, Closure $next, ...$permissions)
     {
@@ -21,7 +26,7 @@ class CheckPermission
         $user = Auth::user();
 
         // Super Admin memiliki akses semua
-        if (method_exists($user, 'hasRole') && $user->hasRole('super_admin')) {
+        if ($user->hasRole('super_admin')) {
             return $next($request);
         }
 
@@ -30,7 +35,7 @@ class CheckPermission
             // Permission bisa berupa kombinasi dengan pipe (|)
             $permList = explode('|', $permission);
             foreach ($permList as $perm) {
-                if (method_exists($user, 'hasPermission') && $user->hasPermission($perm)) {
+                if ($user->hasPermission($perm)) {
                     return $next($request);
                 }
             }
