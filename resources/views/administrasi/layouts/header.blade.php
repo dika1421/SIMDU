@@ -22,6 +22,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
+        /* ===== CSS SAMA SEPERTI SEBELUMNYA ===== */
         * {
             margin: 0;
             padding: 0;
@@ -59,17 +60,14 @@
             z-index: 1000;
         }
         
-        /* 🔥 SIDEBAR COLLAPSED (DESKTOP) */
         .app-sidebar.collapsed {
             margin-left: -280px;
         }
         
-        /* 🔥 SIDEBAR MOBILE */
         .app-sidebar.mobile-open {
             transform: translateX(0);
         }
         
-        /* 🔥 OVERLAY UNTUK MOBILE */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -191,7 +189,6 @@
             margin: 15px 0;
         }
         
-        /* Dropdown Menu dalam Sidebar */
         .sidebar-menu .dropdown-toggle {
             display: block;
             padding: 12px 15px;
@@ -234,7 +231,6 @@
             font-size: 0.9rem;
         }
         
-        /* Submenu level 2 */
         .dropdown-submenu {
             position: static;
         }
@@ -268,7 +264,6 @@
             background-color: #34495e;
         }
         
-        /* ===== MAIN CONTENT ===== */
         .app-main {
             flex: 1;
             display: flex;
@@ -278,7 +273,6 @@
             transition: all 0.3s ease;
         }
         
-        /* ===== NAVBAR ===== */
         .app-navbar {
             padding: 12px 25px;
             background-color: white;
@@ -289,7 +283,6 @@
             min-height: 65px;
         }
         
-        /* 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) - PASTIKAN INI ADA */
         .btn-toggle-sidebar {
             background: none;
             border: none;
@@ -348,7 +341,6 @@
             padding: 25px;
         }
         
-        /* ===== ALERT ===== */
         .alert {
             padding: 15px 20px;
             border-radius: 5px;
@@ -367,7 +359,6 @@
             border-left: 4px solid #dc3545;
         }
         
-        /* ===== CARD ===== */
         .card {
             border: none;
             border-radius: 10px;
@@ -382,29 +373,6 @@
             font-weight: 600;
         }
         
-        .table thead th {
-            border-top: none;
-            background-color: #f8f9fa;
-        }
-        
-        .btn-action {
-            padding: 5px 10px;
-            margin: 0 2px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 10px;
-            padding: 20px;
-        }
-        
-        .stat-card h2 {
-            font-size: 2rem;
-            margin: 10px 0 5px;
-        }
-
-        /* Badge untuk menu baru */
         .menu-new-badge {
             background-color: #e74c3c;
             color: white;
@@ -421,7 +389,6 @@
             100% { opacity: 0.6; }
         }
         
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .app-sidebar {
                 position: fixed;
@@ -475,7 +442,7 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- 🔥 OVERLAY UNTUK MOBILE -->
+        <!-- OVERLAY UNTUK MOBILE -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
         
         <!-- SIDEBAR -->
@@ -829,23 +796,9 @@
                         </div>
                     </li>
                     
-                    <li><hr></li>
-                    
-                    <!-- PROFIL -->
-                    <li>
-                        <a href="{{ route('administrasi.profil.index') }}" 
-                           class="menu-item {{ request()->routeIs('administrasi.profil.*') ? 'active' : '' }}">
-                            <i class="fas fa-user-circle"></i> Profil
-                        </a>
-                    </li>
-                    
-                    <!-- PENGATURAN -->
-                    <li>
-                        <a href="{{ route('administrasi.pengaturan') }}" 
-                           class="menu-item {{ request()->routeIs('administrasi.pengaturan') ? 'active' : '' }}">
-                            <i class="fas fa-cog"></i> Pengaturan
-                        </a>
-                    </li>
+                    <!-- ============================================= -->
+                    <!-- 🔥 BAGIAN INI DIHAPUS (Profil & Pengaturan) -->
+                    <!-- ============================================= -->
                     
                     <!-- LOGOUT -->
                     <li>
@@ -865,7 +818,6 @@
         <main class="app-main">
             <div class="app-navbar">
                 <div class="navbar-left">
-                    <!-- 🔥 TOMBOL TOGGLE SIDEBAR (GARIS TIGA) -->
                     <button class="btn-toggle-sidebar" id="toggleSidebarBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -873,7 +825,6 @@
                 </div>
                 
                 <div class="navbar-actions">
-                    <!-- Notifikasi -->
                     <div class="dropdown">
                         <button class="btn btn-light position-relative" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bell"></i>
@@ -940,7 +891,6 @@
     
     <script>
         $(document).ready(function() {
-            // Inisialisasi DataTable
             $('.datatable').each(function() {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
@@ -951,56 +901,38 @@
                 }
             });
             
-            // Menjaga dropdown menu di sidebar tetap terbuka saat active
             $('.collapse').each(function() {
                 if ($(this).find('.active').length) {
                     $(this).addClass('show');
                 }
             });
             
-            // Auto close alert setelah 5 detik
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
         });
 
-        // ================================================================
-        // 🔥 FUNGSI TOGGLE SIDEBAR
-        // ================================================================
         function toggleSidebar() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            if (!sidebar) {
-                console.error('Sidebar tidak ditemukan!');
-                return;
-            }
+            if (!sidebar) return;
             
             const isMobile = window.innerWidth <= 768;
             
             if (isMobile) {
-                // MOBILE: toggle class mobile-open
                 sidebar.classList.toggle('mobile-open');
                 if (overlay) {
                     overlay.classList.toggle('active');
                 }
             } else {
-                // DESKTOP: toggle class collapsed
                 sidebar.classList.toggle('collapsed');
-                
-                // Simpan state ke localStorage
-                const isCollapsed = sidebar.classList.contains('collapsed');
                 try {
-                    localStorage.setItem('sidebarCollapsed', isCollapsed ? 'true' : 'false');
-                } catch(e) {
-                    // Ignore localStorage error
-                }
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed') ? 'true' : 'false');
+                } catch(e) {}
             }
         }
 
-        // ================================================================
-        // 🔥 TUTUP SIDEBAR KETIKA KLIK DI LUAR (MOBILE)
-        // ================================================================
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('appSidebar');
             const toggleBtn = document.getElementById('toggleSidebarBtn');
@@ -1021,49 +953,30 @@
             }
         });
 
-        // ================================================================
-        // 🔥 RESIZE WINDOW
-        // ================================================================
         window.addEventListener('resize', function() {
             const sidebar = document.getElementById('appSidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
             if (window.innerWidth > 768) {
-                // Desktop: hapus state mobile
-                if (sidebar) {
-                    sidebar.classList.remove('mobile-open');
-                }
-                if (overlay) {
-                    overlay.classList.remove('active');
-                }
+                if (sidebar) sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.remove('active');
             }
         });
 
-        // ================================================================
-        // 🔥 SIDEBAR COLLAPSE STATE (DESKTOP) - Local Storage
-        // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('appSidebar');
-            
             if (!sidebar) return;
             
-            // Cek di localStorage
             let isCollapsed = false;
             try {
                 isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            } catch(e) {
-                // Ignore localStorage error
-            }
+            } catch(e) {}
             
-            // Terapkan state (hanya jika desktop)
             if (window.innerWidth > 768 && isCollapsed) {
                 sidebar.classList.add('collapsed');
             }
         });
 
-        // ================================================================
-        // 🔥 LOGOUT CONFIRMATION
-        // ================================================================
         document.querySelectorAll('.menu-item.logout, .dropdown-item.text-danger').forEach(function(el) {
             el.addEventListener('click', function(e) {
                 if (!confirm('Apakah Anda yakin ingin logout?')) {
@@ -1071,12 +984,6 @@
                 }
             });
         });
-
-        // ================================================================
-        // 🔥 DEBUG
-        // ================================================================
-        console.log('✅ Toggle Sidebar siap digunakan!');
-        console.log('📌 Klik tombol ☰ di navbar untuk toggle sidebar.');
     </script>
     
     @stack('scripts')
