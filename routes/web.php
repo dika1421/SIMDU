@@ -162,8 +162,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
     
     // Manajemen Jadwal
-    // PENTING: route spesifik (kalender, copy, check-conflict, export) HARUS di atas
-    // Route::resource, supaya tidak "tertangkap" duluan oleh /jadwal/{jadwal} milik show()
     Route::get('/jadwal/kalender', [JadwalController::class, 'kalender'])->name('jadwal.kalender');
     Route::post('/jadwal/copy', [JadwalController::class, 'copy'])->name('jadwal.copy');
     Route::post('/jadwal/check-conflict', [JadwalController::class, 'checkConflict'])->name('jadwal.check-conflict');
