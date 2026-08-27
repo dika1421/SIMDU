@@ -39,8 +39,8 @@ class DashboardController extends Controller
             // Data yang akan dikirim ke view
             $data = $this->getDashboardData($siswa);
             
-            // PERBAIKAN: Gunakan view yang benar
-            return view('siswa.dashboard.index', $data);
+            // PERBAIKAN: view('siswa.dashboard') karena file dashboard.blade.php ada di folder siswa langsung
+            return view('siswa.dashboard', $data);
             
         } catch (\Exception $e) {
             Log::error('Error in siswa dashboard: ' . $e->getMessage(), [
@@ -48,8 +48,8 @@ class DashboardController extends Controller
                 'line' => $e->getLine()
             ]);
             
-            // PERBAIKAN: Kirim data kosong dengan error message
-            return view('siswa.dashboard.index', $this->getEmptyDashboardData($e->getMessage()));
+            // PERBAIKAN: Gunakan view yang sama
+            return view('siswa.dashboard', $this->getEmptyDashboardData($e->getMessage()));
         }
     }
 
@@ -73,7 +73,7 @@ class DashboardController extends Controller
             
             $siswa = Siswa::create([
                 'user_id' => $user->id,
-                'nis' => '232410031', // Atau generate otomatis
+                'nis' => 'SIS' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
                 'nama' => $user->name,
                 'nama_lengkap' => $user->name,
                 'kelas_id' => $kelas->id,
@@ -129,7 +129,6 @@ class DashboardController extends Controller
     private function getNilaiData($siswa)
     {
         try {
-            // PERBAIKAN: Pastikan kolom yang digunakan sesuai
             $nilaiTerbaru = Nilai::with(['mataPelajaran'])
                 ->where('siswa_id', $siswa->id)
                 ->where('status', 'published')
@@ -139,7 +138,6 @@ class DashboardController extends Controller
             
             // Jika tidak ada nilai, beri data dummy
             if ($nilaiTerbaru->isEmpty()) {
-                // Data dummy untuk testing
                 $nilaiTerbaru = collect([
                     (object) [
                         'mataPelajaran' => (object) ['nama_mapel' => 'Matematika'],
@@ -168,7 +166,6 @@ class DashboardController extends Controller
                 ->where('status', 'published')
                 ->avg('nilai_akhir') ?? 0;
             
-            // Jika rata-rata 0, beri data dummy
             if ($rataNilai == 0 && $nilaiTerbaru->isNotEmpty()) {
                 $rataNilai = $nilaiTerbaru->avg('nilai_akhir') ?? 0;
             }
@@ -181,7 +178,6 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('Error getting nilai data: ' . $e->getMessage());
             
-            // Data dummy jika error
             $dummyNilai = collect([
                 (object) ['mataPelajaran' => (object) ['nama_mapel' => 'Matematika'], 'nilai_akhir' => 85.5],
                 (object) ['mataPelajaran' => (object) ['nama_mapel' => 'Bahasa Indonesia'], 'nilai_akhir' => 78.0],
@@ -202,13 +198,11 @@ class DashboardController extends Controller
     private function getAbsensiData($siswa)
     {
         try {
-            // Absensi hari ini
             $absensiHariIni = Absensi::where('siswa_id', $siswa->id)
                 ->where('absensi_type', 'siswa')
                 ->whereDate('tanggal', Carbon::today())
                 ->first();
             
-            // Statistik absensi bulan ini
             $absensiBulanIni = Absensi::where('siswa_id', $siswa->id)
                 ->where('absensi_type', 'siswa')
                 ->whereMonth('tanggal', Carbon::now()->month)
@@ -223,7 +217,6 @@ class DashboardController extends Controller
                 'terlambat' => $absensiBulanIni->where('status', 'terlambat')->count(),
             ];
             
-            // Jika tidak ada data, beri dummy
             if (array_sum($statistikAbsensi) == 0) {
                 $statistikAbsensi = [
                     'hadir' => 18,
@@ -267,7 +260,6 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get();
             
-            // Jika tidak ada event, beri dummy
             if ($events->isEmpty()) {
                 $events = collect([
                     (object) [
@@ -293,7 +285,6 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('Error getting events: ' . $e->getMessage());
             
-            // Data dummy
             return collect([
                 (object) [
                     'judul' => 'UTS Semester Ganjil',
@@ -316,7 +307,7 @@ class DashboardController extends Controller
     {
         try {
             if (!$siswa || !$siswa->kelas_id) {
-                return 5; // Dummy peringkat
+                return 5;
             }
 
             $siswaKelas = Siswa::where('kelas_id', $siswa->kelas_id)->get();
@@ -352,7 +343,7 @@ class DashboardController extends Controller
             
         } catch (\Exception $e) {
             Log::error('Error hitung peringkat: ' . $e->getMessage());
-            return 5; // Dummy peringkat
+            return 5;
         }
     }
 
@@ -362,7 +353,6 @@ class DashboardController extends Controller
     private function getChartData($siswa)
     {
         try {
-            // Data nilai per bulan (untuk chart line)
             $nilaiPerBulan = Nilai::where('siswa_id', $siswa->id)
                 ->where('status', 'published')
                 ->selectRaw('MONTH(created_at) as bulan, YEAR(created_at) as tahun, AVG(nilai_akhir) as avg_nilai')
@@ -381,17 +371,15 @@ class DashboardController extends Controller
                     $chartNilaiData[] = round($item->avg_nilai, 2);
                 }
             } else {
-                // Data dummy untuk chart
                 $chartLabels = ['Agustus', 'September', 'Oktober', 'November', 'Desember', 'Januari'];
                 $chartNilaiData = [75, 78, 82, 80, 85, 88];
             }
 
-            // Data untuk chart kehadiran (doughnut)
             $statAbsensi = $this->getAbsensiData($siswa)['statistikAbsensi'];
             
             return [
-                'chartLabels' => $chartLabels ?? ['Agustus', 'September', 'Oktober', 'November', 'Desember', 'Januari'],
-                'chartNilaiData' => $chartNilaiData ?? [75, 78, 82, 80, 85, 88],
+                'chartLabels' => $chartLabels,
+                'chartNilaiData' => $chartNilaiData,
                 'chartKehadiranData' => [
                     $statAbsensi['hadir'] ?? 18,
                     $statAbsensi['sakit'] ?? 2,
@@ -445,7 +433,7 @@ class DashboardController extends Controller
             $user = auth()->user();
             $siswa = Siswa::where('user_id', $user->id)->first();
             
-            return view('siswa.profil.index', compact('siswa', 'user'));
+            return view('siswa.profil', compact('siswa', 'user'));
             
         } catch (\Exception $e) {
             Log::error('Error in siswa profil: ' . $e->getMessage());
@@ -476,12 +464,10 @@ class DashboardController extends Controller
                 'agama' => 'nullable|string',
             ]);
 
-            // Update user
             $user->update([
                 'name' => $request->nama_lengkap
             ]);
 
-            // Update siswa
             $siswa->update([
                 'nama_lengkap' => $request->nama_lengkap,
                 'nama' => $request->nama_lengkap,
