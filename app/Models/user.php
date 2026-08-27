@@ -11,6 +11,11 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'email',
@@ -18,14 +23,24 @@ class User extends Authenticatable
         'role_id',
         'no_hp',
         'alamat',
-        'role', // Untuk field role lama (jika masih ada)
+        'role',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -42,10 +57,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    // ================================================================
-    // ✅ TAMBAHKAN METHOD INI
-    // ================================================================
-
     /**
      * Cek apakah user memiliki role tertentu
      * 
@@ -54,7 +65,7 @@ class User extends Authenticatable
      */
     public function hasRole($roleName)
     {
-        // Cek dari relasi role (jika pakai role_id)
+        // Jika user memiliki relasi role
         if ($this->role) {
             if (is_array($roleName)) {
                 return in_array($this->role->name, $roleName);
@@ -62,12 +73,12 @@ class User extends Authenticatable
             return $this->role->name === $roleName;
         }
 
-        // Fallback: cek dari field role (jika masih pakai field role di tabel users)
-        if (isset($this->role) && is_string($this->role)) {
+        // Fallback: jika masih pakai field role di tabel users
+        if (isset($this->attributes['role']) && !empty($this->attributes['role'])) {
             if (is_array($roleName)) {
-                return in_array($this->role, $roleName);
+                return in_array($this->attributes['role'], $roleName);
             }
-            return $this->role === $roleName;
+            return $this->attributes['role'] === $roleName;
         }
 
         return false;
