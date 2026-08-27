@@ -276,9 +276,10 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
     });
 
-    // Pengaturan Administrasi
+    // ✅ REDIRECT KE DASHBOARD (KARENA MENU SUDAH DIHAPUS)
     Route::get('/pengaturan', function () { 
-        return view('administrasi.pengaturan.index'); 
+        return redirect()->route('administrasi.dashboard')
+            ->with('info', 'Halaman pengaturan sedang dalam pengembangan.'); 
     })->name('pengaturan');
 });
 
