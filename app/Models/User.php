@@ -52,18 +52,28 @@ class User extends Authenticatable
 
     public function hasRole($roleName)
     {
-        if ($this->role) {
+        // Cek jika role adalah object
+        if ($this->role && is_object($this->role)) {
             if (is_array($roleName)) {
                 return in_array($this->role->name, $roleName);
             }
             return $this->role->name === $roleName;
         }
+
+        // Fallback: cek field 'role' di tabel users
+        if (isset($this->attributes['role']) && !empty($this->attributes['role'])) {
+            if (is_array($roleName)) {
+                return in_array($this->attributes['role'], $roleName);
+            }
+            return $this->attributes['role'] === $roleName;
+        }
+
         return false;
     }
 
     public function hasPermission($permissionName)
     {
-        if ($this->role) {
+        if ($this->role && is_object($this->role)) {
             return $this->role->hasPermission($permissionName);
         }
         return false;
