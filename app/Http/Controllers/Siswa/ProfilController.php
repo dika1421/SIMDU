@@ -22,39 +22,30 @@ class ProfilController extends Controller
         if (!$siswa) {
             $kelas = Kelas::first();
             
-            // Jika tidak ada kelas, buat dummy
-            if (!$kelas) {
-                $kelas = (object) [
-                    'id' => 1,
-                    'nama' => 'XII A PEMASARAN',
-                    'nama_kelas' => 'XII A PEMASARAN',
-                    'jurusan' => 'Pemasaran'
-                ];
-            }
+            // Buat data dummy untuk testing
+            $siswa = new Siswa();
+            $siswa->user_id = $user->id;
+            $siswa->nis = '232410031';
+            $siswa->nisn = '1234567890';
+            $siswa->nama = $user->name;
+            $siswa->nama_lengkap = $user->name;
+            $siswa->jenis_kelamin = 'L';
+            $siswa->tempat_lahir = 'Jakarta';
+            $siswa->tanggal_lahir = '2008-08-27';
+            $siswa->kelas_id = $kelas->id ?? null;
+            $siswa->status = 'aktif';
+            $siswa->tahun_masuk = date('Y');
+            $siswa->no_telepon = '08123456789';
+            $siswa->alamat = 'Jl. Pendidikan No. 123';
+            $siswa->nama_ayah = 'Bapak Siswa';
+            $siswa->nama_ibu = 'Ibu Siswa';
+            $siswa->no_telepon_orangtua = '08123456789';
+            $siswa->pekerjaan_orangtua = 'Wiraswasta';
+            $siswa->alamat_orangtua = 'Jl. Orang Tua No. 456';
+            $siswa->agama = 'Islam';
+            $siswa->save();
             
-            $siswa = Siswa::create([
-                'user_id' => $user->id,
-                'nis' => '232410031',
-                'nisn' => '1234567890',
-                'nama' => $user->name,
-                'nama_lengkap' => $user->name,
-                'jenis_kelamin' => 'L',
-                'tempat_lahir' => 'Jakarta',
-                'tanggal_lahir' => '2008-01-01',
-                'kelas_id' => $kelas->id ?? null,
-                'status' => 'aktif',
-                'tahun_masuk' => date('Y'),
-                'no_telepon' => '',
-                'alamat' => '',
-                'nama_ayah' => '',
-                'nama_ibu' => '',
-                'no_telepon_orangtua' => '',
-                'pekerjaan_orangtua' => '',
-                'alamat_orangtua' => '',
-                'agama' => 'Islam'
-            ]);
-            
-            // Reload with relationship
+            // Reload dengan relasi
             $siswa = Siswa::with('kelas')->where('user_id', $user->id)->first();
         }
         
@@ -73,34 +64,33 @@ class ProfilController extends Controller
             Log::error('Error in profil index: ' . $e->getMessage());
             
             $user = auth()->user();
-            // Data dummy untuk tampilan
-            $siswa = (object) [
-                'id' => 1,
-                'nis' => '232410031',
-                'nisn' => '1234567890',
-                'nama_lengkap' => $user->name ?? 'Rahmat Aditya',
-                'nama' => $user->name ?? 'Rahmat Aditya',
-                'jenis_kelamin' => 'L',
-                'tempat_lahir' => 'Jakarta',
-                'tanggal_lahir' => '2008-08-27',
-                'tahun_masuk' => '2024',
-                'status' => 'aktif',
-                'no_telepon' => '08123456789',
-                'alamat' => 'Jl. Pendidikan No. 123',
-                'nama_ayah' => 'Bapak Siswa',
-                'nama_ibu' => 'Ibu Siswa',
-                'no_telepon_orangtua' => '08123456789',
-                'pekerjaan_orangtua' => 'Wiraswasta',
-                'alamat_orangtua' => 'Jl. Orang Tua No. 456',
-                'agama' => 'Islam',
-                'kelas' => (object) [
-                    'id' => 1,
-                    'nama' => 'XII A PEMASARAN',
-                    'nama_kelas' => 'XII A PEMASARAN',
-                    'jurusan' => 'Pemasaran'
-                ],
-                'kelas_id' => 1
-            ];
+            
+            // Data dummy jika error
+            $siswa = new \stdClass();
+            $siswa->id = 1;
+            $siswa->nis = '232410031';
+            $siswa->nisn = '1234567890';
+            $siswa->nama_lengkap = $user->name ?? 'Rahmat Aditya';
+            $siswa->nama = $user->name ?? 'Rahmat Aditya';
+            $siswa->jenis_kelamin = 'Laki-laki';
+            $siswa->tempat_lahir = 'Jakarta';
+            $siswa->tanggal_lahir = '2008-08-27';
+            $siswa->tahun_masuk = '2024';
+            $siswa->status = 'aktif';
+            $siswa->no_telepon = '08123456789';
+            $siswa->alamat = 'Jl. Pendidikan No. 123';
+            $siswa->nama_ayah = 'Bapak Siswa';
+            $siswa->nama_ibu = 'Ibu Siswa';
+            $siswa->no_telepon_orangtua = '08123456789';
+            $siswa->pekerjaan_orangtua = 'Wiraswasta';
+            $siswa->alamat_orangtua = 'Jl. Orang Tua No. 456';
+            $siswa->agama = 'Islam';
+            $siswa->kelas = new \stdClass();
+            $siswa->kelas->id = 1;
+            $siswa->kelas->nama = 'XII A PEMASARAN';
+            $siswa->kelas->nama_kelas = 'XII A PEMASARAN';
+            $siswa->kelas->jurusan = 'Pemasaran';
+            $siswa->kelas_id = 1;
             
             return view('siswa.profil.index', compact('user', 'siswa'))
                 ->with('warning', 'Data menggunakan dummy karena terjadi kesalahan.');
@@ -151,22 +141,34 @@ class ProfilController extends Controller
                 'name' => $validated['nama_lengkap']
             ]);
             
-            // Update siswa
-            $siswa->update([
+            // Update siswa - PERBAIKAN: hanya field yang ada di database
+            $updateData = [
                 'nama_lengkap' => $validated['nama_lengkap'],
                 'nama' => $validated['nama_lengkap'],
                 'no_telepon' => $validated['no_telepon'] ?? $siswa->no_telepon,
                 'alamat' => $validated['alamat'] ?? $siswa->alamat,
-                'jenis_kelamin' => $validated['jenis_kelamin'] ?? $siswa->jenis_kelamin,
-                'tempat_lahir' => $validated['tempat_lahir'] ?? $siswa->tempat_lahir,
-                'tanggal_lahir' => $validated['tanggal_lahir'] ?? $siswa->tanggal_lahir,
-                'agama' => $validated['agama'] ?? $siswa->agama,
                 'nama_ayah' => $validated['nama_ayah'] ?? $siswa->nama_ayah,
                 'nama_ibu' => $validated['nama_ibu'] ?? $siswa->nama_ibu,
                 'no_telepon_orangtua' => $validated['no_telepon_orangtua'] ?? $siswa->no_telepon_orangtua,
                 'pekerjaan_orangtua' => $validated['pekerjaan_orangtua'] ?? $siswa->pekerjaan_orangtua,
                 'alamat_orangtua' => $validated['alamat_orangtua'] ?? $siswa->alamat_orangtua,
-            ]);
+            ];
+            
+            // Hanya update jika field ada di database
+            if (isset($siswa->jenis_kelamin)) {
+                $updateData['jenis_kelamin'] = $validated['jenis_kelamin'] ?? $siswa->jenis_kelamin;
+            }
+            if (isset($siswa->tempat_lahir)) {
+                $updateData['tempat_lahir'] = $validated['tempat_lahir'] ?? $siswa->tempat_lahir;
+            }
+            if (isset($siswa->tanggal_lahir)) {
+                $updateData['tanggal_lahir'] = $validated['tanggal_lahir'] ?? $siswa->tanggal_lahir;
+            }
+            if (isset($siswa->agama)) {
+                $updateData['agama'] = $validated['agama'] ?? $siswa->agama;
+            }
+            
+            $siswa->update($updateData);
             
             DB::commit();
             
