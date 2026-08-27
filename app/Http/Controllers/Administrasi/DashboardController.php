@@ -9,10 +9,12 @@ use App\Models\Kelas;
 use App\Models\Spp;
 use App\Models\Absensi;
 use App\Models\Jadwal;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -87,6 +89,14 @@ class DashboardController extends Controller
                 $kelasData = [1];
             }
 
+            // Data untuk chart kehadiran
+            $chartKehadiranData = [
+                $hadirSiswa,
+                $sakitSiswa,
+                $izinSiswa,
+                $alfaSiswa
+            ];
+
             return view('administrasi.dashboard', compact(
                 'totalSiswa',
                 'siswaAktif',
@@ -102,10 +112,13 @@ class DashboardController extends Controller
                 'pembayaranTerbaru',
                 'jadwalHariIni',
                 'kelasLabels',
-                'kelasData'
+                'kelasData',
+                'chartKehadiranData'
             ));
 
         } catch (\Exception $e) {
+            Log::error('Error in administrasi dashboard: ' . $e->getMessage());
+            
             return view('administrasi.dashboard', [
                 'totalSiswa' => 0,
                 'siswaAktif' => 0,
@@ -122,13 +135,14 @@ class DashboardController extends Controller
                 'jadwalHariIni' => collect(),
                 'kelasLabels' => ['Belum Ada Data'],
                 'kelasData' => [1],
+                'chartKehadiranData' => [0, 0, 0, 0],
                 'error' => $e->getMessage()
             ]);
         }
     }
 
     // =============================================
-    // METHOD UNTUK PROFIL (DITAMBAHKAN)
+    // METHOD UNTUK PROFIL (TAMBAHKAN INI)
     // =============================================
 
     /**
@@ -136,8 +150,21 @@ class DashboardController extends Controller
      */
     public function profil()
     {
-        $user = Auth::user();
-        return view('administrasi.profil.index', compact('user'));
+        try {
+            $user = Auth::user();
+            
+            // Cek apakah user ada
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            }
+            
+            return view('administrasi.profil.index', compact('user'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in profil: ' . $e->getMessage());
+            return redirect()->route('administrasi.dashboard')
+                ->with('error', 'Gagal memuat profil: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -145,8 +172,20 @@ class DashboardController extends Controller
      */
     public function editProfil()
     {
-        $user = Auth::user();
-        return view('administrasi.profil.edit', compact('user'));
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            }
+            
+            return view('administrasi.profil.edit', compact('user'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in edit profil: ' . $e->getMessage());
+            return redirect()->route('administrasi.profil.index')
+                ->with('error', 'Gagal memuat form edit: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -154,25 +193,46 @@ class DashboardController extends Controller
      */
     public function updateProfil(Request $request)
     {
-        $user = Auth::user();
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'no_hp' => 'nullable|string|max:15',
-            'alamat' => 'nullable|string|max:255',
-        ]);
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            }
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'no_hp' => 'nullable|string|max:15',
+                'alamat' => 'nullable|string|max:500',
+            ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'no_hp' => $request->no_hp,
-            'alamat' => $request->alamat,
-        ]);
+            DB::beginTransaction();
 
-        return redirect()
-            ->route('administrasi.profil.index')
-            ->with('success', 'Profil berhasil diperbarui!');
+            $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'no_hp' => $validated['no_hp'] ?? $user->no_hp,
+                'alamat' => $validated['alamat'] ?? $user->alamat,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('administrasi.profil.index')
+                ->with('success', 'Profil berhasil diperbarui!');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error update profil: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui profil: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -180,21 +240,38 @@ class DashboardController extends Controller
      */
     public function changePassword(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|min:8|confirmed',
-        ]);
+        try {
+            $validated = $request->validate([
+                'current_password' => 'required',
+                'password' => 'required|min:8|confirmed',
+            ]);
 
-        $user = Auth::user();
-        
-        if (!Hash::check($request->current_password, $user->password)) {
-            return back()->with('error', 'Password saat ini salah!');
+            $user = Auth::user();
+            
+            if (!$user) {
+                return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+            }
+            
+            if (!Hash::check($validated['current_password'], $user->password)) {
+                return redirect()->back()
+                    ->with('error', 'Password saat ini salah!');
+            }
+
+            $user->update([
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Password berhasil diubah!');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error change password: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Gagal mengubah password: ' . $e->getMessage());
         }
-
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
-
-        return back()->with('success', 'Password berhasil diubah!');
     }
 }
