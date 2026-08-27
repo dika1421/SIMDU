@@ -142,7 +142,7 @@ class DashboardController extends Controller
     }
 
     // =============================================
-    // METHOD UNTUK PROFIL (TAMBAHKAN INI)
+    // METHOD UNTUK PROFIL
     // =============================================
 
     /**
@@ -153,7 +153,6 @@ class DashboardController extends Controller
         try {
             $user = Auth::user();
             
-            // Cek apakah user ada
             if (!$user) {
                 return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
             }
