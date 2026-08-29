@@ -88,9 +88,17 @@ class User extends Authenticatable
      */
     public function hasPermission($permissionName)
     {
-        if ($this->role && is_object($this->role)) {
-            return $this->role->hasPermission($permissionName);
+        // PENTING: jangan pakai $this->role di sini, karena tabel 'users'
+        // punya kolom string 'role' yang namanya sama dengan method relasi
+        // role() di atas. Laravel akan mengutamakan kolom string tersebut,
+        // sehingga $this->role TIDAK PERNAH berupa objek Role di sini.
+        // Solusinya: ambil Role model langsung lewat role_id.
+        $roleModel = $this->role_id ? \App\Models\Role::find($this->role_id) : null;
+
+        if ($roleModel) {
+            return $roleModel->hasPermission($permissionName);
         }
+
         return false;
     }
 }
