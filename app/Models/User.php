@@ -1,5 +1,4 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
@@ -35,6 +34,9 @@ class User extends Authenticatable
         'last_login_at' => 'datetime',
     ];
 
+    /**
+     * Relasi ke Role
+     */
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -50,9 +52,16 @@ class User extends Authenticatable
         return $this->hasOne(Siswa::class, 'user_id');
     }
 
-    public function hasRole($roleName)
+    /**
+     * Cek apakah user memiliki role tertentu.
+     * Mendukung pengecekan via relasi Role model, atau fallback ke kolom 'role' di tabel users.
+     *
+     * @param string|array $roleName
+     * @return bool
+     */
+    public function hasRole($roleName): bool
     {
-        // Cek jika role adalah object
+        // Cek relasi role Model
         if ($this->role && is_object($this->role)) {
             if (is_array($roleName)) {
                 return in_array($this->role->name, $roleName);
@@ -71,6 +80,12 @@ class User extends Authenticatable
         return false;
     }
 
+    /**
+     * Cek apakah user memiliki permission tertentu (lewat relasi Role).
+     *
+     * @param string $permissionName
+     * @return bool
+     */
     public function hasPermission($permissionName)
     {
         if ($this->role && is_object($this->role)) {
