@@ -1,4 +1,4 @@
-{{-- resources/views/admin/roles/index.blade.php --}}
+{{-- resources/views/administrasi/roles/index.blade.php --}}
 @extends('administrasi.layouts.header')
 
 @section('title', 'Manajemen Role')
@@ -13,7 +13,7 @@
                         <i class="fas fa-user-tag me-2 text-primary"></i> Manajemen Role
                     </h5>
                     @can('role.create')
-                        <a href="{{ route('admin.roles.create') }}" class="btn btn-primary rounded-pill px-4">
+                        <a href="{{ route('administrasi.roles.create') }}" class="btn btn-primary rounded-pill px-4">
                             <i class="fas fa-plus me-1"></i> Tambah Role
                         </a>
                     @endcan
@@ -71,7 +71,7 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         @can('role.permission')
-                                            <a href="{{ route('admin.roles.permissions', $role->id) }}" 
+                                            <a href="{{ route('administrasi.roles.permissions', $role->id) }}" 
                                                class="btn btn-sm btn-info" 
                                                title="Atur Permission">
                                                 <i class="fas fa-key"></i>
@@ -79,7 +79,7 @@
                                         @endcan
 
                                         @can('role.edit')
-                                            <a href="{{ route('admin.roles.edit', $role->id) }}" 
+                                            <a href="{{ route('administrasi.roles.edit', $role->id) }}" 
                                                class="btn btn-sm btn-warning" 
                                                title="Edit Role">
                                                 <i class="fas fa-edit"></i>
@@ -88,7 +88,7 @@
 
                                         @can('role.delete')
                                             @if(!$role->is_default)
-                                                <form action="{{ route('admin.roles.destroy', $role->id) }}" 
+                                                <form action="{{ route('administrasi.roles.destroy', $role->id) }}" 
                                                       method="POST" 
                                                       style="display:inline;"
                                                       onsubmit="return confirm('Yakin ingin menghapus role {{ $role->display_name ?? $role->name }}?')">
