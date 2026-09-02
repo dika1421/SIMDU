@@ -795,9 +795,43 @@
                             </ul>
                         </div>
                     </li>
+
+                    <!-- ============================================= -->
+                    <!-- ✅ TAMBAHAN BARU: MANAJEMEN ROLE & PERMISSION -->
+                    <!-- ============================================= -->
+                    <li class="menu-section">MANAJEMEN AKSES</li>
+                    <li class="dropdown-submenu">
+                        <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#rolesMenu">
+                            <i class="fas fa-user-shield"></i> Role & Permission
+                            <i class="fas fa-chevron-down chevron float-end mt-1"></i>
+                        </a>
+                        <div class="collapse {{ request()->routeIs('administrasi.roles.*') || request()->routeIs('administrasi.permissions.*') ? 'show' : '' }}" id="rolesMenu">
+                            <ul class="nav flex-column">
+                                <li>
+                                    <a href="{{ route('administrasi.roles.index') }}"
+                                       class="menu-item {{ request()->routeIs('administrasi.roles.index') || request()->routeIs('administrasi.roles.edit') ? 'active' : '' }}">
+                                        <i class="fas fa-list"></i> Data Role
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.roles.create') }}"
+                                       class="menu-item {{ request()->routeIs('administrasi.roles.create') ? 'active' : '' }}">
+                                        <i class="fas fa-plus"></i> Tambah Role
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('administrasi.permissions.index') }}"
+                                       class="menu-item {{ request()->routeIs('administrasi.permissions.*') ? 'active' : '' }}">
+                                        <i class="fas fa-key"></i> Data Permission
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                     
                     <!-- ============================================= -->
                     <!-- 🔥 BAGIAN INI DIHAPUS (Profil & Pengaturan) -->
+                    <!-- Masih bisa diakses lewat dropdown user di navbar atas -->
                     <!-- ============================================= -->
                     
                     <!-- LOGOUT -->
