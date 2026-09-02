@@ -1,4 +1,4 @@
-{{-- resources/views/admin/permissions/index.blade.php --}}
+{{-- resources/views/administrasi/permissions/index.blade.php --}}
 @extends('administrasi.layouts.header')
 
 @section('title', 'Manajemen Permission')
@@ -13,7 +13,7 @@
                         <i class="fas fa-lock me-2 text-warning"></i> Manajemen Permission
                     </h5>
                     @can('permission.create')
-                        <a href="{{ route('admin.permissions.create') }}" class="btn btn-primary rounded-pill px-4">
+                        <a href="{{ route('administrasi.permissions.create') }}" class="btn btn-primary rounded-pill px-4">
                             <i class="fas fa-plus me-1"></i> Tambah Permission
                         </a>
                     @endcan
@@ -23,6 +23,13 @@
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show">
                         <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
@@ -61,7 +68,7 @@
                                 <td>
                                     <div class="btn-group" role="group">
                                         @can('permission.delete')
-                                            <form action="{{ route('admin.permissions.destroy', $permission->id) }}" 
+                                            <form action="{{ route('administrasi.permissions.destroy', $permission->id) }}" 
                                                   method="POST" 
                                                   style="display:inline;"
                                                   onsubmit="return confirm('Yakin ingin menghapus permission {{ $permission->display_name ?? $permission->name }}?')">
