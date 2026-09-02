@@ -25,6 +25,9 @@ use App\Http\Controllers\Administrasi\AbsensiSholatController;
 use App\Http\Controllers\Administrasi\MapelController;
 use App\Http\Controllers\Administrasi\GaleriController;
 use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
+// >>> PERBAIKAN: namespace controller Role & Permission disesuaikan ke Administrasi
+use App\Http\Controllers\Administrasi\RoleController;
+use App\Http\Controllers\Administrasi\PermissionController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -38,8 +41,6 @@ use App\Http\Controllers\Siswa\TugasController as SiswaTugas;
 use App\Http\Controllers\Siswa\KalenderController as SiswaKalender;
 use App\Http\Controllers\Siswa\ProfilController;
 use App\Http\Controllers\Siswa\PembayaranController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PermissionController;
 
 // ================== LANDING PAGE ==================
 Route::get('/', [LandingPageController::class, 'index'])->name('landing');
@@ -57,7 +58,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // ================== KEPALA SEKOLAH ==================
 Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah')->name('kepala-sekolah.')->group(function () {
     Route::get('/dashboard', [KepalaSekolahDashboard::class, 'index'])->name('dashboard');
-    
+
     Route::prefix('manajemen')->name('manajemen.')->group(function () {
         Route::get('/struktur', [ManajemenSekolahController::class, 'struktur'])->name('struktur');
         Route::post('/struktur', [ManajemenSekolahController::class, 'strukturStore'])->name('struktur.store');
@@ -71,7 +72,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/tahun-ajaran', [ManajemenSekolahController::class, 'tahunAjaranStore'])->name('tahun-ajaran.store');
         Route::post('/tahun-ajaran/{id}/set-aktif', [ManajemenSekolahController::class, 'tahunAjaranSetAktif'])->name('tahun-ajaran.set-aktif');
     });
-    
+
     Route::prefix('manajemen-guru')->name('manajemen-guru.')->group(function () {
         Route::get('/', [ManajemenGuruController::class, 'index'])->name('index');
         Route::get('/create', [ManajemenGuruController::class, 'create'])->name('create');
@@ -83,7 +84,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::delete('/{id}', [ManajemenGuruController::class, 'destroy'])->name('destroy');
         Route::post('/{id}/reset-password', [ManajemenGuruController::class, 'resetPassword'])->name('reset-password');
     });
-    
+
     Route::prefix('persetujuan')->name('persetujuan.')->group(function () {
         Route::get('/dashboard', [PersetujuanController::class, 'dashboard'])->name('dashboard');
         Route::get('/', [PersetujuanController::class, 'index'])->name('index');
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/{id}/reject', [PersetujuanController::class, 'reject'])->name('reject');
         Route::post('/{id}/revise', [PersetujuanController::class, 'revise'])->name('revise');
     });
-    
+
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/absensi', [LaporanController::class, 'absensi'])->name('absensi');
         Route::get('/kinerja-guru', [LaporanController::class, 'kinerjaGuru'])->name('kinerja-guru');
@@ -109,21 +110,21 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::get('/keuangan', [LaporanController::class, 'keuangan'])->name('keuangan');
         Route::get('/export/{type}', [LaporanController::class, 'export'])->name('export');
     });
-    
+
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         Route::get('/laporan', function() { return view('kepala-sekolah.keuangan.laporan'); })->name('laporan');
         Route::get('/spp', function() { return view('kepala-sekolah.keuangan.spp'); })->name('spp');
         Route::get('/pembayaran-lain', function() { return view('kepala-sekolah.keuangan.pembayaran-lain'); })->name('pembayaran-lain-view');
         Route::get('/rekapitulasi', function() { return view('kepala-sekolah.keuangan.rekapitulasi'); })->name('rekapitulasi');
     });
-    
+
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [KepalaSekolahProfil::class, 'index'])->name('index');
         Route::get('/edit', [KepalaSekolahProfil::class, 'edit'])->name('edit');
         Route::put('/', [KepalaSekolahProfil::class, 'update'])->name('update');
         Route::post('/change-password', [KepalaSekolahProfil::class, 'changePassword'])->name('change-password');
     });
-    
+
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
 });
 
@@ -133,11 +134,11 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])
         ->middleware('permission:dashboard.view')
         ->name('dashboard');
-    
+
     // Manajemen Jurusan
     Route::resource('jurusan', JurusanController::class)
         ->middleware('permission:jurusan.view|jurusan.create|jurusan.edit|jurusan.delete');
-    
+
     // Manajemen Kelas
     Route::post('/kelas/import', [KelasController::class, 'import'])
         ->middleware('permission:kelas.create')
@@ -153,7 +154,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])
         ->middleware('permission:kelas.view')
         ->name('kelas.get-list');
-    
+
     // Manajemen Mata Pelajaran
     Route::resource('mapel', MapelController::class)
         ->middleware('permission:mapel.view|mapel.create|mapel.edit|mapel.delete');
@@ -169,7 +170,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/mapel/export', [MapelController::class, 'export'])
         ->middleware('permission:mapel.export')
         ->name('mapel.export');
-    
+
     // Manajemen Siswa
     Route::resource('siswa', SiswaController::class)
         ->middleware('permission:siswa.view|siswa.create|siswa.edit|siswa.delete');
@@ -188,7 +189,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/siswa/export', [SiswaController::class, 'export'])
         ->middleware('permission:siswa.export')
         ->name('siswa.export');
-    
+
     // Manajemen Guru
     Route::resource('guru', AdministrasiGuruController::class)
         ->middleware('permission:guru.view|guru.create|guru.edit|guru.delete');
@@ -201,7 +202,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])
         ->middleware('permission:guru.export')
         ->name('guru.export');
-    
+
     // Manajemen Jadwal
     Route::get('/jadwal/kalender', [JadwalController::class, 'kalender'])
         ->middleware('permission:jadwal.view')
@@ -217,7 +218,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         ->name('jadwal.export');
     Route::resource('jadwal', JadwalController::class)
         ->middleware('permission:jadwal.view|jadwal.create|jadwal.edit|jadwal.delete');
-    
+
     // Absensi
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', function() { return redirect()->route('administrasi.absensi.scan'); })
@@ -251,7 +252,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
             ->middleware('permission:absensi.export')
             ->name('export-guru');
     });
-    
+
     // Absensi Sholat
     Route::prefix('absensi-sholat')->name('absensi-sholat.')->group(function () {
         Route::get('/', [AbsensiSholatController::class, 'index'])
@@ -297,7 +298,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
             ->middleware('permission:absensi.export')
             ->name('export-guru');
     });
-    
+
     // RFID
     Route::prefix('rfid')->name('rfid.')->group(function () {
         Route::post('/scan/siswa', [RfidController::class, 'scanSiswa'])
@@ -310,7 +311,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
             ->middleware('permission:absensi.view')
             ->name('card-info');
     });
-    
+
     // Keuangan
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])
@@ -365,7 +366,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
             ->middleware('permission:keuangan.export')
             ->name('laporan.export');
     });
-    
+
     // Arsip
     Route::prefix('arsip')->name('arsip.')->group(function () {
         Route::get('/', [ArsipController::class, 'index'])
@@ -402,7 +403,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
             ->middleware('permission:arsip.delete')
             ->name('force-delete');
     });
-    
+
     // Komunikasi
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])
@@ -457,6 +458,54 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // =============================================
+    // MANAJEMEN ROLE & PERMISSION
+    // >>> PERBAIKAN: dipindahkan ke dalam grup administrasi
+    // Route name sekarang: administrasi.roles.*  dan  administrasi.permissions.*
+    // Sesuai lokasi view: views/administrasi/roles dan views/administrasi/permissions
+    // =============================================
+    Route::prefix('roles')->name('roles.')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])
+            ->middleware('permission:role.view')
+            ->name('index');
+        Route::get('/create', [RoleController::class, 'create'])
+            ->middleware('permission:role.create')
+            ->name('create');
+        Route::post('/', [RoleController::class, 'store'])
+            ->middleware('permission:role.create')
+            ->name('store');
+        Route::get('/{id}/edit', [RoleController::class, 'edit'])
+            ->middleware('permission:role.edit')
+            ->name('edit');
+        Route::put('/{id}', [RoleController::class, 'update'])
+            ->middleware('permission:role.edit')
+            ->name('update');
+        Route::delete('/{id}', [RoleController::class, 'destroy'])
+            ->middleware('permission:role.delete')
+            ->name('destroy');
+        Route::get('/{id}/permissions', [RoleController::class, 'permissions'])
+            ->middleware('permission:role.permission')
+            ->name('permissions');
+        Route::post('/{id}/permissions', [RoleController::class, 'assignPermissions'])
+            ->middleware('permission:role.permission')
+            ->name('assign-permissions');
+    });
+
+    Route::prefix('permissions')->name('permissions.')->group(function () {
+        Route::get('/', [PermissionController::class, 'index'])
+            ->middleware('permission:permission.view')
+            ->name('index');
+        Route::get('/create', [PermissionController::class, 'create'])
+            ->middleware('permission:permission.create')
+            ->name('create');
+        Route::post('/', [PermissionController::class, 'store'])
+            ->middleware('permission:permission.create')
+            ->name('store');
+        Route::delete('/{id}', [PermissionController::class, 'destroy'])
+            ->middleware('permission:permission.delete')
+            ->name('destroy');
+    });
+
+    // =============================================
     // PROFIL ADMINISTRASI
     // =============================================
     Route::prefix('profil')->name('profil.')->group(function () {
@@ -477,28 +526,11 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     // =============================================
     // PENGATURAN ADMINISTRASI
     // =============================================
-    Route::get('/pengaturan', function () { 
-        return view('administrasi.pengaturan.index'); 
+    Route::get('/pengaturan', function () {
+        return view('administrasi.pengaturan.index');
     })
     ->middleware('permission:pengaturan.view')
     ->name('pengaturan');
-});
-
-// ================== ADMIN ROLE & PERMISSION (Super Admin Only) ==================
-Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Manajemen Role
-    Route::resource('roles', RoleController::class)
-        ->middleware('permission:role.view|role.create|role.edit|role.delete');
-    Route::get('/roles/{id}/permissions', [RoleController::class, 'permissions'])
-        ->middleware('permission:role.permission')
-        ->name('roles.permissions');
-    Route::post('/roles/{id}/permissions', [RoleController::class, 'assignPermissions'])
-        ->middleware('permission:role.permission')
-        ->name('roles.assign-permissions');
-    
-    // Manajemen Permission
-    Route::resource('permissions', PermissionController::class)
-        ->middleware('permission:permission.view|permission.create|permission.delete');
 });
 
 // ================== GURU ==================
@@ -506,7 +538,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
     Route::get('/dashboard', [GuruDashboard::class, 'index'])
         ->middleware('permission:dashboard.view')
         ->name('dashboard');
-    
+
     Route::prefix('nilai')->name('nilai.')->group(function () {
         Route::get('/', [NilaiController::class, 'index'])
             ->middleware('permission:nilai.view')
@@ -533,7 +565,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
             ->middleware('permission:nilai.export')
             ->name('export');
     });
-    
+
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', [AbsensiSiswaController::class, 'index'])
             ->middleware('permission:absensi.view')
@@ -566,7 +598,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
             ->middleware('permission:absensi.view')
             ->name('get-mata-pelajaran');
     });
-    
+
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [GuruKomunikasi::class, 'index'])
             ->middleware('permission:komunikasi.view')
@@ -596,7 +628,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
             ->middleware('permission:komunikasi.create')
             ->name('reply');
     });
-    
+
     Route::get('/kalender', [KalenderController::class, 'index'])
         ->middleware('permission:kalender.view')
         ->name('kalender');
@@ -612,7 +644,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
     Route::delete('/kalender/event/{id}', [KalenderController::class, 'destroyEvent'])
         ->middleware('permission:kalender.delete')
         ->name('kalender.event.destroy');
-    
+
     Route::prefix('kinerja')->name('kinerja.')->group(function () {
         Route::get('/', [KinerjaController::class, 'index'])
             ->middleware('permission:kinerja.view')
@@ -624,7 +656,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
             ->middleware('permission:kinerja.export')
             ->name('export');
     });
-    
+
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [GuruDashboard::class, 'profil'])
             ->middleware('permission:profil.view')
@@ -646,7 +678,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
     Route::get('/dashboard', [SiswaDashboard::class, 'index'])
         ->middleware('permission:dashboard.view')
         ->name('dashboard');
-    
+
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [ProfilController::class, 'index'])
             ->middleware('permission:profil.view')
@@ -661,7 +693,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
             ->middleware('permission:profil.edit')
             ->name('change-password');
     });
-    
+
     Route::prefix('nilai')->name('nilai.')->group(function () {
         Route::get('/', [SiswaNilai::class, 'index'])
             ->middleware('permission:nilai.view')
@@ -673,7 +705,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
             ->middleware('permission:nilai.view')
             ->name('detail');
     });
-    
+
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', [SiswaAbsensi::class, 'index'])
             ->middleware('permission:absensi.view')
@@ -685,7 +717,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
             ->middleware('permission:absensi.view')
             ->name('rekap');
     });
-    
+
     Route::prefix('tugas')->name('tugas.')->group(function () {
         Route::get('/', [SiswaTugas::class, 'index'])
             ->middleware('permission:tugas.view')
@@ -700,7 +732,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
             ->middleware('permission:tugas.delete')
             ->name('batal');
     });
-    
+
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [SiswaKalender::class, 'index'])
             ->middleware('permission:kalender.view')
@@ -709,7 +741,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
             ->middleware('permission:kalender.view')
             ->name('api.events');
     });
-    
+
     Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
         Route::get('/', [PembayaranController::class, 'index'])
             ->middleware('permission:pembayaran.view')
