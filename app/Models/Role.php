@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -19,21 +20,34 @@ class Role extends Model
         'is_default' => 'boolean'
     ];
 
+    /**
+     * Relasi ke Permission (Many-to-Many)
+     */
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'role_permission');
     }
 
-    public function users(): BelongsToMany
+    /**
+     * Relasi ke User (One-to-Many)
+     * Karena User memiliki role_id
+     */
+    public function users(): HasMany
     {
-        return $this->belongsToMany(User::class, 'user_roles');
+        return $this->hasMany(User::class, 'role_id');
     }
 
+    /**
+     * Cek apakah role memiliki permission
+     */
     public function hasPermission($permissionName): bool
     {
         return $this->permissions()->where('name', $permissionName)->exists();
     }
 
+    /**
+     * Assign permission ke role
+     */
     public function assignPermission($permission): void
     {
         if (is_string($permission)) {
@@ -42,6 +56,9 @@ class Role extends Model
         $this->permissions()->syncWithoutDetaching([$permission->id]);
     }
 
+    /**
+     * Remove permission dari role
+     */
     public function removePermission($permission): void
     {
         if (is_string($permission)) {
@@ -50,6 +67,9 @@ class Role extends Model
         $this->permissions()->detach($permission->id);
     }
 
+    /**
+     * Sync permissions
+     */
     public function syncPermissions(array $permissions): void
     {
         $this->permissions()->sync($permissions);
