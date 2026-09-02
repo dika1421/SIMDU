@@ -1,4 +1,4 @@
-{{-- resources/views/admin/roles/edit.blade.php --}}
+{{-- resources/views/administrasi/roles/edit.blade.php --}}
 @extends('administrasi.layouts.header')
 
 @section('title', 'Edit Role')
@@ -12,13 +12,13 @@
                     <h5 class="mb-0 fw-bold">
                         <i class="fas fa-edit me-2 text-primary"></i> Edit Role
                     </h5>
-                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <a href="{{ route('administrasi.roles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
                         <i class="fas fa-arrow-left me-1"></i> Kembali
                     </a>
                 </div>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.roles.update', $role->id) }}" method="POST">
+                <form action="{{ route('administrasi.roles.update', $role->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -89,7 +89,7 @@
                             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
                                 <i class="fas fa-save me-2"></i> Update Role
                             </button>
-                            <a href="{{ route('admin.roles.index') }}" class="btn btn-secondary rounded-pill px-4 py-2 ms-2">
+                            <a href="{{ route('administrasi.roles.index') }}" class="btn btn-secondary rounded-pill px-4 py-2 ms-2">
                                 <i class="fas fa-times me-1"></i> Batal
                             </a>
                         </div>
