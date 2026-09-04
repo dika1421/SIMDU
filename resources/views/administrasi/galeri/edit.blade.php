@@ -1,4 +1,4 @@
-@extends('layouts.administrasi')
+@extends('layouts.header')
 
 @section('title', 'Edit Galeri')
 
