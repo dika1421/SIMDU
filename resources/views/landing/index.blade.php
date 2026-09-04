@@ -726,7 +726,7 @@
         .garis-hubung {
             display: flex;
             justify-content: center;
-            gap: 100px;
+            gap: 80px;
             flex-wrap: wrap;
             margin: 20px 0 30px;
         }
@@ -1264,7 +1264,7 @@
                 <div class="kepala-sekolah-box">
                     <i class="fas fa-user-tie fa-2x d-block mb-2"></i>
                     <h5>Kepala Sekolah</h5>
-                    <p>Drs. H. Ahmad Fauzi, M.Pd.</p>
+                    <p>Hj. Jubaedah, SE</p>
                 </div>
             </div>
 
@@ -1273,80 +1273,142 @@
                 <div class="garis"></div>
                 <div class="garis"></div>
                 <div class="garis"></div>
+                <div class="garis"></div>
             </div>
 
-            <!-- Wakil Kepala Sekolah -->
+            <!-- Wakil Kepala Sekolah & Kaprog -->
             <div class="row g-4 justify-content-center">
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
                     <div class="struktur-card" style="border-top-color: #3949ab;">
                         <div class="avatar blue"><i class="fas fa-user-graduate"></i></div>
                         <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">Drs. Budi Santoso, M.M.</p>
-                        <span class="jabatan">Bidang Kurikulum</span>
+                        <p class="nama">H. Rojudin, S.Pd</p>
+                        <span class="jabatan">Wakabid Kurikulum</span>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
                     <div class="struktur-card" style="border-top-color: #4caf50;">
                         <div class="avatar green"><i class="fas fa-users"></i></div>
                         <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">Dra. Siti Rahayu, M.Pd.</p>
-                        <span class="jabatan">Bidang Kesiswaan</span>
+                        <p class="nama">Siti Sopiah, S. Pd</p>
+                        <span class="jabatan">Kesiswaan</span>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
                     <div class="struktur-card" style="border-top-color: #ff8a65;">
-                        <div class="avatar orange"><i class="fas fa-handshake"></i></div>
-                        <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">H. M. Ikhsan, S.Ag., M.Pd.I.</p>
-                        <span class="jabatan">Bidang Humas & Industri</span>
+                        <div class="avatar orange"><i class="fas fa-chart-line"></i></div>
+                        <h6>Kaprog Pemasaran</h6>
+                        <p class="nama">Sri Gustina, S. Pd</p>
+                        <span class="jabatan">Ketua Program Pemasaran</span>
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
                     <div class="struktur-card" style="border-top-color: #4dd0e1;">
-                        <div class="avatar cyan"><i class="fas fa-clipboard-list"></i></div>
-                        <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">Drs. Agus Supriyadi, M.Si.</p>
-                        <span class="jabatan">Bidang Sarana & Prasarana</span>
+                        <div class="avatar cyan"><i class="fas fa-utensils"></i></div>
+                        <h6>Kaprog Tata Boga</h6>
+                        <p class="nama">Maimunah Busyrah, S. Pd</p>
+                        <span class="jabatan">Ketua Program Tata Boga</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Koordinator -->
-            <div class="row g-3 mt-4 justify-content-center">
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="600">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">PKL & Bursa Kerja</p>
+            <!-- Pembina OSIS & BP/BKK & TU & Operator -->
+            <div class="row g-4 mt-2 justify-content-center">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
+                    <div class="struktur-card" style="border-top-color: #9c27b0;">
+                        <div class="avatar" style="background: linear-gradient(135deg, #9c27b0, #ab47bc);"><i class="fas fa-flag"></i></div>
+                        <h6>Pembina OSIS</h6>
+                        <p class="nama">Ilham Amaludin, M. Pd</p>
+                        <span class="jabatan">Pembina OSIS</span>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="700">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">BK & Konseling</p>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
+                    <div class="struktur-card" style="border-top-color: #f57c00;">
+                        <div class="avatar" style="background: linear-gradient(135deg, #f57c00, #ff9800);"><i class="fas fa-hand-holding-heart"></i></div>
+                        <h6>BP/BKK</h6>
+                        <p class="nama">M. Fadilah, S. Si</p>
+                        <span class="jabatan">BP/BKK</span>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="800">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Ekstrakurikuler</p>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
+                    <div class="struktur-card" style="border-top-color: #00897b;">
+                        <div class="avatar" style="background: linear-gradient(135deg, #00897b, #26a69a);"><i class="fas fa-building"></i></div>
+                        <h6>Tata Usaha</h6>
+                        <p class="nama">Nata Wijaya, S. Pd. I</p>
+                        <span class="jabatan">Tata Usaha</span>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="900">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Perpustakaan</p>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
+                    <div class="struktur-card" style="border-top-color: #6d4c41;">
+                        <div class="avatar" style="background: linear-gradient(135deg, #6d4c41, #8d6e63);"><i class="fas fa-laptop"></i></div>
+                        <h6>Operator Sekolah</h6>
+                        <p class="nama">Syaripudin, S.Pd.I., M.Ag.,Gr</p>
+                        <span class="jabatan">Operator Sekolah</span>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1000">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Laboratorium</p>
+            </div>
+
+            <!-- Guru Mapel - Grid 4 kolom -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="text-center mb-3" style="color: #1a237e; font-weight: 700;">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Daftar Guru Mapel
+                    </h5>
+                    <div class="row g-2">
+                        @php
+                            $guruMapel = [
+                                'Euis Suryani, S.Ag',
+                                'Drs. H. Kadri Imbali, MA',
+                                'Abdul Aziz, S. Pd',
+                                'Dra. Deswita',
+                                'Nining Indranigsih, M. Pd',
+                                'Syaripudin, S. Pd, M. Pd',
+                                'Drs. H. Suardi',
+                                'Asep Purwadi, S. Pd',
+                                'Maliyah, S. Pd.I',
+                                'Siti Hamimah, S.Pd',
+                                'Nur Septiani, S.Pd',
+                                'Nurma Fitriani. S. S, S. Pd',
+                                'Nurlailah Qadariah, S. Pd',
+                                'Aceng Ma\'sum, S.Pd',
+                                'Sukanti, SE',
+                                'Dra. Kholilah, MM',
+                                'Lulu Sa\'idah, S.Pd.I, Gr.',
+                                'Zahra Alfiyah, S. Sos',
+                                'Agustami, CDP',
+                                'Adelia Gita Cahyani, S. Pd',
+                                'Larasati Anindhita, S.Sos',
+                            ];
+                        @endphp
+                        @foreach($guruMapel as $guru)
+                            <div class="col-lg-2 col-md-3 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
+                                <div style="background: white; padding: 10px 8px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; height: 100%;">
+                                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #e8eaf6, #c5cae9); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: #1a237e; font-weight: 700; font-size: 12px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <p style="font-size: 0.6rem; color: #333; margin-bottom: 0; font-weight: 600; line-height: 1.3;">{{ $guru }}</p>
+                                    <span style="font-size: 0.5rem; color: #999;">Guru Mapel</span>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1100">
+            </div>
+
+            <!-- Staff Lainnya -->
+            <div class="row g-3 mt-3 justify-content-center">
+                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1100">
                     <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem;">Koordinator</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Tata Usaha</p>
+                        <i class="fas fa-flask text-primary" style="font-size: 1.5rem;"></i>
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem; margin-top: 5px;">Kepala Laboratorium</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Krisdianarti</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1200">
+                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
+                        <i class="fas fa-quran text-success" style="font-size: 1.5rem;"></i>
+                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem; margin-top: 5px;">Guru Tahsin/Tadarus</h6>
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Naufal Nurrahmatullah Aryanto</p>
                     </div>
                 </div>
             </div>
