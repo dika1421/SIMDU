@@ -1,4 +1,4 @@
-@extends('administrasi.layouts')
+@extends('administrasi.layouts.header')
 
 @section('title', 'Tambah Jurusan')
 
