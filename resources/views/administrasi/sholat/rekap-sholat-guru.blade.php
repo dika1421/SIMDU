@@ -20,18 +20,49 @@
 
 <div class="card">
     <div class="card-body">
-        <p>Tabel rekap absensi sholat guru akan ditampilkan di sini.</p>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Guru</th>
+                        <th>NUPTK</th>
+                        <th>Total Hadir</th>
+                        <th>Total Terlambat</th>
+                        <th>Total Izin</th>
+                        <th>Total Tidak Hadir</th>
+                        <th>Persentase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($data as $index => $item)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $item->nama_lengkap ?? $item->name ?? '-' }}</td>
+                            <td>{{ $item->nuptk ?? '-' }}</td>
+                            <td><span class="badge bg-success">{{ $item->total_tepat_waktu ?? 0 }}</span></td>
+                            <td><span class="badge bg-warning">{{ $item->total_terlambat ?? 0 }}</span></td>
+                            <td><span class="badge bg-info">{{ $item->total_izin ?? 0 }}</span></td>
+                            <td><span class="badge bg-danger">{{ $item->total_tidak_hadir ?? 0 }}</span></td>
+                            <td>
+                                @php
+                                    $total = ($item->total_tepat_waktu ?? 0) + ($item->total_terlambat ?? 0) + ($item->total_izin ?? 0) + ($item->total_tidak_hadir ?? 0);
+                                    $persen = $total > 0 ? round(($item->total_tepat_waktu ?? 0) / $total * 100, 2) : 0;
+                                @endphp
+                                {{ $persen }}%
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Belum ada data absensi sholat guru.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-@endsectiona@extends('administrasi.layouts.header')
-
-@section('title', 'Rekap Absensi Sholat Guru')
-
-@section('content')
-<div class="d-flex justify-content-between pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-chart-bar me-2"></i> Rekap Absensi Sholat Guru</h1>
-    <a href="{{ route('administrasi.absensi-sholat.dashboard') }}" class="btn btn-sm btn-secondary">Kembali</a>
-</div>
-
-<div class="alert alert-info">Fitur rekap absensi guru - Data akan ditampilkan di sini</div>
 @endsection
