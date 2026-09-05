@@ -13,56 +13,60 @@
     </a>
 </div>
 
-<div class="alert alert-info">
-    <i class="fas fa-info-circle me-2"></i>
-    Halaman rekap absensi sholat guru.
-</div>
-
 <div class="card">
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Guru</th>
-                        <th>NUPTK</th>
-                        <th>Total Hadir</th>
-                        <th>Total Terlambat</th>
-                        <th>Total Izin</th>
-                        <th>Total Tidak Hadir</th>
-                        <th>Persentase</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($data as $index => $item)
+        @if(isset($guru) && $guru->count() > 0)
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item->nama_lengkap ?? $item->name ?? '-' }}</td>
-                            <td>{{ $item->nuptk ?? '-' }}</td>
-                            <td><span class="badge bg-success">{{ $item->total_tepat_waktu ?? 0 }}</span></td>
-                            <td><span class="badge bg-warning">{{ $item->total_terlambat ?? 0 }}</span></td>
-                            <td><span class="badge bg-info">{{ $item->total_izin ?? 0 }}</span></td>
-                            <td><span class="badge bg-danger">{{ $item->total_tidak_hadir ?? 0 }}</span></td>
-                            <td>
-                                @php
-                                    $total = ($item->total_tepat_waktu ?? 0) + ($item->total_terlambat ?? 0) + ($item->total_izin ?? 0) + ($item->total_tidak_hadir ?? 0);
-                                    $persen = $total > 0 ? round(($item->total_tepat_waktu ?? 0) / $total * 100, 2) : 0;
-                                @endphp
-                                {{ $persen }}%
-                            </td>
+                            <th>No</th>
+                            <th>Nama Guru</th>
+                            <th>NUPTK</th>
+                            <th>Total Hadir</th>
+                            <th>Total Tepat Waktu</th>
+                            <th>Total Terlambat</th>
+                            <th>Total Izin</th>
+                            <th>Total Tidak Hadir</th>
+                            <th>Persentase</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Belum ada data absensi sholat guru.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @forelse($guru as $index => $item)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item->user->name ?? $item->nama_lengkap ?? '-' }}</td>
+                                <td>{{ $item->nip ?? '-' }}</td>
+                                <td><span class="badge bg-primary">{{ $item->total_hadir ?? 0 }}</span></td>
+                                <td><span class="badge bg-success">{{ $item->total_tepat_waktu ?? 0 }}</span></td>
+                                <td><span class="badge bg-warning">{{ $item->total_terlambat ?? 0 }}</span></td>
+                                <td><span class="badge bg-info">{{ $item->total_izin ?? 0 }}</span></td>
+                                <td><span class="badge bg-danger">{{ $item->total_tidak_hadir ?? 0 }}</span></td>
+                                <td>
+                                    @php
+                                        $total = ($item->total_hadir ?? 0) + ($item->total_izin ?? 0) + ($item->total_tidak_hadir ?? 0);
+                                        $persen = $total > 0 ? round(($item->total_hadir ?? 0) / $total * 100, 2) : 0;
+                                    @endphp
+                                    {{ $persen }}%
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Belum ada data absensi sholat guru.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Belum ada data rekap absensi sholat guru.
+            </div>
+        @endif
     </div>
 </div>
 @endsection

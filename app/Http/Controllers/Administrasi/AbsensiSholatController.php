@@ -106,7 +106,7 @@ class AbsensiSholatController extends Controller
                 $s->absensi = $absensiData->isEmpty() ? collect() : $absensiData->keyBy('sholat');
             }
             
-            $kelasList = Kelas::orderBy('nama')->get();
+            $kelasList = Kelas::orderBy('nama_kelas', 'asc')->get();
             $sholatList = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
             $statusList = [
                 'tepat_waktu' => 'Tepat Waktu',
@@ -210,7 +210,7 @@ class AbsensiSholatController extends Controller
                 $s->persentase = $s->total_hadir > 0 ? round(($s->total_hadir / 25) * 100, 2) : 0;
             }
             
-            $kelasList = Kelas::orderBy('nama')->get();
+            $kelasList = Kelas::orderBy('nama_kelas', 'asc')->get();
             
             return view('administrasi.sholat.rekap-sholat-siswa', compact('siswa', 'kelasList', 'kelasId', 'bulan', 'tahun', 'search'));
         } catch (\Exception $e) {
@@ -357,7 +357,7 @@ class AbsensiSholatController extends Controller
                         'role' => 'siswa',
                         'name' => $siswa->user->name ?? $siswa->nama,
                         'nip_nis' => $siswa->nis ?? '-',
-                        'kelas' => $siswa->kelas->nama ?? '-'
+                        'kelas' => $siswa->kelas->nama_kelas ?? '-'
                     ]
                 ]);
             }
