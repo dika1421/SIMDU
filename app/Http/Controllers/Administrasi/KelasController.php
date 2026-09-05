@@ -60,8 +60,7 @@ class KelasController extends Controller
         try {
             $guru = Guru::with('user')->where('status', 'aktif')->orderBy('nama_lengkap')->get();
             $jurusanList = Jurusan::orderByRaw('COALESCE(nama_jurusan, nama)')->get();
-            $tahunAjaran = TahunAjaran::where('status', 'aktif')->first();
-            $tingkatList = ['X' => 'X (Sepuluh)', 'XI' => 'XI (Sebelas)', 'XII' => 'XII (Dua Belas)', 'XIII' => 'XIII (Tiga Belas)'];
+            $tahunAjaran = TahunAjaran::where('is_aktif', true)->first();            $tingkatList = ['X' => 'X (Sepuluh)', 'XI' => 'XI (Sebelas)', 'XII' => 'XII (Dua Belas)', 'XIII' => 'XIII (Tiga Belas)'];
             $statusList = ['aktif' => 'Aktif', 'nonaktif' => 'Non Aktif'];
             return view('administrasi.kelas.create', compact('guru', 'jurusanList', 'tahunAjaran', 'tingkatList', 'statusList'));
         } catch (\Exception $e) {
