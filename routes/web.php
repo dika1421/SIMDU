@@ -257,9 +257,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
 
-    // =============================================
-    // GALERI - TANPA MIDDLEWARE PERMISSION
-    // =============================================
+    // Galeri
     Route::prefix('galeri')->name('galeri.')->group(function () {
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
@@ -270,9 +268,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
-    // =============================================
-    // MANAJEMEN ROLE & PERMISSION
-    // =============================================
+    // Manajemen Role & Permission
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/create', [RoleController::class, 'create'])->name('create');
@@ -291,9 +287,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
     });
 
-    // =============================================
-    // PROFIL ADMINISTRASI
-    // =============================================
+    // Profil Administrasi
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
         Route::get('/edit', [AdministrasiDashboard::class, 'editProfil'])->name('edit');
@@ -301,9 +295,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
     });
 
-    // =============================================
-    // PENGATURAN ADMINISTRASI
-    // =============================================
+    // Pengaturan Administrasi
     Route::get('/pengaturan', function () {
         return view('administrasi.pengaturan.index');
     })->name('pengaturan');
@@ -349,11 +341,14 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::post('/{id}/reply', [GuruKomunikasi::class, 'reply'])->name('reply');
     });
 
-    Route::get('/kalender', [KalenderController::class, 'index'])->name('kalender');
-    Route::get('/kalender/events', [KalenderController::class, 'getEvents'])->name('kalender.events');
-    Route::post('/kalender/event', [KalenderController::class, 'storeEvent'])->name('kalender.event.store');
-    Route::put('/kalender/event/{id}', [KalenderController::class, 'updateEvent'])->name('kalender.event.update');
-    Route::delete('/kalender/event/{id}', [KalenderController::class, 'destroyEvent'])->name('kalender.event.destroy');
+    // ================== KALENDER GURU ==================
+    Route::prefix('kalender')->name('kalender.')->group(function () {
+        Route::get('/', [KalenderController::class, 'index'])->name('index');
+        Route::get('/events', [KalenderController::class, 'getEvents'])->name('events');
+        Route::post('/event', [KalenderController::class, 'storeEvent'])->name('event.store');
+        Route::put('/event/{id}', [KalenderController::class, 'updateEvent'])->name('event.update');
+        Route::delete('/event/{id}', [KalenderController::class, 'destroyEvent'])->name('event.destroy');
+    });
 
     Route::prefix('kinerja')->name('kinerja.')->group(function () {
         Route::get('/', [KinerjaController::class, 'index'])->name('index');
@@ -399,6 +394,7 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
         Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
     });
 
+    // ================== KALENDER SISWA ==================
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [SiswaKalender::class, 'index'])->name('index');
         Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');
