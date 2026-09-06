@@ -29,10 +29,19 @@ class Role extends Model
     }
 
     /**
-     * Relasi ke User (One-to-Many)
-     * Karena User memiliki role_id
+     * 🔥 PERUBAHAN: Relasi ke User (Many-to-Many)
+     * Untuk role ganda, user bisa punya banyak role
      */
-    public function users(): HasMany
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'role_user');
+    }
+
+    /**
+     * 🔥 RELASI LAMA: Tetap dipertahankan untuk backward compatibility
+     * Jika user hanya punya 1 role (role_id di tabel users)
+     */
+    public function singleRoleUsers(): HasMany
     {
         return $this->hasMany(User::class, 'role_id');
     }

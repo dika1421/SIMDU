@@ -27,6 +27,7 @@ use App\Http\Controllers\Administrasi\GaleriController;
 use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Administrasi\RoleController;
 use App\Http\Controllers\Administrasi\PermissionController;
+use App\Http\Controllers\Administrasi\UserRoleController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -165,26 +166,22 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // =============================================
     // MANAJEMEN JADWAL
-    // >>> PERBAIKAN: route statis (kalender, copy,
-    // check-conflict, export, create) HARUS di atas
-    // route dinamis ({id}, {id}/edit), supaya tidak
-    // ketangkap duluan sebagai parameter {id}.
     // =============================================
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
-        // --- Route statis dulu ---
+        // Route statis dulu (tanpa parameter)
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
         Route::get('/create', [JadwalController::class, 'create'])->name('create');
 
-        // --- Baru route index & dinamis ---
+        // Route dinamis (dengan parameter)
         Route::get('/', [JadwalController::class, 'index'])->name('index');
         Route::post('/', [JadwalController::class, 'store'])->name('store');
+        Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
         Route::put('/{id}', [JadwalController::class, 'update'])->name('update');
         Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
-        Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
     });
 
     // Absensi
@@ -285,7 +282,9 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
-    // Manajemen Role & Permission
+    // =============================================
+    // MANAJEMEN ROLE & PERMISSION
+    // =============================================
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/create', [RoleController::class, 'create'])->name('create');
@@ -302,6 +301,15 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/create', [PermissionController::class, 'create'])->name('create');
         Route::post('/', [PermissionController::class, 'store'])->name('store');
         Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
+    });
+
+    // =============================================
+    // 🔥 BARU: MANAJEMEN USER ROLE (Multi-Role)
+    // =============================================
+    Route::prefix('user-roles')->name('user-roles.')->group(function () {
+        Route::get('/', [UserRoleController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [UserRoleController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [UserRoleController::class, 'update'])->name('update');
     });
 
     // Profil Administrasi
