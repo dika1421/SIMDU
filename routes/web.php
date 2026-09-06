@@ -163,20 +163,28 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
-    // ================== MANAJEMEN JADWAL ==================
+    // =============================================
+    // MANAJEMEN JADWAL
+    // >>> PERBAIKAN: route statis (kalender, copy,
+    // check-conflict, export, create) HARUS di atas
+    // route dinamis ({id}, {id}/edit), supaya tidak
+    // ketangkap duluan sebagai parameter {id}.
+    // =============================================
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
-        Route::get('/', [JadwalController::class, 'index'])->name('index');
-        Route::get('/create', [JadwalController::class, 'create'])->name('create');
-        Route::post('/', [JadwalController::class, 'store'])->name('store');
-        Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
-        Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [JadwalController::class, 'update'])->name('update');
-        Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
-        // 🔥 ROUTE KALENDER TANPA PARAMETER
+        // --- Route statis dulu ---
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
+        Route::get('/create', [JadwalController::class, 'create'])->name('create');
+
+        // --- Baru route index & dinamis ---
+        Route::get('/', [JadwalController::class, 'index'])->name('index');
+        Route::post('/', [JadwalController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [JadwalController::class, 'update'])->name('update');
+        Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
     });
 
     // Absensi
