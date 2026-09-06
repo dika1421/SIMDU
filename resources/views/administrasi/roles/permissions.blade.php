@@ -1,4 +1,4 @@
-{{-- resources/views/admin/roles/permissions.blade.php --}}
+{{-- resources/views/administrasi/roles/permissions.blade.php --}}
 @extends('administrasi.layouts.header')
 
 @section('title', 'Atur Permission Role')
@@ -13,13 +13,13 @@
                         <i class="fas fa-key me-2 text-warning"></i> Atur Permission
                         <small class="text-muted">- {{ $role->display_name ?? $role->name }}</small>
                     </h5>
-                    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <a href="{{ route('administrasi.roles.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
                         <i class="fas fa-arrow-left me-1"></i> Kembali
                     </a>
                 </div>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.roles.assign-permissions', $role->id) }}" method="POST">
+                <form action="{{ route('administrasi.roles.assign-permissions', $role->id) }}" method="POST">
                     @csrf
 
                     <div class="row">
@@ -71,7 +71,7 @@
                                     <i class="fas fa-inbox fa-3x text-muted mb-2"></i>
                                     <p class="text-muted">Belum ada permission yang tersedia</p>
                                     @can('permission.create')
-                                        <a href="{{ route('admin.permissions.create') }}" class="btn btn-sm btn-primary">
+                                        <a href="{{ route('administrasi.permissions.create') }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-plus"></i> Tambah Permission
                                         </a>
                                     @endcan
@@ -85,7 +85,7 @@
                             <button type="submit" class="btn btn-primary rounded-pill px-5 py-2">
                                 <i class="fas fa-save me-2"></i> Simpan Permission
                             </button>
-                            <a href="{{ route('admin.roles.index') }}" class="btn btn-secondary rounded-pill px-4 py-2 ms-2">
+                            <a href="{{ route('administrasi.roles.index') }}" class="btn btn-secondary rounded-pill px-4 py-2 ms-2">
                                 <i class="fas fa-times me-1"></i> Batal
                             </a>
                         </div>
@@ -112,7 +112,8 @@
             const group = $(this).data('group');
             const allChecked = $(`.permission-checkbox[data-group="${group}"]:checked`).length;
             const total = $(`.permission-checkbox[data-group="${group}"]`).length;
-            const selectAll = $(`#select_all_${group.replace(/\s/g, '_')}`);
+            const groupSlug = group.replace(/\s/g, '_');
+            const selectAll = $(`#select_all_${groupSlug}`);
             
             if (allChecked === total) {
                 selectAll.prop('checked', true);
