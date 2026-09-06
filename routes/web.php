@@ -172,6 +172,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
         Route::put('/{id}', [JadwalController::class, 'update'])->name('update');
         Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
+        // 🔥 ROUTE KALENDER TANPA PARAMETER
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
