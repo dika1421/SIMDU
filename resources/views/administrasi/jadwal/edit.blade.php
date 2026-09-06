@@ -45,12 +45,6 @@
 </div>
 @endif
 
-<!-- DEBUG: Cek data mapel -->
-<div class="alert alert-info mb-3" style="display: none;">
-    <strong>Debug:</strong>
-    Jumlah mapel: {{ isset($mapel) ? (is_object($mapel) ? $mapel->count() : count($mapel)) : 0 }}
-</div>
-
 <div class="card">
     <div class="card-header bg-white">
         <i class="fas fa-edit me-2 text-primary"></i>
@@ -167,25 +161,48 @@
                     @error('ruang')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 
-                <!-- Tahun Ajaran -->
+                <!-- Tahun Ajaran (DIPERBAIKI) -->
                 <div class="col-md-3 mb-3">
                     <label class="form-label"><i class="fas fa-calendar-alt"></i> Tahun Ajaran</label>
-                    <select name="tahun_ajaran" class="form-control">
+                    <select name="tahun_ajaran" id="tahun_ajaran" class="form-control @error('tahun_ajaran') is-invalid @enderror">
                         <option value="">-- Pilih Tahun Ajaran --</option>
-                        @foreach($tahunAjaranList as $ta)
-                        <option value="{{ $ta->nama }}" {{ old('tahun_ajaran', $jadwal->tahun_ajaran) == $ta->nama ? 'selected' : '' }}>{{ $ta->nama }}</option>
-                        @endforeach
+                        @if(isset($tahunAjaranList) && $tahunAjaranList->count() > 0)
+                            @foreach($tahunAjaranList as $ta)
+                                @php
+                                    $namaTa = is_object($ta) ? $ta->nama_tahun : $ta['nama_tahun'];
+                                    $isAktif = is_object($ta) ? $ta->is_aktif : $ta['is_aktif'];
+                                @endphp
+                                <option value="{{ $namaTa }}" 
+                                    {{ old('tahun_ajaran', $jadwal->tahun_ajaran) == $namaTa ? 'selected' : '' }}>
+                                    {{ $namaTa }}
+                                    @if($isAktif)
+                                        (Aktif)
+                                    @endif
+                                </option>
+                            @endforeach
+                        @else
+                            <option value="{{ date('Y') . '/' . (date('Y') + 1) }}" selected>
+                                {{ date('Y') . '/' . (date('Y') + 1) }}
+                            </option>
+                        @endif
                     </select>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> Pilih tahun ajaran
+                    </small>
+                    @error('tahun_ajaran')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
                 
                 <!-- Semester -->
                 <div class="col-md-3 mb-3">
                     <label class="form-label"><i class="fas fa-calendar-week"></i> Semester</label>
-                    <select name="semester" class="form-control">
+                    <select name="semester" class="form-control @error('semester') is-invalid @enderror">
                         <option value="">-- Pilih Semester --</option>
                         <option value="ganjil" {{ old('semester', $jadwal->semester) == 'ganjil' ? 'selected' : '' }}>Ganjil</option>
                         <option value="genap" {{ old('semester', $jadwal->semester) == 'genap' ? 'selected' : '' }}>Genap</option>
                     </select>
+                    @error('semester')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 
                 <!-- Informasi Tambahan -->
@@ -200,8 +217,8 @@
             <hr>
             
             <div class="text-end">
-                <button type="reset" class="btn btn-secondary">Reset</button>
-                <button type="submit" class="btn btn-primary">Update Jadwal</button>
+                <button type="reset" class="btn btn-secondary" id="resetBtn">Reset</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Update Jadwal</button>
             </div>
         </form>
     </div>
@@ -245,6 +262,7 @@ $(document).ready(function() {
         var jamSelesai = $('#jam_selesai').val();
         if (jamMulai && jamSelesai && jamMulai >= jamSelesai) {
             $('#jam_selesai').addClass('is-invalid');
+            $('#jam_selesai').next('.invalid-feedback').remove();
             $('#jam_selesai').after('<div class="invalid-feedback">Jam selesai harus lebih besar dari jam mulai</div>');
             return false;
         } else {
@@ -256,6 +274,26 @@ $(document).ready(function() {
     }
     
     $('#jam_mulai, #jam_selesai').on('change', validateTime);
+    
+    // Reset form
+    $('#resetBtn').on('click', function(e) {
+        e.preventDefault();
+        $('#jadwalForm')[0].reset();
+        $('#kelasPreview').hide();
+        $('#ruang').val('');
+        $('#ruang').css('background-color', '#f5f5f5');
+        $('#ruangHint').html('<i class="fas fa-info-circle"></i> Ruangan akan terisi otomatis setelah memilih kelas');
+        $('#kelas_id').css('border-color', '#ddd');
+        
+        @if(isset($tahunAjaranAktif) && $tahunAjaranAktif)
+        $('#tahun_ajaran').val('{{ $tahunAjaranAktif->nama_tahun }}');
+        @else
+        $('#tahun_ajaran').val('');
+        @endif
+        
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+    });
     
     // Validasi form
     $('#jadwalForm').on('submit', function(e) {
@@ -280,6 +318,11 @@ $(document).ready(function() {
             alert('Periksa kembali jam mulai dan jam selesai');
             return false;
         }
+        
+        // Loading state
+        $('#submitBtn').html('<i class="fas fa-spinner fa-spin"></i> Menyimpan...');
+        $('#submitBtn').prop('disabled', true);
+        
         return true;
     });
 });
