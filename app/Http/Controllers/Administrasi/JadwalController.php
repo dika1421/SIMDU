@@ -20,7 +20,6 @@ class JadwalController extends Controller
      */
     private function getDaftarMapel()
     {
-        // Menggunakan collection dengan key id unik untuk menghindari duplikasi
         $mapelArray = [
             // Kelompok A (Umum/Wajib)
             ['id' => 1, 'nama' => 'Pendidikan Agama dan Budi Pekerti (PAI)', 'kode' => 'PAI', 'kelompok' => 'A'],
@@ -36,11 +35,7 @@ class JadwalController extends Controller
             ['id' => 11, 'nama' => 'Penjaskes (PJOK)', 'kode' => 'PJOK', 'kelompok' => 'A'],
             ['id' => 12, 'nama' => 'Informatika', 'kode' => 'INF', 'kelompok' => 'A'],
             ['id' => 13, 'nama' => 'Projek IPAS', 'kode' => 'PJ-IPAS', 'kelompok' => 'A'],
-
-            // Kelompok B (Muatan Lokal/Keahlian)
             ['id' => 14, 'nama' => 'Agama Mulok', 'kode' => 'AGM-MULOK', 'kelompok' => 'B'],
-
-            // Kelompok C (Kejuruan/Produktif)
             ['id' => 15, 'nama' => 'Produk Kreatif dan Kewirausahaan (PKK)', 'kode' => 'PKK', 'kelompok' => 'C'],
             ['id' => 16, 'nama' => 'Administrasi Transaksi', 'kode' => 'ADM-TRANS', 'kelompok' => 'C'],
             ['id' => 17, 'nama' => 'Pengemasan dan Pendistribusian Produk', 'kode' => 'PENGEM-PROD', 'kelompok' => 'C'],
@@ -66,7 +61,6 @@ class JadwalController extends Controller
             ['id' => 37, 'nama' => 'Elemen 8 Pemasaran', 'kode' => 'ELEMEN-8', 'kelompok' => 'C'],
         ];
 
-        // Konversi ke collection of objects
         $result = collect();
         foreach ($mapelArray as $item) {
             $result->push((object) $item);
@@ -141,15 +135,12 @@ class JadwalController extends Controller
         try {
             $kelas = Kelas::with('jurusan')->get();
 
-            // AMBIL DATA MATA PELAJARAN dari daftar lengkap
             $mapel = $this->getDaftarMapel();
 
-            // Coba juga ambil dari database jika ada (untuk menambah data dari DB)
             if (class_exists('App\Models\Mapel')) {
                 try {
                     $dbMapel = Mapel::orderBy('nama_mapel')->get();
                     if ($dbMapel->isNotEmpty()) {
-                        // Gabungkan dengan daftar yang sudah ada, tanpa duplikasi
                         $existingNames = $mapel->pluck('nama')->map(function($item) {
                             return strtolower(preg_replace('/^[a-zA-Z]\.\s*/', '', $item));
                         })->toArray();
@@ -166,27 +157,14 @@ class JadwalController extends Controller
                             }
                         }
                     }
-                    Log::info('Mengambil mapel dari Model Mapel, jumlah: ' . $mapel->count());
                 } catch (\Exception $e) {
                     Log::error('Error ambil mapel dari Model: ' . $e->getMessage());
                 }
             }
 
-            // Kelompokkan mapel berdasarkan kelompok untuk tampilan yang lebih rapi
-            $mapelKelompokA = $mapel->filter(function($item) {
-                return $item->kelompok == 'A';
-            });
-            $mapelKelompokB = $mapel->filter(function($item) {
-                return $item->kelompok == 'B';
-            });
-            $mapelKelompokC = $mapel->filter(function($item) {
-                return $item->kelompok == 'C';
-            });
-
-            Log::info('Final data mapel yang dikirim ke view - Total: ' . $mapel->count() .
-                      ', Kel A: ' . $mapelKelompokA->count() .
-                      ', Kel B: ' . $mapelKelompokB->count() .
-                      ', Kel C: ' . $mapelKelompokC->count());
+            $mapelKelompokA = $mapel->filter(fn($item) => $item->kelompok == 'A');
+            $mapelKelompokB = $mapel->filter(fn($item) => $item->kelompok == 'B');
+            $mapelKelompokC = $mapel->filter(fn($item) => $item->kelompok == 'C');
 
             $guru = Guru::with('user')->get();
             $ruang = RuangKelas::all();
@@ -200,8 +178,11 @@ class JadwalController extends Controller
             $bulan = date('n');
             $semesterAktif = ($bulan >= 1 && $bulan <= 6) ? 'genap' : 'ganjil';
 
-            return view('administrasi.jadwal.create', compact('kelas', 'mapel', 'mapelKelompokA', 'mapelKelompokB', 'mapelKelompokC',
-                            'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 'semesterList', 'semesterAktif'));
+            return view('administrasi.jadwal.create', compact(
+                'kelas', 'mapel', 'mapelKelompokA', 'mapelKelompokB', 'mapelKelompokC',
+                'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 
+                'semesterList', 'semesterAktif'
+            ));
         } catch (\Exception $e) {
             Log::error('Error in jadwal create: ' . $e->getMessage());
 
@@ -218,9 +199,11 @@ class JadwalController extends Controller
             $semesterList = collect();
             $semesterAktif = 'ganjil';
 
-            return view('administrasi.jadwal.create', compact('kelas', 'mapel', 'mapelKelompokA', 'mapelKelompokB', 'mapelKelompokC',
-                            'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 'semesterList', 'semesterAktif'))
-                ->with('error', 'Gagal memuat data: ' . $e->getMessage());
+            return view('administrasi.jadwal.create', compact(
+                'kelas', 'mapel', 'mapelKelompokA', 'mapelKelompokB', 'mapelKelompokC',
+                'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 
+                'semesterList', 'semesterAktif'
+            ))->with('error', 'Gagal memuat data: ' . $e->getMessage());
         }
     }
 
@@ -234,8 +217,8 @@ class JadwalController extends Controller
 
             $validated = $request->validate([
                 'kelas_id' => 'required|exists:kelas,id',
-                'mapel_id' => 'required',
-                'guru_id' => 'required',
+                'mapel_id' => 'required|exists:mata_pelajarans,id',
+                'guru_id' => 'required|exists:gurus,id',
                 'hari' => 'required|in:senin,selasa,rabu,kamis,jumat,sabtu',
                 'jam_mulai' => 'required',
                 'jam_selesai' => 'required',
@@ -256,7 +239,6 @@ class JadwalController extends Controller
                 $semester = ($bulan >= 1 && $bulan <= 6) ? 'genap' : 'ganjil';
             }
 
-            // Validasi jam
             if ($request->jam_mulai >= $request->jam_selesai) {
                 return back()->with('error', 'Jam selesai harus lebih besar dari jam mulai')->withInput();
             }
@@ -309,7 +291,7 @@ class JadwalController extends Controller
             // Buat jadwal
             $jadwal = Jadwal::create([
                 'kelas_id' => $request->kelas_id,
-                'mata_pelajaran_id' => $request->mapel_id,
+                'mapel_id' => $request->mapel_id,
                 'guru_id' => $request->guru_id,
                 'hari' => $request->hari,
                 'jam_mulai' => $request->jam_mulai,
@@ -352,11 +334,8 @@ class JadwalController extends Controller
         try {
             $jadwal = Jadwal::findOrFail($id);
             $kelas = Kelas::with('jurusan')->get();
-
-            // AMBIL DATA MATA PELAJARAN dari daftar lengkap
             $mapel = $this->getDaftarMapel();
 
-            // Coba juga ambil dari database jika ada
             if (class_exists('App\Models\Mapel')) {
                 try {
                     $dbMapel = Mapel::orderBy('nama_mapel')->get();
@@ -377,18 +356,14 @@ class JadwalController extends Controller
                             }
                         }
                     }
-                    Log::info('EDIT - Mengambil mapel dari Model Mapel, jumlah: ' . $mapel->count());
                 } catch (\Exception $e) {
                     Log::error('EDIT - Error ambil mapel dari Model: ' . $e->getMessage());
                 }
             }
 
-            // Kelompokkan mapel berdasarkan kelompok
             $mapelKelompokA = $mapel->filter(fn($i) => $i->kelompok == 'A');
             $mapelKelompokB = $mapel->filter(fn($i) => $i->kelompok == 'B');
             $mapelKelompokC = $mapel->filter(fn($i) => $i->kelompok == 'C');
-
-            Log::info('EDIT - Final data mapel yang dikirim ke view: ' . $mapel->count() . ' data');
 
             $guru = Guru::with('user')->get();
             $ruang = RuangKelas::all();
@@ -404,7 +379,8 @@ class JadwalController extends Controller
 
             return view('administrasi.jadwal.edit', compact(
                 'jadwal', 'kelas', 'mapel', 'mapelKelompokA', 'mapelKelompokB', 'mapelKelompokC',
-                'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 'semesterList', 'semesterAktif'
+                'guru', 'ruang', 'hariList', 'tahunAjaranList', 'tahunAjaranAktif', 
+                'semesterList', 'semesterAktif'
             ));
         } catch (\Exception $e) {
             Log::error('Error in jadwal edit: ' . $e->getMessage());
@@ -423,8 +399,8 @@ class JadwalController extends Controller
 
             $request->validate([
                 'kelas_id' => 'required|exists:kelas,id',
-                'mapel_id' => 'required',
-                'guru_id' => 'required',
+                'mapel_id' => 'required|exists:mata_pelajarans,id',
+                'guru_id' => 'required|exists:gurus,id',
                 'hari' => 'required|in:senin,selasa,rabu,kamis,jumat,sabtu',
                 'jam_mulai' => 'required',
                 'jam_selesai' => 'required',
@@ -483,7 +459,7 @@ class JadwalController extends Controller
 
             $jadwal->update([
                 'kelas_id' => $request->kelas_id,
-                'mata_pelajaran_id' => $request->mapel_id,
+                'mapel_id' => $request->mapel_id,
                 'guru_id' => $request->guru_id,
                 'hari' => $request->hari,
                 'jam_mulai' => $request->jam_mulai,
@@ -534,23 +510,16 @@ class JadwalController extends Controller
             ];
 
             foreach ($jadwal as $j) {
-                // Ambil nama mata pelajaran
                 $mapelNama = '';
                 if ($j->mapel) {
                     $mapelNama = $j->mapel->nama_mapel ?? $j->mapel->nama ?? 'Mapel';
                 } else {
-                    $found = $daftarMapel->firstWhere('id', $j->mata_pelajaran_id);
-                    $mapelNama = $found ? $found->nama : 'Mapel ' . $j->mata_pelajaran_id;
+                    $found = $daftarMapel->firstWhere('id', $j->mapel_id);
+                    $mapelNama = $found ? $found->nama : 'Mapel ' . $j->mapel_id;
                 }
 
-                // Ambil nama kelas
                 $kelasNama = $j->kelas->nama_kelas ?? $j->kelas->nama ?? 'Kelas ?';
-
-                // Ambil nama guru
-                $guruNama = '-';
-                if ($j->guru) {
-                    $guruNama = $j->guru->user->name ?? $j->guru->nama_lengkap ?? '-';
-                }
+                $guruNama = $j->guru->user->name ?? $j->guru->nama_lengkap ?? '-';
 
                 $events[] = [
                     'title' => $mapelNama . ' - ' . $kelasNama,
@@ -562,12 +531,10 @@ class JadwalController extends Controller
                 ];
             }
 
-            // Kirim data events ke view
             return view('administrasi.jadwal.kalender', compact('events'));
             
         } catch (\Exception $e) {
             Log::error('Error in jadwal kalender: ' . $e->getMessage());
-            // Kirim array kosong jika error
             $events = [];
             return view('administrasi.jadwal.kalender', compact('events'))
                 ->with('error', 'Gagal memuat kalender: ' . $e->getMessage());
