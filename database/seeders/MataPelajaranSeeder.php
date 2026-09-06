@@ -15,7 +15,7 @@ class MataPelajaranSeeder extends Seeder
     {
         $mapelList = [
             // Kelompok A (Umum/Wajib)
-            ['kode' => 'PAI', 'nama' => 'Pendidikan Agama dan Budi Pekerti', 'kelompok' => 'A', 'status' => 'aktif'],
+            ['kode' => 'PAI', 'nama' => 'Pendidikan Agama dan Budi Pekerti (PAI)', 'kelompok' => 'A', 'status' => 'aktif'],
             ['kode' => 'PRAK-IBADAH', 'nama' => 'Praktik Ibadah (PAI Mulok)', 'kelompok' => 'A', 'status' => 'aktif'],
             ['kode' => 'PPKN', 'nama' => 'PPKn', 'kelompok' => 'A', 'status' => 'aktif'],
             ['kode' => 'BIN', 'nama' => 'Bahasa Indonesia', 'kelompok' => 'A', 'status' => 'aktif'],
@@ -33,7 +33,7 @@ class MataPelajaranSeeder extends Seeder
             ['kode' => 'AGM-MULOK', 'nama' => 'Agama Mulok', 'kelompok' => 'B', 'status' => 'aktif'],
             
             // Kelompok C (Kejuruan)
-            ['kode' => 'PKK', 'nama' => 'Produk Kreatif dan Kewirausahaan', 'kelompok' => 'C', 'status' => 'aktif'],
+            ['kode' => 'PKK', 'nama' => 'Produk Kreatif dan Kewirausahaan (PKK)', 'kelompok' => 'C', 'status' => 'aktif'],
             ['kode' => 'ADM-TRANS', 'nama' => 'Administrasi Transaksi', 'kelompok' => 'C', 'status' => 'aktif'],
             ['kode' => 'PENGEM-PROD', 'nama' => 'Pengemasan dan Pendistribusian Produk', 'kelompok' => 'C', 'status' => 'aktif'],
             ['kode' => 'BISNIS-ON', 'nama' => 'Bisnis Online', 'kelompok' => 'C', 'status' => 'aktif'],
@@ -59,25 +59,36 @@ class MataPelajaranSeeder extends Seeder
         ];
 
         foreach ($mapelList as $mapel) {
-            // Cek apakah sudah ada berdasarkan kode atau nama
+            // Cek apakah sudah ada berdasarkan kode
             $existing = DB::table('mata_pelajarans')
                 ->where('kode_mapel', $mapel['kode'])
-                ->orWhere('nama_mapel', $mapel['nama'])
                 ->first();
             
             if (!$existing) {
                 DB::table('mata_pelajarans')->insert([
                     'kode_mapel' => $mapel['kode'],
                     'nama_mapel' => $mapel['nama'],
+                    'nama_singkat' => substr($mapel['nama'], 0, 20),
                     'kelompok' => $mapel['kelompok'],
+                    'jam_per_minggu' => 2,
+                    'jam_per_tahun' => 72,
+                    'jenis' => 'Teori',
+                    'kurikulum' => 'K13',
+                    'tingkat' => 'X,XI,XII',
+                    'jurusan' => 'IPA,IPS',
                     'status' => $mapel['status'],
+                    'is_wajib' => true,
+                    'is_ujian_nasional' => false,
+                    'kkm' => 75,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                Log::info("Mata pelajaran {$mapel['nama']} berhasil ditambahkan");
+                echo "✅ Mata pelajaran {$mapel['nama']} berhasil ditambahkan\n";
             } else {
-                Log::info("Mata pelajaran {$mapel['nama']} sudah ada, skip insert");
+                echo "⏭️ Mata pelajaran {$mapel['nama']} sudah ada, skip\n";
             }
         }
+        
+        echo "✅ Seeder selesai dijalankan!\n";
     }
 }
