@@ -15,9 +15,27 @@
     </div>
 </div>
 
+@if(session('error'))
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle me-2"></i>
+    {{ session('error') }}
+</div>
+@endif
+
 <div class="card">
     <div class="card-body">
-        <div id="calendar"></div>
+        @if(isset($events) && count($events) > 0)
+            <div id="calendar"></div>
+        @else
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                Belum ada data jadwal. Silakan tambahkan jadwal terlebih dahulu.
+                <br>
+                <a href="{{ route('administrasi.jadwal.create') }}" class="btn btn-primary btn-sm mt-2">
+                    <i class="fas fa-plus"></i> Tambah Jadwal
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -26,6 +44,14 @@
 <style>
     #calendar {
         min-height: 600px;
+    }
+    .fc-event {
+        cursor: pointer;
+        font-size: 12px;
+        padding: 2px 4px;
+    }
+    .fc-daygrid-day {
+        min-height: 80px !important;
     }
 </style>
 @endpush
@@ -36,21 +62,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        
         var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
+            initialView: 'dayGridMonth',
             locale: 'id',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            slotMinTime: '07:00',
-            slotMaxTime: '17:00',
-            allDaySlot: false,
-            slotDuration: '00:30:00',
             events: {!! json_encode($events) !!},
             eventClick: function(info) {
-                alert(info.event.extendedProps.description);
+                var desc = info.event.extendedProps.description || 'Tidak ada keterangan';
+                Swal.fire({
+                    title: info.event.title,
+                    text: desc,
+                    icon: 'info',
+                    confirmButtonText: 'OK'
+                });
+            },
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
             }
         });
         calendar.render();
