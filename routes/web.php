@@ -163,12 +163,20 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
-    // Manajemen Jadwal
-    Route::resource('jadwal', JadwalController::class);
-    Route::get('/jadwal/kalender', [JadwalController::class, 'kalender'])->name('jadwal.kalender');
-    Route::post('/jadwal/copy', [JadwalController::class, 'copy'])->name('jadwal.copy');
-    Route::post('/jadwal/check-conflict', [JadwalController::class, 'checkConflict'])->name('jadwal.check-conflict');
-    Route::get('/jadwal/export', [JadwalController::class, 'export'])->name('jadwal.export');
+    // ================== MANAJEMEN JADWAL ==================
+    Route::prefix('jadwal')->name('jadwal.')->group(function () {
+        Route::get('/', [JadwalController::class, 'index'])->name('index');
+        Route::get('/create', [JadwalController::class, 'create'])->name('create');
+        Route::post('/', [JadwalController::class, 'store'])->name('store');
+        Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [JadwalController::class, 'update'])->name('update');
+        Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
+        Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
+        Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
+        Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
+        Route::get('/export', [JadwalController::class, 'export'])->name('export');
+    });
 
     // Absensi
     Route::prefix('absensi')->name('absensi.')->group(function () {

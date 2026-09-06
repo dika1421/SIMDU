@@ -217,7 +217,7 @@ class JadwalController extends Controller
 
             $validated = $request->validate([
                 'kelas_id' => 'required|exists:kelas,id',
-                'mapel_id' => 'required', // <-- HAPUS 'exists:mata_pelajarans,id'
+                'mapel_id' => 'required',
                 'guru_id' => 'required|exists:gurus,id',
                 'hari' => 'required|in:senin,selasa,rabu,kamis,jumat,sabtu',
                 'jam_mulai' => 'required',
@@ -399,7 +399,7 @@ class JadwalController extends Controller
 
             $request->validate([
                 'kelas_id' => 'required|exists:kelas,id',
-                'mapel_id' => 'required', // <-- HAPUS 'exists:mata_pelajarans,id'
+                'mapel_id' => 'required',
                 'guru_id' => 'required|exists:gurus,id',
                 'hari' => 'required|in:senin,selasa,rabu,kamis,jumat,sabtu',
                 'jam_mulai' => 'required',
