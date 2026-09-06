@@ -192,7 +192,7 @@ class JadwalController extends Controller
             $ruang = RuangKelas::all();
             $hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
             $tahunAjaranList = TahunAjaran::all();
-            $tahunAjaranAktif = TahunAjaran::where('status', 'aktif')->first();
+            $tahunAjaranAktif = TahunAjaran::where('is_aktif', true)->first();
             $semesterList = collect([
                 (object) ['id' => 'ganjil', 'nama' => 'Ganjil'],
                 (object) ['id' => 'genap', 'nama' => 'Genap'],
@@ -246,8 +246,8 @@ class JadwalController extends Controller
 
             $tahunAjaran = $request->tahun_ajaran;
             if (empty($tahunAjaran)) {
-                $tahunAktif = TahunAjaran::where('status', 'aktif')->first();
-                $tahunAjaran = $tahunAktif ? $tahunAktif->nama : date('Y') . '/' . (date('Y') + 1);
+                $tahunAktif = TahunAjaran::where('is_aktif', true)->first();
+                $tahunAjaran = $tahunAktif ? $tahunAktif->nama_tahun : date('Y') . '/' . (date('Y') + 1);
             }
 
             $semester = $request->semester;
@@ -394,7 +394,7 @@ class JadwalController extends Controller
             $ruang = RuangKelas::all();
             $hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
             $tahunAjaranList = TahunAjaran::all();
-            $tahunAjaranAktif = TahunAjaran::where('status', 'aktif')->first();
+            $tahunAjaranAktif = TahunAjaran::where('is_aktif', true)->first();
             $semesterList = collect([
                 (object) ['id' => 'ganjil', 'nama' => 'Ganjil'],
                 (object) ['id' => 'genap', 'nama' => 'Genap'],
@@ -439,8 +439,8 @@ class JadwalController extends Controller
 
             $tahunAjaran = $request->tahun_ajaran;
             if (empty($tahunAjaran)) {
-                $tahunAktif = TahunAjaran::where('status', 'aktif')->first();
-                $tahunAjaran = $tahunAktif ? $tahunAktif->nama : date('Y') . '/' . (date('Y') + 1);
+                $tahunAktif = TahunAjaran::where('is_aktif', true)->first();
+                $tahunAjaran = $tahunAktif ? $tahunAktif->nama_tahun : date('Y') . '/' . (date('Y') + 1);
             }
 
             $semester = $request->semester;
@@ -527,37 +527,67 @@ class JadwalController extends Controller
             $daftarMapel = $this->getDaftarMapel();
 
             $events = [];
-            $warna = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#1abc9c'];
+            $warna = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#2c3e50'];
             $dayMap = [
                 'senin' => 1, 'selasa' => 2, 'rabu' => 3,
                 'kamis' => 4, 'jumat' => 5, 'sabtu' => 6,
             ];
 
             foreach ($jadwal as $j) {
+                // Ambil nama mata pelajaran
                 $mapelNama = '';
                 if ($j->mapel) {
                     $mapelNama = $j->mapel->nama_mapel ?? $j->mapel->nama ?? 'Mapel';
                 } else {
-                    // Cari dari daftar mapel
                     $found = $daftarMapel->firstWhere('id', $j->mata_pelajaran_id);
                     $mapelNama = $found ? $found->nama : 'Mapel ' . $j->mata_pelajaran_id;
                 }
 
+                // Ambil nama kelas
+                $kelasNama = $j->kelas->nama_kelas ?? $j->kelas->nama ?? 'Kelas ?';
+
+                // Ambil nama guru
+                $guruNama = '-';
+                if ($j->guru) {
+                    $guruNama = $j->guru->user->name ?? $j->guru->nama_lengkap ?? '-';
+                }
+
                 $events[] = [
-                    'title' => $mapelNama . ' - ' . ($j->kelas->nama ?? 'Kelas ?'),
+                    'title' => $mapelNama . ' - ' . $kelasNama,
                     'daysOfWeek' => [$dayMap[$j->hari] ?? 1],
                     'startTime' => $j->jam_mulai,
                     'endTime' => $j->jam_selesai,
                     'color' => $warna[($j->kelas_id ?? 0) % count($warna)],
-                    'description' => 'Guru: ' . ($j->guru->user->name ?? $j->guru->nama_lengkap ?? '-') . ', Ruangan: ' . ($j->ruangan ?? '-'),
+                    'description' => 'Guru: ' . $guruNama . ', Ruangan: ' . ($j->ruangan ?? '-'),
                 ];
             }
 
+            // Kirim data events ke view
             return view('administrasi.jadwal.kalender', compact('events'));
+            
         } catch (\Exception $e) {
             Log::error('Error in jadwal kalender: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memuat kalender: ' . $e->getMessage());
+            // Kirim array kosong jika error
+            $events = [];
+            return view('administrasi.jadwal.kalender', compact('events'))
+                ->with('error', 'Gagal memuat kalender: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Export jadwal (untuk fitur export)
+     */
+    public function export(Request $request)
+    {
+        return back()->with('info', 'Fitur export sedang dalam pengembangan');
+    }
+
+    /**
+     * Copy jadwal dari satu kelas ke kelas lain
+     */
+    public function copy(Request $request)
+    {
+        return back()->with('info', 'Fitur copy jadwal sedang dalam pengembangan');
     }
 
     /**
