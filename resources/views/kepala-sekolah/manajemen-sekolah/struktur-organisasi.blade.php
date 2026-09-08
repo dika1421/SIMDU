@@ -197,6 +197,35 @@
         font-size: 0.7rem;
         font-weight: 600;
     }
+
+    /* Form Modern */
+    .form-control-modern {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        padding: 8px 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+    
+    .form-label-modern {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+    
+    .form-label-modern .text-danger {
+        color: #dc3545;
+    }
+    
+    .text-muted-small {
+        font-size: 0.7rem;
+        color: #6c757d;
+    }
 </style>
 
 <!-- Header -->
@@ -206,12 +235,6 @@
             <i class="fas fa-sitemap me-2 text-primary"></i>
             Struktur Organisasi
         </h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item"><a href="{{ route('kepala-sekolah.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                <li class="breadcrumb-item active">Struktur Organisasi</li>
-            </ol>
-        </nav>
     </div>
     <div>
         <button type="button" class="btn btn-modern-primary" data-bs-toggle="modal" data-bs-target="#tambahStrukturModal">
@@ -377,7 +400,7 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL TAMBAH STRUKTUR -->
+<!-- MODAL TAMBAH STRUKTUR (DIPERBAIKI) -->
 <!-- ============================================ -->
 <div class="modal fade" id="tambahStrukturModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -395,24 +418,26 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label-modern">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control" placeholder="Contoh: Kepala Sekolah" required>
+                            <input type="text" name="nama" class="form-control form-control-modern" 
+                                   placeholder="Contoh: Kepala Sekolah" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label-modern">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control" placeholder="Contoh: Kepala Sekolah" required>
+                            <input type="text" name="jabatan" class="form-control form-control-modern" 
+                                   placeholder="Contoh: Kepala Sekolah" required>
                         </div>
                         
                         <!-- Atasan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Atasan</label>
-                            <select name="parent_id" class="form-control">
+                            <label class="form-label-modern">Atasan</label>
+                            <select name="parent_id" class="form-control form-control-modern">
                                 <option value="">Tidak Ada (Root)</option>
                                 @foreach($struktur as $s)
                                     <option value="{{ $s->id }}">
@@ -420,13 +445,12 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">Kosongkan jika ini adalah struktur induk</small>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Penanggung Jawab</label>
-                            <select name="guru_id" class="form-control">
+                            <label class="form-label-modern">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control form-control-modern">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}">
@@ -438,15 +462,17 @@
                         
                         <!-- Deskripsi -->
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" rows="3" placeholder="Jelaskan tugas dan tanggung jawab..."></textarea>
+                            <label class="form-label-modern">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control form-control-modern" 
+                                      rows="3" placeholder="Jelaskan tugas dan tanggung jawab..."></textarea>
                         </div>
                         
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Urutan</label>
-                            <input type="number" name="urutan" class="form-control" value="0" min="0">
-                            <small class="text-muted">Semakin kecil angka, semakin atas posisinya</small>
+                            <label class="form-label-modern">Urutan</label>
+                            <input type="number" name="urutan" class="form-control form-control-modern" 
+                                   value="0" min="0">
+                            <small class="text-muted-small">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
@@ -482,24 +508,26 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label-modern">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control" value="{{ $s->nama }}" required>
+                            <input type="text" name="nama" class="form-control form-control-modern" 
+                                   value="{{ $s->nama }}" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label-modern">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control" value="{{ $s->jabatan }}" required>
+                            <input type="text" name="jabatan" class="form-control form-control-modern" 
+                                   value="{{ $s->jabatan }}" required>
                         </div>
                         
                         <!-- Atasan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Atasan</label>
-                            <select name="parent_id" class="form-control">
+                            <label class="form-label-modern">Atasan</label>
+                            <select name="parent_id" class="form-control form-control-modern">
                                 <option value="">Tidak Ada (Root)</option>
                                 @foreach($struktur as $p)
                                     @if($p->id != $s->id)
@@ -509,13 +537,12 @@
                                     @endif
                                 @endforeach
                             </select>
-                            <small class="text-muted">Kosongkan jika ini adalah struktur induk</small>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Penanggung Jawab</label>
-                            <select name="guru_id" class="form-control">
+                            <label class="form-label-modern">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control form-control-modern">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}" {{ $s->guru_id == $g->id ? 'selected' : '' }}>
@@ -527,15 +554,17 @@
                         
                         <!-- Deskripsi -->
                         <div class="col-md-12 mb-3">
-                            <label class="form-label fw-bold">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" rows="3">{{ $s->deskripsi }}</textarea>
+                            <label class="form-label-modern">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control form-control-modern" 
+                                      rows="3">{{ $s->deskripsi }}</textarea>
                         </div>
                         
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Urutan</label>
-                            <input type="number" name="urutan" class="form-control" value="{{ $s->urutan }}" min="0">
-                            <small class="text-muted">Semakin kecil angka, semakin atas posisinya</small>
+                            <label class="form-label-modern">Urutan</label>
+                            <input type="number" name="urutan" class="form-control form-control-modern" 
+                                   value="{{ $s->urutan }}" min="0">
+                            <small class="text-muted-small">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
