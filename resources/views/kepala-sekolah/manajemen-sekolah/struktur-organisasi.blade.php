@@ -10,7 +10,7 @@
         border: none;
         border-radius: 12px;
         overflow: hidden;
-        padding: 20px;
+        padding: 18px 20px;
         background: white;
         box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         height: 100%;
@@ -22,24 +22,24 @@
     }
     
     .stat-icon {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 10px;
+        font-size: 1.3rem;
+        margin-bottom: 8px;
     }
     
     .stat-number {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 700;
         margin-bottom: 2px;
     }
     
     .stat-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #6c757d;
     }
     
@@ -53,9 +53,10 @@
     .card-modern .card-header {
         background: white;
         border-bottom: 1px solid #e9ecef;
-        padding: 15px 20px;
+        padding: 14px 20px;
         font-weight: 600;
         border-radius: 12px 12px 0 0;
+        font-size: 0.95rem;
     }
     
     .card-modern .card-body {
@@ -72,45 +73,53 @@
         text-align: center;
     }
     
-    .org-node .org-box {
+    .org-box {
         display: inline-block;
-        padding: 15px 30px;
+        padding: 14px 28px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        min-width: 220px;
+        min-width: 200px;
         transition: all 0.3s ease;
         cursor: pointer;
     }
     
-    .org-node .org-box:hover {
+    .org-box:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
     }
     
-    .org-node .org-box h5 {
+    .org-box h5 {
         margin-bottom: 2px;
         font-weight: 700;
+        font-size: 1rem;
     }
     
-    .org-node .org-box small {
+    .org-box small {
         opacity: 0.85;
+        font-size: 0.75rem;
+    }
+    
+    .org-connector {
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin: 8px 0;
     }
     
     .org-child {
         display: flex;
         justify-content: center;
-        gap: 20px;
+        gap: 16px;
         flex-wrap: wrap;
-        margin-top: 20px;
+        margin-top: 16px;
     }
     
     .org-child-item {
         background: #f8f9fa;
         border-radius: 10px;
-        padding: 15px 20px;
-        min-width: 180px;
+        padding: 12px 18px;
+        min-width: 160px;
         border: 1px solid #e9ecef;
         transition: all 0.3s ease;
         text-align: center;
@@ -126,68 +135,28 @@
         font-weight: 600;
         color: #2c3e50;
         margin-bottom: 2px;
+        font-size: 0.85rem;
     }
     
     .org-child-item small {
         color: #6c757d;
-        font-size: 0.75rem;
-    }
-    
-    .org-connector {
-        color: #6c757d;
-        font-size: 1.5rem;
-        margin: 10px 0;
-    }
-    
-    .form-control-modern {
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        padding: 10px 15px;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control-modern:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-    }
-    
-    .form-label-modern {
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #2c3e50;
-    }
-    
-    .form-label-modern .text-danger {
-        font-weight: 700;
+        font-size: 0.7rem;
     }
     
     .btn-modern-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
         border-radius: 10px;
-        padding: 10px 30px;
+        padding: 8px 20px;
         color: white;
         transition: all 0.3s ease;
+        font-size: 0.85rem;
     }
     
     .btn-modern-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         color: white;
-    }
-    
-    .btn-modern-secondary {
-        border-radius: 10px;
-        padding: 10px 30px;
-        border: 2px solid #e9ecef;
-        color: #6c757d;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-modern-secondary:hover {
-        background: #f8f9fa;
-        border-color: #667eea;
-        color: #2c3e50;
     }
     
     .table-modern {
@@ -198,84 +167,61 @@
     .table-modern thead th {
         background: #f8f9fa;
         font-weight: 600;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-bottom: 2px solid #e9ecef;
-        padding: 12px 15px;
+        padding: 10px 14px;
     }
     
     .table-modern tbody td {
-        padding: 12px 15px;
+        padding: 10px 14px;
         vertical-align: middle;
-    }
-    
-    .badge-role {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
+        font-size: 0.85rem;
     }
     
     .badge-root {
         background: #e8f5e9;
         color: #2e7d32;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
     }
     
     .badge-child {
         background: #e3f2fd;
         color: #1565c0;
-    }
-
-    .modal-content-modern {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    }
-    
-    .modal-content-modern .modal-header {
-        border-bottom: 1px solid #e9ecef;
-        padding: 20px 25px;
-    }
-    
-    .modal-content-modern .modal-header h5 {
-        font-weight: 700;
-        color: #2c3e50;
-    }
-    
-    .modal-content-modern .modal-body {
-        padding: 25px;
-    }
-    
-    .modal-content-modern .modal-footer {
-        border-top: 1px solid #e9ecef;
-        padding: 15px 25px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
     }
 </style>
 
 <!-- Header -->
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-2 mb-3 border-bottom">
     <div>
-        <h1 class="h2 mb-1">
+        <h1 class="h4 mb-0">
             <i class="fas fa-sitemap me-2 text-primary"></i>
             Struktur Organisasi
         </h1>
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('kepala-sekolah.dashboard') }}">Dashboard</a></li>
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="{{ route('kepala-sekolah.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
                 <li class="breadcrumb-item active">Struktur Organisasi</li>
             </ol>
         </nav>
     </div>
-    <div class="btn-toolbar">
+    <div>
         <button type="button" class="btn btn-modern-primary" data-bs-toggle="modal" data-bs-target="#tambahStrukturModal">
             <i class="fas fa-plus me-2"></i>Tambah Struktur
         </button>
     </div>
 </div>
 
-<!-- Statistik -->
-<div class="row g-4 mb-4">
+<!-- Statistik Cards -->
+<div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon bg-primary bg-opacity-10 text-primary">
@@ -288,10 +234,10 @@
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon bg-success bg-opacity-10 text-success">
-                <i class="fas fa-user-tie"></i>
+                <i class="fas fa-tree"></i>
             </div>
             <div class="stat-number">{{ $struktur->whereNull('parent_id')->count() }}</div>
-            <div class="stat-label">Root / Induk</div>
+            <div class="stat-label">Induk / Root</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
@@ -306,7 +252,7 @@
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon bg-info bg-opacity-10 text-info">
-                <i class="fas fa-chalkboard-user"></i>
+                <i class="fas fa-user-tie"></i>
             </div>
             <div class="stat-number">{{ $struktur->whereNotNull('guru_id')->count() }}</div>
             <div class="stat-label">Penanggung Jawab</div>
@@ -330,11 +276,9 @@
                 <div class="org-node">
                     <div class="org-box">
                         <h5>{{ $item->nama }}</h5>
-                        <p class="mb-0"><small>{{ $item->jabatan }}</small></p>
+                        <small>{{ $item->jabatan }}</small>
                         @if($item->guru)
-                            <small class="text-white-50">
-                                <i class="fas fa-user me-1"></i>{{ $item->guru->user->name ?? '-' }}
-                            </small>
+                            <div><small><i class="fas fa-user me-1"></i>{{ $item->guru->user->name ?? '-' }}</small></div>
                         @endif
                     </div>
                     
@@ -348,11 +292,7 @@
                                     <h6>{{ $child->nama }}</h6>
                                     <small>{{ $child->jabatan }}</small>
                                     @if($child->guru)
-                                        <div class="mt-1">
-                                            <small class="text-muted">
-                                                <i class="fas fa-user me-1"></i>{{ $child->guru->user->name ?? '-' }}
-                                            </small>
-                                        </div>
+                                        <div><small class="text-muted"><i class="fas fa-user me-1"></i>{{ $child->guru->user->name ?? '-' }}</small></div>
                                     @endif
                                 </div>
                             @endforeach
@@ -400,22 +340,22 @@
                         <td>{{ $s->jabatan }}</td>
                         <td>
                             @if($s->parent)
-                                <span class="badge-role badge-child">{{ $s->parent->nama }}</span>
+                                <span class="badge-child">{{ $s->parent->nama }}</span>
                             @else
-                                <span class="badge-role badge-root"><i class="fas fa-tree me-1"></i>Root</span>
+                                <span class="badge-root"><i class="fas fa-tree me-1"></i>Root</span>
                             @endif
                         </td>
                         <td>{{ $s->guru->user->name ?? '-' }}</td>
                         <td>{{ $s->urutan }}</td>
                         <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editStrukturModal{{ $s->id }}">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editStrukturModal{{ $s->id }}" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <form action="{{ route('kepala-sekolah.manajemen.struktur.destroy', $s->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')" title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -437,11 +377,11 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL TAMBAH STRUKTUR (DIPERBAIKI) -->
+<!-- MODAL TAMBAH STRUKTUR -->
 <!-- ============================================ -->
 <div class="modal fade" id="tambahStrukturModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content modal-content-modern">
+        <div class="modal-content">
             <form action="{{ route('kepala-sekolah.manajemen.struktur.store') }}" method="POST">
                 @csrf
                 <div class="modal-header">
@@ -455,51 +395,38 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-building me-1 text-primary"></i>
+                            <label class="form-label fw-bold">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control form-control-modern" 
-                                   placeholder="Contoh: Kepala Sekolah, Wakil Kepala Sekolah" required>
+                            <input type="text" name="nama" class="form-control" placeholder="Contoh: Kepala Sekolah" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-briefcase me-1 text-primary"></i>
+                            <label class="form-label fw-bold">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control form-control-modern" 
-                                   placeholder="Contoh: Kepala Sekolah, Wakil Kurikulum" required>
+                            <input type="text" name="jabatan" class="form-control" placeholder="Contoh: Kepala Sekolah" required>
                         </div>
                         
                         <!-- Atasan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-arrow-up me-1 text-primary"></i>
-                                Atasan
-                            </label>
-                            <select name="parent_id" class="form-control form-control-modern">
-                                <option value="">Pilih Atasan (Kosongkan jika Root)</option>
+                            <label class="form-label fw-bold">Atasan</label>
+                            <select name="parent_id" class="form-control">
+                                <option value="">Tidak Ada (Root)</option>
                                 @foreach($struktur as $s)
                                     <option value="{{ $s->id }}">
                                         {{ $s->nama }} ({{ $s->jabatan }})
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Biarkan kosong jika ini adalah struktur induk (Root)
-                            </small>
+                            <small class="text-muted">Kosongkan jika ini adalah struktur induk</small>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-user-tie me-1 text-primary"></i>
-                                Penanggung Jawab
-                            </label>
-                            <select name="guru_id" class="form-control form-control-modern">
+                            <label class="form-label fw-bold">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}">
@@ -511,34 +438,21 @@
                         
                         <!-- Deskripsi -->
                         <div class="col-md-12 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-align-left me-1 text-primary"></i>
-                                Deskripsi
-                            </label>
-                            <textarea name="deskripsi" class="form-control form-control-modern" 
-                                      rows="3" placeholder="Jelaskan tugas dan tanggung jawab ..."></textarea>
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3" placeholder="Jelaskan tugas dan tanggung jawab..."></textarea>
                         </div>
                         
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-sort-numeric-down me-1 text-primary"></i>
-                                Urutan
-                            </label>
-                            <input type="number" name="urutan" class="form-control form-control-modern" 
-                                   value="0" min="0">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Semakin kecil angka, semakin atas posisinya
-                            </small>
+                            <label class="form-label fw-bold">Urutan</label>
+                            <input type="number" name="urutan" class="form-control" value="0" min="0">
+                            <small class="text-muted">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-modern-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Batal
-                    </button>
-                    <button type="submit" class="btn btn-modern-primary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Simpan
                     </button>
                 </div>
@@ -548,12 +462,12 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL EDIT STRUKTUR (DIPERBAIKI) -->
+<!-- MODAL EDIT STRUKTUR -->
 <!-- ============================================ -->
 @foreach($struktur as $s)
 <div class="modal fade" id="editStrukturModal{{ $s->id }}" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content modal-content-modern">
+        <div class="modal-content">
             <form action="{{ route('kepala-sekolah.manajemen.struktur.update', $s->id) }}" method="POST">
                 @csrf
                 @method('PUT')
@@ -568,32 +482,25 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-building me-1 text-primary"></i>
+                            <label class="form-label fw-bold">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control form-control-modern" 
-                                   value="{{ $s->nama }}" required>
+                            <input type="text" name="nama" class="form-control" value="{{ $s->nama }}" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-briefcase me-1 text-primary"></i>
+                            <label class="form-label fw-bold">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control form-control-modern" 
-                                   value="{{ $s->jabatan }}" required>
+                            <input type="text" name="jabatan" class="form-control" value="{{ $s->jabatan }}" required>
                         </div>
                         
                         <!-- Atasan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-arrow-up me-1 text-primary"></i>
-                                Atasan
-                            </label>
-                            <select name="parent_id" class="form-control form-control-modern">
-                                <option value="">Pilih Atasan (Kosongkan jika Root)</option>
+                            <label class="form-label fw-bold">Atasan</label>
+                            <select name="parent_id" class="form-control">
+                                <option value="">Tidak Ada (Root)</option>
                                 @foreach($struktur as $p)
                                     @if($p->id != $s->id)
                                         <option value="{{ $p->id }}" {{ $s->parent_id == $p->id ? 'selected' : '' }}>
@@ -602,19 +509,13 @@
                                     @endif
                                 @endforeach
                             </select>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Biarkan kosong jika ini adalah struktur induk (Root)
-                            </small>
+                            <small class="text-muted">Kosongkan jika ini adalah struktur induk</small>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-user-tie me-1 text-primary"></i>
-                                Penanggung Jawab
-                            </label>
-                            <select name="guru_id" class="form-control form-control-modern">
+                            <label class="form-label fw-bold">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}" {{ $s->guru_id == $g->id ? 'selected' : '' }}>
@@ -626,34 +527,21 @@
                         
                         <!-- Deskripsi -->
                         <div class="col-md-12 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-align-left me-1 text-primary"></i>
-                                Deskripsi
-                            </label>
-                            <textarea name="deskripsi" class="form-control form-control-modern" 
-                                      rows="3">{{ $s->deskripsi }}</textarea>
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3">{{ $s->deskripsi }}</textarea>
                         </div>
                         
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
-                                <i class="fas fa-sort-numeric-down me-1 text-primary"></i>
-                                Urutan
-                            </label>
-                            <input type="number" name="urutan" class="form-control form-control-modern" 
-                                   value="{{ $s->urutan }}" min="0">
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Semakin kecil angka, semakin atas posisinya
-                            </small>
+                            <label class="form-label fw-bold">Urutan</label>
+                            <input type="number" name="urutan" class="form-control" value="{{ $s->urutan }}" min="0">
+                            <small class="text-muted">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-modern-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Batal
-                    </button>
-                    <button type="submit" class="btn btn-modern-primary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Update
                     </button>
                 </div>
@@ -671,38 +559,5 @@
         });
     });
 </script>
-@endpush
-
-@push('styles')
-<style>
-    .modal-content-modern {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    }
-    
-    .modal-content-modern .modal-header {
-        border-bottom: 1px solid #e9ecef;
-        padding: 20px 25px;
-        background: #f8f9fa;
-        border-radius: 12px 12px 0 0;
-    }
-    
-    .modal-content-modern .modal-header h5 {
-        font-weight: 700;
-        color: #2c3e50;
-    }
-    
-    .modal-content-modern .modal-body {
-        padding: 25px;
-    }
-    
-    .modal-content-modern .modal-footer {
-        border-top: 1px solid #e9ecef;
-        padding: 15px 25px;
-        background: #f8f9fa;
-        border-radius: 0 0 12px 12px;
-    }
-</style>
 @endpush
 @endsection
