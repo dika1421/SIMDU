@@ -222,13 +222,19 @@
     }
 </style>
 
-<!-- Header -->
+<!-- Header dengan Breadcrumb -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-2 mb-3 border-bottom">
     <div>
-        <h1 class="h4 mb-0">
+        <h1 class="h4 mb-1">
             <i class="fas fa-sitemap me-2 text-primary"></i>
             Struktur Organisasi
         </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="{{ route('kepala-sekolah.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active">Struktur Organisasi</li>
+            </ol>
+        </nav>
     </div>
     <div>
         <button type="button" class="btn btn-modern-primary" data-bs-toggle="modal" data-bs-target="#tambahStrukturModal">
@@ -394,7 +400,7 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL TAMBAH STRUKTUR (DIPERBAIKI) -->
+<!-- MODAL TAMBAH STRUKTUR (FIELD ATASAN DIHAPUS) -->
 <!-- ============================================ -->
 <div class="modal fade" id="tambahStrukturModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -412,39 +418,26 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
+                            <label class="form-label fw-bold">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control form-control-modern" 
+                            <input type="text" name="nama" class="form-control" 
                                    placeholder="Contoh: Kepala Sekolah" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
+                            <label class="form-label fw-bold">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control form-control-modern" 
+                            <input type="text" name="jabatan" class="form-control" 
                                    placeholder="Contoh: Kepala Sekolah" required>
-                        </div>
-                        
-                        <!-- Atasan -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Atasan</label>
-                            <select name="parent_id" class="form-control form-control-modern">
-                                <option value="">Tidak Ada (Root)</option>
-                                @foreach($struktur as $s)
-                                    <option value="{{ $s->id }}">
-                                        {{ $s->nama }} ({{ $s->jabatan }})
-                                    </option>
-                                @endforeach
-                            </select>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Penanggung Jawab</label>
-                            <select name="guru_id" class="form-control form-control-modern">
+                            <label class="form-label fw-bold">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}">
@@ -454,11 +447,17 @@
                             </select>
                         </div>
                         
+                        <!-- Deskripsi -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3" 
+                                      placeholder="Jelaskan tugas dan tanggung jawab..."></textarea>
+                        </div>
+                        
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Urutan</label>
-                            <input type="number" name="urutan" class="form-control form-control-modern" 
-                                   value="0" min="0">
+                            <label class="form-label fw-bold">Urutan</label>
+                            <input type="number" name="urutan" class="form-control" value="0" min="0">
                             <small class="text-muted" style="font-size: 0.7rem;">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
@@ -475,7 +474,7 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL EDIT STRUKTUR -->
+<!-- MODAL EDIT STRUKTUR (FIELD ATASAN DIHAPUS) -->
 <!-- ============================================ -->
 @foreach($struktur as $s)
 <div class="modal fade" id="editStrukturModal{{ $s->id }}" tabindex="-1">
@@ -495,41 +494,26 @@
                     <div class="row">
                         <!-- Nama Struktur -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
+                            <label class="form-label fw-bold">
                                 Nama Struktur <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="nama" class="form-control form-control-modern" 
+                            <input type="text" name="nama" class="form-control" 
                                    value="{{ $s->nama }}" required>
                         </div>
                         
                         <!-- Jabatan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">
+                            <label class="form-label fw-bold">
                                 Jabatan <span class="text-danger">*</span>
                             </label>
-                            <input type="text" name="jabatan" class="form-control form-control-modern" 
+                            <input type="text" name="jabatan" class="form-control" 
                                    value="{{ $s->jabatan }}" required>
-                        </div>
-                        
-                        <!-- Atasan -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Atasan</label>
-                            <select name="parent_id" class="form-control form-control-modern">
-                                <option value="">Tidak Ada (Root)</option>
-                                @foreach($struktur as $p)
-                                    @if($p->id != $s->id)
-                                        <option value="{{ $p->id }}" {{ $s->parent_id == $p->id ? 'selected' : '' }}>
-                                            {{ $p->nama }} ({{ $p->jabatan }})
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
                         </div>
                         
                         <!-- Penanggung Jawab -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Penanggung Jawab</label>
-                            <select name="guru_id" class="form-control form-control-modern">
+                            <label class="form-label fw-bold">Penanggung Jawab</label>
+                            <select name="guru_id" class="form-control">
                                 <option value="">Pilih Guru</option>
                                 @foreach($guru as $g)
                                     <option value="{{ $g->id }}" {{ $s->guru_id == $g->id ? 'selected' : '' }}>
@@ -539,10 +523,16 @@
                             </select>
                         </div>
                         
+                        <!-- Deskripsi -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3">{{ $s->deskripsi }}</textarea>
+                        </div>
+                        
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
-                            <label class="form-label-modern">Urutan</label>
-                            <input type="number" name="urutan" class="form-control form-control-modern" 
+                            <label class="form-label fw-bold">Urutan</label>
+                            <input type="number" name="urutan" class="form-control" 
                                    value="{{ $s->urutan }}" min="0">
                             <small class="text-muted" style="font-size: 0.7rem;">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
