@@ -55,12 +55,10 @@
             flex-shrink: 0;
         }
         
-        /* Sidebar di HP: disembunyikan */
         .sidebar.hidden {
             transform: translateX(-100%);
         }
         
-        /* Sidebar di laptop: selalu muncul */
         @media (min-width: 769px) {
             .sidebar {
                 transform: translateX(0) !important;
@@ -160,12 +158,6 @@
             border-radius: 10px;
             font-size: 0.55rem;
         }
-        
-        .menu-item.logout {
-            margin-top: 10px;
-            color: #ff6b6b;
-        }
-        .menu-item.logout:hover { background: #c0392b; color: white; }
         
         hr { border-color: rgba(255,255,255,0.06); margin: 8px 0; }
         
@@ -525,17 +517,7 @@
                         </a>
                     </li>
                     
-                    <li><hr></li>
-                    
-                    <li>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: inline;">
-                            @csrf
-                            <a href="#" class="menu-item logout" 
-                               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a>
-                        </form>
-                    </li>
+                    <!-- 🔥 LOGOUT DIHAPUS DARI SIDEBAR -->
                     
                     <li style="height: 20px;"></li>
                 </ul>
@@ -568,6 +550,7 @@
                         </ul>
                     </div>
                     
+                    <!-- 🔥 DROPDOWN USER DENGAN LOGOUT -->
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle"></i>
@@ -586,6 +569,7 @@
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
+                            <!-- 🔥 LOGOUT HANYA DI SINI -->
                             <li>
                                 <a class="dropdown-item text-danger" href="#" 
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -624,6 +608,11 @@
             </div>
         </main>
     </div>
+
+    <!-- Form Logout -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
