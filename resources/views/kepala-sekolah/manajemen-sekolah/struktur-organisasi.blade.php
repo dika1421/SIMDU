@@ -198,7 +198,6 @@
         font-weight: 600;
     }
 
-    /* Form Modern */
     .form-control-modern {
         border-radius: 8px;
         border: 1px solid #e9ecef;
@@ -220,11 +219,6 @@
     
     .form-label-modern .text-danger {
         color: #dc3545;
-    }
-    
-    .text-muted-small {
-        font-size: 0.7rem;
-        color: #6c757d;
     }
 </style>
 
@@ -460,19 +454,12 @@
                             </select>
                         </div>
                         
-                        <!-- Deskripsi -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label-modern">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control form-control-modern" 
-                                      rows="3" placeholder="Jelaskan tugas dan tanggung jawab..."></textarea>
-                        </div>
-                        
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label-modern">Urutan</label>
                             <input type="number" name="urutan" class="form-control form-control-modern" 
                                    value="0" min="0">
-                            <small class="text-muted-small">Semakin kecil angka, semakin atas posisinya</small>
+                            <small class="text-muted" style="font-size: 0.7rem;">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
@@ -552,19 +539,12 @@
                             </select>
                         </div>
                         
-                        <!-- Deskripsi -->
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label-modern">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control form-control-modern" 
-                                      rows="3">{{ $s->deskripsi }}</textarea>
-                        </div>
-                        
                         <!-- Urutan -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label-modern">Urutan</label>
                             <input type="number" name="urutan" class="form-control form-control-modern" 
                                    value="{{ $s->urutan }}" min="0">
-                            <small class="text-muted-small">Semakin kecil angka, semakin atas posisinya</small>
+                            <small class="text-muted" style="font-size: 0.7rem;">Semakin kecil angka, semakin atas posisinya</small>
                         </div>
                     </div>
                 </div>
