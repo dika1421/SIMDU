@@ -18,12 +18,10 @@ class ManajemenSekolahController extends Controller
      */
     public function struktur()
     {
-        // PERBAIKI: Gunakan relasi yang benar
         $struktur = StrukturOrganisasi::with(['guru.user', 'parent'])
             ->orderBy('urutan')
             ->get();
         
-        // PERBAIKI: Ambil guru dengan user
         $guru = Guru::with('user')->get();
         
         return view('kepala-sekolah.manajemen-sekolah.struktur-organisasi', compact('struktur', 'guru'));
@@ -32,14 +30,24 @@ class ManajemenSekolahController extends Controller
     public function strukturStore(Request $request)
     {
         $request->validate([
-            'nama' => 'required',
-            'jabatan' => 'required',
-            'urutan' => 'required|integer',
+            'nama_jabatan' => 'required|string|max:255',
+            'nama_pejabat' => 'required|string|max:255',
             'guru_id' => 'nullable|exists:gurus,id',
+            'urutan' => 'nullable|integer',
             'parent_id' => 'nullable|exists:struktur_organisasi,id',
+            'deskripsi_tugas' => 'nullable|string',
+            'status' => 'nullable|in:aktif,nonaktif',
         ]);
 
-        StrukturOrganisasi::create($request->all());
+        StrukturOrganisasi::create([
+            'nama_jabatan' => $request->nama_jabatan,
+            'nama_pejabat' => $request->nama_pejabat,
+            'guru_id' => $request->guru_id,
+            'urutan' => $request->urutan ?? 1,
+            'parent_id' => $request->parent_id,
+            'deskripsi_tugas' => $request->deskripsi_tugas,
+            'status' => $request->status ?? 'aktif',
+        ]);
 
         return redirect()->route('kepala-sekolah.manajemen.struktur')
             ->with('success', 'Struktur organisasi berhasil ditambahkan');
@@ -50,14 +58,24 @@ class ManajemenSekolahController extends Controller
         $struktur = StrukturOrganisasi::findOrFail($id);
         
         $request->validate([
-            'nama' => 'required',
-            'jabatan' => 'required',
-            'urutan' => 'required|integer',
+            'nama_jabatan' => 'required|string|max:255',
+            'nama_pejabat' => 'required|string|max:255',
             'guru_id' => 'nullable|exists:gurus,id',
+            'urutan' => 'nullable|integer',
             'parent_id' => 'nullable|exists:struktur_organisasi,id',
+            'deskripsi_tugas' => 'nullable|string',
+            'status' => 'nullable|in:aktif,nonaktif',
         ]);
 
-        $struktur->update($request->all());
+        $struktur->update([
+            'nama_jabatan' => $request->nama_jabatan,
+            'nama_pejabat' => $request->nama_pejabat,
+            'guru_id' => $request->guru_id,
+            'urutan' => $request->urutan ?? 1,
+            'parent_id' => $request->parent_id,
+            'deskripsi_tugas' => $request->deskripsi_tugas,
+            'status' => $request->status ?? 'aktif',
+        ]);
 
         return redirect()->route('kepala-sekolah.manajemen.struktur')
             ->with('success', 'Struktur organisasi berhasil diupdate');
@@ -76,7 +94,6 @@ class ManajemenSekolahController extends Controller
      */
     public function jurusan()
     {
-        // PERBAIKI: Gunakan relasi yang benar
         $jurusan = Jurusan::with('kepalaJurusan.user')->get();
         $guru = Guru::with('user')->get();
         
@@ -167,7 +184,6 @@ class ManajemenSekolahController extends Controller
      */
     public function kelas()
     {
-        // PERBAIKI: Gunakan relasi yang benar
         $kelas = Kelas::with(['jurusan', 'waliKelas.user'])->get();
         $jurusan = Jurusan::all();
         $guru = Guru::with('user')->get();
