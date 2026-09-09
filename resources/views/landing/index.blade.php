@@ -1246,7 +1246,7 @@
     </div>
 </section>
 
-<!-- ===== STRUKTUR ORGANISASI ===== -->
+<!-- ===== STRUKTUR ORGANISASI (DINAMIS DARI DATABASE) ===== -->
 <section class="struktur-section" id="struktur">
     <div class="container">
         <div class="text-center" data-aos="fade-up">
@@ -1259,159 +1259,61 @@
         </div>
 
         <div class="struktur-tree" data-aos="fade-up" data-aos-delay="100">
-            <!-- Kepala Sekolah -->
-            <div class="text-center mb-4">
-                <div class="kepala-sekolah-box">
-                    <i class="fas fa-user-tie fa-2x d-block mb-2"></i>
-                    <h5>Kepala Sekolah</h5>
-                    <p>Hj. Jubaedah, SE</p>
-                </div>
-            </div>
+            @php
+                $roots = $struktur->whereNull('parent_id');
+                $warna = ['#3949ab', '#4caf50', '#ff8a65', '#4dd0e1', '#9c27b0', '#f57c00', '#00897b', '#6d4c41'];
+                $warnaGradient = ['#5c6bc0', '#66bb6a', '#ffab91', '#4dd0e1', '#ab47bc', '#ffa726', '#26a69a', '#8d6e63'];
+            @endphp
 
-            <!-- Garis Hubung -->
-            <div class="garis-hubung">
-                <div class="garis"></div>
-                <div class="garis"></div>
-                <div class="garis"></div>
-                <div class="garis"></div>
-            </div>
+            @forelse($roots as $root)
+                <!-- Root (Kepala Sekolah / Pimpinan) -->
+                <div class="text-center mb-4">
+                    <div class="kepala-sekolah-box" style="background: linear-gradient(135deg, #1a237e, #283593); display: inline-block; padding: 20px 45px; border-radius: 16px; color: white; box-shadow: 0 10px 30px rgba(26,35,126,0.25);">
+                        <i class="fas fa-user-tie fa-2x d-block mb-2"></i>
+                        <h5 style="font-weight: 700; margin-bottom: 2px;">{{ $root->nama_jabatan ?? $root->nama }}</h5>
+                        <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">{{ $root->nama_pejabat ?? $root->jabatan }}</p>
+                        @if($root->guru)
+                            <small style="opacity:0.7; display: block; margin-top: 4px; font-size: 0.75rem;">
+                                <i class="fas fa-user me-1"></i>{{ $root->guru->user->name ?? $root->guru->nama_lengkap }}
+                            </small>
+                        @endif
+                    </div>
+                </div>
 
-            <!-- Wakil Kepala Sekolah & Kaprog -->
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                    <div class="struktur-card" style="border-top-color: #3949ab;">
-                        <div class="avatar blue"><i class="fas fa-user-graduate"></i></div>
-                        <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">H. Rojudin, S.Pd</p>
-                        <span class="jabatan">Wakabid Kurikulum</span>
+                @if($root->children->count() > 0)
+                    <!-- Garis Hubung -->
+                    <div class="garis-hubung" style="display: flex; justify-content: center; gap: 80px; flex-wrap: wrap; margin: 20px 0 30px;">
+                        @for($i = 0; $i < min($root->children->count(), 8); $i++)
+                            <div style="width: 2px; height: 30px; background: #1a237e; opacity: 0.2;"></div>
+                        @endfor
                     </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                    <div class="struktur-card" style="border-top-color: #4caf50;">
-                        <div class="avatar green"><i class="fas fa-users"></i></div>
-                        <h6>Wakil Kepala Sekolah</h6>
-                        <p class="nama">Siti Sopiah, S. Pd</p>
-                        <span class="jabatan">Kesiswaan</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                    <div class="struktur-card" style="border-top-color: #ff8a65;">
-                        <div class="avatar orange"><i class="fas fa-chart-line"></i></div>
-                        <h6>Kaprog Pemasaran</h6>
-                        <p class="nama">Sri Gustina, S. Pd</p>
-                        <span class="jabatan">Ketua Program Pemasaran</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
-                    <div class="struktur-card" style="border-top-color: #4dd0e1;">
-                        <div class="avatar cyan"><i class="fas fa-utensils"></i></div>
-                        <h6>Kaprog Tata Boga</h6>
-                        <p class="nama">Maimunah Busyrah, S. Pd</p>
-                        <span class="jabatan">Ketua Program Tata Boga</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Pembina OSIS & BP/BKK & TU & Operator -->
-            <div class="row g-4 mt-2 justify-content-center">
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
-                    <div class="struktur-card" style="border-top-color: #9c27b0;">
-                        <div class="avatar" style="background: linear-gradient(135deg, #9c27b0, #ab47bc);"><i class="fas fa-flag"></i></div>
-                        <h6>Pembina OSIS</h6>
-                        <p class="nama">Ilham Amaludin, M. Pd</p>
-                        <span class="jabatan">Pembina OSIS</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
-                    <div class="struktur-card" style="border-top-color: #f57c00;">
-                        <div class="avatar" style="background: linear-gradient(135deg, #f57c00, #ff9800);"><i class="fas fa-hand-holding-heart"></i></div>
-                        <h6>BP/BKK</h6>
-                        <p class="nama">M. Fadilah, S. Si</p>
-                        <span class="jabatan">BP/BKK</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
-                    <div class="struktur-card" style="border-top-color: #00897b;">
-                        <div class="avatar" style="background: linear-gradient(135deg, #00897b, #26a69a);"><i class="fas fa-building"></i></div>
-                        <h6>Tata Usaha</h6>
-                        <p class="nama">Nata Wijaya, S. Pd. I</p>
-                        <span class="jabatan">Tata Usaha</span>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
-                    <div class="struktur-card" style="border-top-color: #6d4c41;">
-                        <div class="avatar" style="background: linear-gradient(135deg, #6d4c41, #8d6e63);"><i class="fas fa-laptop"></i></div>
-                        <h6>Operator Sekolah</h6>
-                        <p class="nama">Syaripudin, S.Pd.I., M.Ag.,Gr</p>
-                        <span class="jabatan">Operator Sekolah</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Guru Mapel - Grid 4 kolom -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    <h5 class="text-center mb-3" style="color: #1a237e; font-weight: 700;">
-                        <i class="fas fa-chalkboard-teacher me-2"></i>Daftar Guru Mapel
-                    </h5>
-                    <div class="row g-2">
-                        @php
-                            $guruMapel = [
-                                'Euis Suryani, S.Ag',
-                                'Drs. H. Kadri Imbali, MA',
-                                'Abdul Aziz, S. Pd',
-                                'Dra. Deswita',
-                                'Nining Indranigsih, M. Pd',
-                                'Syaripudin, S. Pd, M. Pd',
-                                'Drs. H. Suardi',
-                                'Asep Purwadi, S. Pd',
-                                'Maliyah, S. Pd.I',
-                                'Siti Hamimah, S.Pd',
-                                'Nur Septiani, S.Pd',
-                                'Nurma Fitriani. S. S, S. Pd',
-                                'Nurlailah Qadariah, S. Pd',
-                                'Aceng Ma\'sum, S.Pd',
-                                'Sukanti, SE',
-                                'Dra. Kholilah, MM',
-                                'Lulu Sa\'idah, S.Pd.I, Gr.',
-                                'Zahra Alfiyah, S. Sos',
-                                'Agustami, CDP',
-                                'Adelia Gita Cahyani, S. Pd',
-                                'Larasati Anindhita, S.Sos',
-                            ];
-                        @endphp
-                        @foreach($guruMapel as $guru)
-                            <div class="col-lg-2 col-md-3 col-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 50 }}">
-                                <div style="background: white; padding: 10px 8px; border-radius: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; height: 100%;">
-                                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #e8eaf6, #c5cae9); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; color: #1a237e; font-weight: 700; font-size: 12px;">
-                                        <i class="fas fa-user"></i>
+                    <!-- Bawahan Level 1 -->
+                    <div class="row g-4 justify-content-center">
+                        @foreach($root->children->sortBy('urutan') as $index => $child)
+                            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 100 }}">
+                                <div class="struktur-card" style="background: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); height: 100%; transition: all 0.4s ease; border-top: 4px solid {{ $warna[$index % count($warna)] }};">
+                                    <div class="avatar" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 26px; color: white; background: linear-gradient(135deg, {{ $warna[$index % count($warna)] }}, {{ $warnaGradient[$index % count($warnaGradient)] }});">
+                                        <i class="fas fa-user-graduate"></i>
                                     </div>
-                                    <p style="font-size: 0.6rem; color: #333; margin-bottom: 0; font-weight: 600; line-height: 1.3;">{{ $guru }}</p>
-                                    <span style="font-size: 0.5rem; color: #999;">Guru Mapel</span>
+                                    <h6 style="font-weight: 700; color: #1a237e; margin-bottom: 2px; font-size: 0.95rem;">{{ $child->nama_jabatan ?? $child->nama }}</h6>
+                                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 2px;">{{ $child->nama_pejabat ?? $child->jabatan }}</p>
+                                    @if($child->guru)
+                                        <span style="font-size: 0.7rem; color: #999;">
+                                            <i class="fas fa-user me-1"></i>{{ $child->guru->user->name ?? $child->guru->nama_lengkap }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
                     </div>
+                @endif
+            @empty
+                <div class="text-center py-5">
+                    <i class="fas fa-sitemap fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">Belum ada data struktur organisasi</p>
                 </div>
-            </div>
-
-            <!-- Staff Lainnya -->
-            <div class="row g-3 mt-3 justify-content-center">
-                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1100">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <i class="fas fa-flask text-primary" style="font-size: 1.5rem;"></i>
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem; margin-top: 5px;">Kepala Laboratorium</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Krisdianarti</p>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-4 col-6" data-aos="fade-up" data-aos-delay="1200">
-                    <div style="background: white; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 3px 15px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;">
-                        <i class="fas fa-quran text-success" style="font-size: 1.5rem;"></i>
-                        <h6 style="font-weight: 700; color: #1a237e; font-size: 0.85rem; margin-top: 5px;">Guru Tahsin/Tadarus</h6>
-                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 0;">Naufal Nurrahmatullah Aryanto</p>
-                    </div>
-                </div>
-            </div>
+            @endforelse
         </div>
     </div>
 </section>

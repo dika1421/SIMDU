@@ -7,13 +7,14 @@ use App\Models\Siswa;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Jurusan;
+use App\Models\StrukturOrganisasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class LandingPageController extends Controller
 {
     /**
-     * Tampilkan halaman landing page dengan data galeri dan statistik
+     * Tampilkan halaman landing page dengan data galeri, statistik, dan struktur
      */
     public function index()
     {
@@ -30,9 +31,16 @@ class LandingPageController extends Controller
         $totalKelas = Kelas::count();
         $totalJurusan = Jurusan::count();
 
-        // 🔥 DEBUG: Cek data galeri (untuk debugging)
-        Log::info('=== DATA GALERI LANDING PAGE ===');
+        // 🔥 🔥 🔥 AMBIL DATA STRUKTUR ORGANISASI (BARU)
+        $struktur = StrukturOrganisasi::with(['guru.user', 'children'])
+            ->where('status', 'aktif')
+            ->orderBy('urutan')
+            ->get();
+
+        // 🔥 DEBUG: Cek data
+        Log::info('=== DATA LANDING PAGE ===');
         Log::info('Jumlah galeri: ' . $galleries->count());
+        Log::info('Jumlah struktur: ' . $struktur->count());
         
         foreach ($galleries as $gallery) {
             Log::info('Galeri:', [
@@ -49,7 +57,8 @@ class LandingPageController extends Controller
             'totalSiswa',
             'totalGuru',
             'totalKelas',
-            'totalJurusan'
+            'totalJurusan',
+            'struktur' // 🔥 KIRIM DATA STRUKTUR KE VIEW
         ));
     }
 
