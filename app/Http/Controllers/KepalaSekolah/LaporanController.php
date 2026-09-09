@@ -127,14 +127,14 @@ class LaporanController extends Controller
                     $g->jumlahMapel = $g->mapel->count() ?? 0;
                 } catch (\Exception $e) {
                     // Jika relasi mapel tidak ada, hitung dari jadwal
-                    $g->jumlahMapel = DB::table('jadwals')
+                    $g->jumlahMapel = DB::table('jadwal')
                         ->where('guru_id', $g->id)
                         ->distinct('mapel_id')
                         ->count('mapel_id');
                 }
 
                 // === JUMLAH KELAS YANG DIAJAR ===
-                $g->jumlahKelas = DB::table('jadwals')
+                $g->jumlahKelas = DB::table('jadwal')
                     ->where('guru_id', $g->id)
                     ->distinct('kelas_id')
                     ->count('kelas_id');
@@ -166,7 +166,7 @@ class LaporanController extends Controller
                 $g->izin = $izin;
 
                 // === JUMLAH SISWA YANG DIAJAR ===
-                $kelasIds = DB::table('jadwals')
+                $kelasIds = DB::table('jadwal')
                     ->where('guru_id', $g->id)
                     ->distinct('kelas_id')
                     ->pluck('kelas_id');

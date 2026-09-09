@@ -65,7 +65,7 @@ class Mapel extends Model
     {
         return $this->belongsToMany(
             Guru::class, 
-            'jadwals', 
+            'jadwal', 
             'mata_pelajaran_id', 
             'guru_id'
         )->withPivot('kelas_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan')
@@ -79,7 +79,7 @@ class Mapel extends Model
     {
         return $this->belongsToMany(
             Kelas::class, 
-            'jadwals', 
+            'jadwal', 
             'mata_pelajaran_id', 
             'kelas_id'
         )->withPivot('guru_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan')
