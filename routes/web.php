@@ -28,6 +28,7 @@ use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Administrasi\RoleController;
 use App\Http\Controllers\Administrasi\PermissionController;
 use App\Http\Controllers\Administrasi\UserRoleController;
+use App\Http\Controllers\Administrasi\Api\GuruController as ApiGuruController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
 use App\Http\Controllers\Guru\AbsensiSiswaController;
@@ -163,6 +164,14 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
+
+    // =============================================
+    // API UNTUK ADMINISTRASI (🔥 DITAMBAHKAN)
+    // =============================================
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('/guru/search', [ApiGuruController::class, 'search'])->name('guru.search');
+        Route::get('/guru/by-nuptk', [ApiGuruController::class, 'getByNuptk'])->name('guru.by-nuptk');
+    });
 
     // =============================================
     // MANAJEMEN JADWAL
