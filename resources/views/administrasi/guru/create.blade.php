@@ -58,7 +58,7 @@
                 <strong>Informasi:</strong>
                 <ul class="mb-0 mt-2">
                     <li>Email akan dibuat otomatis dengan format: nama.guru@guru.sch.id</li>
-                    <li>Password default: <strong>password123</strong> (harap diubah setelah login)</li>
+                    <li>Password default: <strong>simdu#3(4 digit terakhir nuptk)</strong> (harap diubah setelah login)</li>
                     <li>NIP akan digenerate otomatis jika tidak diisi</li>
                 </ul>
             </div>
