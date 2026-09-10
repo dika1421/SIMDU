@@ -805,7 +805,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('administrasi.pengaturan') }}">
+                                <a class="dropdown-item" href="{{ route('administrasi.pengaturan.index') }}">
                                     <i class="fas fa-cog me-2"></i> Pengaturan
                                 </a>
                             </li>
