@@ -130,32 +130,28 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/change-password', [KepalaSekolahProfil::class, 'changePassword'])->name('change-password');
     });
 
+    // ================== PENGATURAN ==================
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
 });
 
 // ================== ADMINISTRASI ==================
 Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->name('administrasi.')->group(function () {
-    // Dashboard
     Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])->name('dashboard');
 
-    // Manajemen Jurusan
     Route::resource('jurusan', JurusanController::class);
 
-    // Manajemen Kelas
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
     Route::get('/kelas/download-template', [KelasController::class, 'downloadTemplate'])->name('kelas.download-template');
     Route::get('/kelas/export', [KelasController::class, 'export'])->name('kelas.export');
     Route::resource('kelas', KelasController::class);
     Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])->name('kelas.get-list');
 
-    // Manajemen Mata Pelajaran
     Route::resource('mapel', MapelController::class);
     Route::get('/mapel/get-mapel-list', [MapelController::class, 'getMapelList'])->name('mapel.get-list');
     Route::post('/mapel/import', [MapelController::class, 'import'])->name('mapel.import');
     Route::get('/mapel/download-template', [MapelController::class, 'downloadTemplate'])->name('mapel.download-template');
     Route::get('/mapel/export', [MapelController::class, 'export'])->name('mapel.export');
 
-    // Manajemen Siswa
     Route::resource('siswa', SiswaController::class);
     Route::post('/siswa/{siswa}/mutasi', [SiswaController::class, 'mutasi'])->name('siswa.mutasi');
     Route::get('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
@@ -163,32 +159,22 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplate'])->name('siswa.download-template');
     Route::get('/siswa/export', [SiswaController::class, 'export'])->name('siswa.export');
 
-    // Manajemen Guru
     Route::resource('guru', AdministrasiGuruController::class);
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
-    // =============================================
-    // API UNTUK ADMINISTRASI
-    // =============================================
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('/guru/search', [ApiGuruController::class, 'search'])->name('guru.search');
         Route::get('/guru/by-nuptk', [ApiGuruController::class, 'getByNuptk'])->name('guru.by-nuptk');
     });
 
-    // =============================================
-    // MANAJEMEN JADWAL
-    // =============================================
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
-        // Route statis dulu (tanpa parameter)
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
         Route::get('/create', [JadwalController::class, 'create'])->name('create');
-
-        // Route dinamis (dengan parameter)
         Route::get('/', [JadwalController::class, 'index'])->name('index');
         Route::post('/', [JadwalController::class, 'store'])->name('store');
         Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
@@ -197,7 +183,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}', [JadwalController::class, 'destroy'])->name('destroy');
     });
 
-    // Absensi
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', function() { return redirect()->route('administrasi.absensi.scan'); })->name('index');
         Route::get('/scan', [RfidController::class, 'index'])->name('scan');
@@ -211,7 +196,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/export-guru', [AdministrasiAbsensi::class, 'exportGuru'])->name('export-guru');
     });
 
-    // Absensi Sholat
     Route::prefix('absensi-sholat')->name('absensi-sholat.')->group(function () {
         Route::get('/', [AbsensiSholatController::class, 'index'])->name('index');
         Route::get('/dashboard', [AbsensiSholatController::class, 'dashboard'])->name('dashboard');
@@ -229,14 +213,12 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/export-guru', [AbsensiSholatController::class, 'exportGuru'])->name('export-guru');
     });
 
-    // RFID
     Route::prefix('rfid')->name('rfid.')->group(function () {
         Route::post('/scan/siswa', [RfidController::class, 'scanSiswa'])->name('scan.siswa');
         Route::post('/scan/guru', [RfidController::class, 'scanGuru'])->name('scan.guru');
         Route::get('/card-info', [RfidController::class, 'getCardInfo'])->name('card-info');
     });
 
-    // Keuangan
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])->name('get-siswa-by-kelas');
         Route::get('/cari-siswa', [KeuanganController::class, 'cariSiswa'])->name('cari-siswa');
@@ -257,7 +239,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
     });
 
-    // Arsip
     Route::prefix('arsip')->name('arsip.')->group(function () {
         Route::get('/', [ArsipController::class, 'index'])->name('index');
         Route::get('/create', [ArsipController::class, 'create'])->name('create');
@@ -272,7 +253,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}/force-delete', [ArsipController::class, 'forceDelete'])->name('force-delete');
     });
 
-    // Komunikasi
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
@@ -284,7 +264,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
 
-    // Galeri
     Route::prefix('galeri')->name('galeri.')->group(function () {
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
@@ -295,9 +274,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
-    // =============================================
-    // MANAJEMEN ROLE & PERMISSION
-    // =============================================
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/create', [RoleController::class, 'create'])->name('create');
@@ -316,16 +292,12 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
     });
 
-    // =============================================
-    // MANAJEMEN USER ROLE (Multi-Role)
-    // =============================================
     Route::prefix('user-roles')->name('user-roles.')->group(function () {
         Route::get('/', [UserRoleController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [UserRoleController::class, 'edit'])->name('edit');
         Route::put('/{id}', [UserRoleController::class, 'update'])->name('update');
     });
 
-    // Profil Administrasi
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
         Route::get('/edit', [AdministrasiDashboard::class, 'editProfil'])->name('edit');
@@ -333,7 +305,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
     });
 
-    // Pengaturan Administrasi
     Route::get('/pengaturan', function () {
         return view('administrasi.pengaturan.index');
     })->name('pengaturan');
@@ -379,7 +350,6 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::post('/{id}/reply', [GuruKomunikasi::class, 'reply'])->name('reply');
     });
 
-    // ================== KALENDER GURU ==================
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [KalenderController::class, 'index'])->name('index');
         Route::get('/events', [KalenderController::class, 'getEvents'])->name('events');
@@ -432,7 +402,6 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
         Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
     });
 
-    // ================== KALENDER SISWA ==================
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [SiswaKalender::class, 'index'])->name('index');
         Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');

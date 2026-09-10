@@ -27,7 +27,7 @@
             </a>
         </div>
     </div>
-    
+
     <div class="col-md-9">
         <div class="tab-content">
             <!-- Profil Sekolah -->
@@ -85,7 +85,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Keamanan -->
             <div class="tab-pane" id="keamanan">
                 <div class="card">
@@ -123,7 +123,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Hak Akses -->
             <div class="tab-pane" id="hak-akses">
                 <div class="card">
@@ -188,7 +188,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Backup -->
             <div class="tab-pane" id="backup">
                 <div class="card">
@@ -200,7 +200,7 @@
                             <i class="fas fa-info-circle me-2"></i>
                             Terakhir backup: {{ now()->format('d F Y, H:i') }} WIB
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card border">
