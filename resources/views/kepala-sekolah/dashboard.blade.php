@@ -152,16 +152,6 @@
                 {{ \Carbon\Carbon::now()->format('H:i') }} WIB
             </p>
         </div>
-        <div class="col-md-4 text-md-end mt-2 mt-md-0">
-            <div class="btn-group">
-                <button type="button" class="btn btn-light btn-sm" onclick="window.location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-                <button type="button" class="btn btn-light btn-sm" onclick="window.print()">
-                    <i class="fas fa-print"></i> Print
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
