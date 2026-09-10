@@ -5,15 +5,17 @@
 @section('content')
 {{-- ==================== HEADER ==================== --}}
 <div class="dash-header d-flex justify-content-between flex-wrap align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1 fw-bold text-dark">
-            <i class="fas fa-tachometer-alt me-2 text-primary"></i>
-            Dashboard Administrasi
-        </h1>
-        <p class="text-muted mb-0 small">
-            <i class="fas fa-calendar-day me-1"></i>
-            {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
-        </p>
+    <div class="d-flex align-items-center gap-3">
+        <div class="dash-header-icon">
+            <i class="fas fa-gauge-high"></i>
+        </div>
+        <div>
+            <h1 class="h4 mb-1 fw-bold text-dark">Dashboard Administrasi</h1>
+            <p class="text-muted mb-0 small">
+                <i class="fas fa-calendar-day me-1"></i>
+                {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('l, d F Y') }}
+            </p>
+        </div>
     </div>
     <button type="button" class="btn btn-refresh" onclick="window.location.reload()">
         <i class="fas fa-sync-alt me-1"></i> Refresh
@@ -329,16 +331,31 @@
         </div>
     </div>
 </div>
+@endsection
 
 {{-- ==================== STYLE KHUSUS DASHBOARD ==================== --}}
 @push('styles')
 <style>
-    /* Header */
+    /* ========== HEADER ========== */
     .dash-header {
         background: #fff;
         border-radius: 14px;
         padding: 18px 22px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .dash-header-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
     }
 
     .btn-refresh {
@@ -357,7 +374,7 @@
         transform: translateY(-1px);
     }
 
-    /* Stat Card */
+    /* ========== STAT CARD ========== */
     .stat-card {
         display: flex;
         align-items: center;
@@ -431,7 +448,7 @@
         color: #64748b;
     }
 
-    /* Modern Card */
+    /* ========== MODERN CARD ========== */
     .modern-card {
         border: none;
         border-radius: 14px;
@@ -450,7 +467,7 @@
         color: #1e293b;
     }
 
-    /* Modern Table */
+    /* ========== MODERN TABLE ========== */
     .modern-table thead th {
         background: #f8fafc;
         color: #475569;
@@ -469,20 +486,14 @@
         border-bottom: 1px solid #f1f5f9;
         color: #334155;
     }
-    .modern-table tbody tr {
-        transition: background 0.15s;
-    }
-    .modern-table tbody tr:hover {
-        background: #f8fafc;
-    }
-    .modern-table tbody tr:last-child td {
-        border-bottom: none;
-    }
+    .modern-table tbody tr { transition: background 0.15s; }
+    .modern-table tbody tr:hover { background: #f8fafc; }
+    .modern-table tbody tr:last-child td { border-bottom: none; }
 
     .fw-500 { font-weight: 500; }
     .fw-600 { font-weight: 600; }
 
-    /* Avatar */
+    /* ========== AVATAR ========== */
     .avatar-circle {
         width: 32px;
         height: 32px;
@@ -497,33 +508,24 @@
         flex-shrink: 0;
     }
 
-    /* Soft Badges */
+    /* ========== SOFT BADGES ========== */
     .badge-soft-success {
-        background: #d1fae5;
-        color: #065f46;
-        font-weight: 500;
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-size: 0.72rem;
+        background: #d1fae5; color: #065f46;
+        font-weight: 500; padding: 5px 10px;
+        border-radius: 6px; font-size: 0.72rem;
     }
     .badge-soft-warning {
-        background: #fef3c7;
-        color: #92400e;
-        font-weight: 500;
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-size: 0.72rem;
+        background: #fef3c7; color: #92400e;
+        font-weight: 500; padding: 5px 10px;
+        border-radius: 6px; font-size: 0.72rem;
     }
     .badge-soft-primary {
-        background: #dbeafe;
-        color: #1e40af;
-        font-weight: 500;
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-size: 0.72rem;
+        background: #dbeafe; color: #1e40af;
+        font-weight: 500; padding: 5px 10px;
+        border-radius: 6px; font-size: 0.72rem;
     }
 
-    /* Absensi Box */
+    /* ========== ABSENSI BOX ========== */
     .abs-box {
         padding: 14px 8px;
         border-radius: 12px;
@@ -535,22 +537,14 @@
         transform: translateY(-3px);
         box-shadow: 0 6px 14px rgba(0,0,0,0.08);
     }
-    .abs-icon {
-        font-size: 1.2rem;
-        margin-bottom: 6px;
-        opacity: 0.8;
-    }
+    .abs-icon { font-size: 1.2rem; margin-bottom: 6px; opacity: 0.8; }
     .abs-count {
-        font-size: 1.4rem;
-        font-weight: 700;
-        line-height: 1;
-        margin-bottom: 4px;
+        font-size: 1.4rem; font-weight: 700;
+        line-height: 1; margin-bottom: 4px;
     }
     .abs-label {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 0.7rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.5px;
         opacity: 0.85;
     }
     .abs-hadir { background: #d1fae5; color: #065f46; }
@@ -558,7 +552,7 @@
     .abs-izin  { background: #cffafe; color: #155e75; }
     .abs-alfa  { background: #fee2e2; color: #991b1b; }
 
-    /* Modern Progress */
+    /* ========== PROGRESS ========== */
     .modern-progress {
         background: #f1f5f9;
         border-radius: 10px;
@@ -568,9 +562,10 @@
         background: linear-gradient(90deg, #10b981, #34d399);
     }
 
-    /* Responsive */
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
         .dash-header { padding: 14px 16px; }
+        .dash-header-icon { width: 40px; height: 40px; font-size: 1.1rem; }
         .stat-card { padding: 16px; gap: 12px; }
         .stat-icon { width: 48px; height: 48px; font-size: 1.2rem; }
         .stat-value { font-size: 1.4rem; }
@@ -683,4 +678,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection
