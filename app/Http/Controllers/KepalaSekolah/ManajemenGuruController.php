@@ -17,6 +17,21 @@ use Carbon\Carbon;
 class ManajemenGuruController extends Controller
 {
     /**
+     * Helper: Generate password default guru.
+     * Format: simdu#3 + 4 digit terakhir NUPTK
+     * Contoh: NUPTK 1234567890123456 -> simdu#33456
+     */
+    private function generateDefaultPassword($nuptk)
+    {
+        $nuptk = $nuptk ?? '';
+        $last4 = strlen($nuptk) >= 4
+            ? substr($nuptk, -4)
+            : str_pad($nuptk, 4, '0', STR_PAD_LEFT);
+
+        return 'simdu#3' . $last4;
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -128,10 +143,13 @@ class ManajemenGuruController extends Controller
                 $fotoPath = $foto->storeAs('guru/foto', $fotoName, 'public');
             }
 
+            // Generate password default: simdu#3 + 4 digit terakhir NUPTK
+            $defaultPassword = $this->generateDefaultPassword($request->nuptk);
+
             $user = User::create([
                 'name' => $request->nama_lengkap,
                 'email' => $request->email,
-                'password' => Hash::make('password123'),
+                'password' => Hash::make($defaultPassword),
                 'role' => 'guru',
                 'foto' => $fotoPath,
             ]);
@@ -162,7 +180,7 @@ class ManajemenGuruController extends Controller
             DB::commit();
 
             return redirect()->route('kepala-sekolah.manajemen-guru.index')
-                ->with('success', 'Guru berhasil ditambahkan');
+                ->with('success', 'Guru berhasil ditambahkan. Password default: ' . $defaultPassword);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -514,7 +532,9 @@ class ManajemenGuruController extends Controller
     }
 
     /**
-     * Reset password guru
+     * Reset password guru.
+     * Format password: simdu#3 + 4 digit terakhir NUPTK
+     * Contoh: NUPTK 1234567890123456 -> simdu#33456
      */
     public function resetPassword($id)
     {
@@ -525,11 +545,14 @@ class ManajemenGuruController extends Controller
                 return back()->with('error', 'User account tidak ditemukan');
             }
             
+            // Generate password baru sesuai format
+            $newPassword = $this->generateDefaultPassword($guru->nuptk);
+            
             $guru->user->update([
-                'password' => Hash::make('password123')
+                'password' => Hash::make($newPassword)
             ]);
             
-            return back()->with('success', 'Password berhasil direset ke: password123');
+            return back()->with('success', 'Password berhasil direset menjadi: ' . $newPassword);
             
         } catch (\Exception $e) {
             Log::error('Error in manajemen guru resetPassword: ' . $e->getMessage());
