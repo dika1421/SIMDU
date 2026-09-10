@@ -221,18 +221,22 @@
         color: #dc3545;
     }
 
+    /* Style untuk Live Search Result */
     .guru-search-result {
-        max-height: 200px;
+        max-height: 250px;
         overflow-y: auto;
         border: 1px solid #e9ecef;
         border-radius: 8px;
-        margin-top: 5px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     
     .guru-search-result .list-group-item {
         cursor: pointer;
         border-left: none;
         border-right: none;
+        border-radius: 0;
+        padding: 10px 15px;
     }
     
     .guru-search-result .list-group-item:first-child {
@@ -241,6 +245,10 @@
     
     .guru-search-result .list-group-item:hover {
         background-color: #f0f2ff;
+    }
+    
+    .guru-search-result .list-group-item:last-child {
+        border-bottom: none;
     }
 
     .guru-info-card {
@@ -443,7 +451,7 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL TAMBAH STRUKTUR (DENGAN AUTO DETECT) -->
+<!-- MODAL TAMBAH STRUKTUR (LIVE SEARCH + MAPEL) -->
 <!-- ============================================ -->
 <div class="modal fade" id="tambahStrukturModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -459,22 +467,21 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- Cari Guru dengan Auto Complete -->
-                        <div class="col-md-12 mb-3">
+                        <!-- Cari Guru dengan Live Search -->
+                        <div class="col-md-12 mb-3 position-relative">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-search me-1"></i>Cari Guru <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-user-graduate text-muted"></i></span>
                                 <input type="text" id="searchGuru" class="form-control" 
                                        placeholder="Ketik nama atau NUPTK guru..." autocomplete="off">
-                                <button class="btn btn-primary" type="button" id="btnSearchGuru">
-                                    <i class="fas fa-search"></i>
-                                </button>
                                 <button class="btn btn-secondary" type="button" id="btnClearSearch">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            <div id="searchResult" class="guru-search-result" style="display: none;">
+                            <!-- Hasil pencarian muncul melayang -->
+                            <div id="searchResult" class="guru-search-result" style="display: none; position: absolute; z-index: 1000; width: 95%;">
                                 <div class="list-group" id="guruList"></div>
                             </div>
                             <input type="hidden" name="guru_id" id="selectedGuruId">
@@ -507,7 +514,7 @@
 
                         <hr>
 
-                        <!-- Nama Jabatan (Dropdown) -->
+                        <!-- Nama Jabatan -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-tag me-1"></i>Nama Jabatan <span class="text-danger">*</span>
@@ -533,7 +540,7 @@
                             </select>
                         </div>
 
-                        <!-- Nama Pejabat (Otomatis dari data guru) -->
+                        <!-- Nama Pejabat -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-user-tie me-1"></i>Nama Pejabat <span class="text-danger">*</span>
@@ -542,7 +549,16 @@
                                    placeholder="Akan terisi otomatis" readonly style="background-color: #f0f0f0;">
                         </div>
 
-                        <!-- Kategori (Pimpinan / Staf / Guru) -->
+                        <!-- FIELD BARU: Mata Pelajaran -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-book-open me-1"></i>Mata Pelajaran
+                            </label>
+                            <input type="text" name="mata_pelajaran" id="mataPelajaran" class="form-control" 
+                                   placeholder="Akan terisi otomatis" readonly style="background-color: #f0f0f0;">
+                        </div>
+
+                        <!-- Kategori -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-layer-group me-1"></i>Kategori
@@ -755,49 +771,64 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ===== SEARCH GURU =====
-    function searchGuru() {
-        var keyword = $('#searchGuru').val().trim();
+    // ===== LIVE SEARCH GURU (Debounce) =====
+    var searchTimeout;
+    
+    $('#searchGuru').on('keyup', function() {
+        var keyword = $(this).val().trim();
         
+        // Clear timeout sebelumnya
+        clearTimeout(searchTimeout);
+        
+        // Jika kosong, sembunyikan hasil
         if (keyword.length < 2) {
             $('#searchResult').hide();
             return;
         }
         
-        $.ajax({
-            url: '{{ route("administrasi.api.guru.search") }}',
-            type: 'GET',
-            data: { q: keyword },
-            success: function(response) {
-                if (response.success && response.data.length > 0) {
-                    var html = '';
-                    $.each(response.data, function(index, guru) {
-                        html += '<a href="#" class="list-group-item list-group-item-action" data-id="' + guru.id + '" data-nuptk="' + guru.nuptk + '" data-nama="' + guru.nama + '" data-jabatan="' + guru.jabatan + '" data-mapel="' + guru.mata_pelajaran + '">';
-                        html += '<div class="d-flex justify-content-between align-items-center">';
-                        html += '<div><strong>' + guru.nama + '</strong></div>';
-                        html += '<span class="badge bg-primary">' + (guru.jabatan || 'Guru') + '</span>';
-                        html += '</div>';
-                        html += '<small class="text-muted">NUPTK: ' + guru.nuptk + ' | Mapel: ' + (guru.mata_pelajaran || '-') + '</small>';
-                        html += '</a>';
-                    });
-                    $('#guruList').html(html);
-                    $('#searchResult').show();
-                } else {
-                    $('#guruList').html('<div class="list-group-item text-muted text-center py-3"><i class="fas fa-user-slash me-2"></i>Guru tidak ditemukan</div>');
+        // Debounce: Tunggu 300ms setelah user berhenti mengetik
+        searchTimeout = setTimeout(function() {
+            $.ajax({
+                url: '{{ route("administrasi.api.guru.search") }}',
+                type: 'GET',
+                data: { q: keyword },
+                success: function(response) {
+                    if (response.success && response.data.length > 0) {
+                        var html = '';
+                        $.each(response.data, function(index, guru) {
+                            // Simpan data mapel di atribut data-mapel
+                            html += '<a href="#" class="list-group-item list-group-item-action" ' +
+                                    'data-id="' + guru.id + '" ' +
+                                    'data-nuptk="' + guru.nuptk + '" ' +
+                                    'data-nama="' + guru.nama + '" ' +
+                                    'data-jabatan="' + (guru.jabatan || 'Guru') + '" ' +
+                                    'data-mapel="' + (guru.mata_pelajaran || '-') + '">';
+                            html += '<div class="d-flex justify-content-between align-items-center">';
+                            html += '<div><strong>' + guru.nama + '</strong></div>';
+                            html += '<span class="badge bg-primary">' + (guru.jabatan || 'Guru') + '</span>';
+                            html += '</div>';
+                            html += '<small class="text-muted">NUPTK: ' + guru.nuptk + ' | Mapel: ' + (guru.mata_pelajaran || '-') + '</small>';
+                            html += '</a>';
+                        });
+                        $('#guruList').html(html);
+                        $('#searchResult').show();
+                    } else {
+                        $('#guruList').html('<div class="list-group-item text-muted text-center py-3"><i class="fas fa-user-slash me-2"></i>Guru tidak ditemukan</div>');
+                        $('#searchResult').show();
+                    }
+                },
+                error: function() {
+                    $('#guruList').html('<div class="list-group-item text-danger text-center py-3"><i class="fas fa-exclamation-triangle me-2"></i>Terjadi kesalahan</div>');
                     $('#searchResult').show();
                 }
-            },
-            error: function() {
-                $('#guruList').html('<div class="list-group-item text-danger text-center py-3"><i class="fas fa-exclamation-triangle me-2"></i>Terjadi kesalahan</div>');
-                $('#searchResult').show();
-            }
-        });
-    }
+            });
+        }, 300); // Delay 300ms
+    });
 
-    $('#btnSearchGuru').on('click', searchGuru);
-    $('#searchGuru').on('keyup', function(e) {
-        if (e.key === 'Enter') {
-            searchGuru();
+    // Sembunyikan hasil jika klik di luar area search
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#searchGuru, #searchResult').length) {
+            $('#searchResult').hide();
         }
     });
 
@@ -811,7 +842,7 @@ $(document).ready(function() {
         var jabatan = $(this).data('jabatan') || '-';
         var mapel = $(this).data('mapel') || '-';
         
-        // Set value
+        // Set value ke hidden input dan tampilan info card
         $('#selectedGuruId').val(id);
         $('#selectedNuptk').val(nuptk);
         $('#guruNama').text(nama);
@@ -822,12 +853,15 @@ $(document).ready(function() {
         // Auto fill nama pejabat
         $('#namaPejabat').val(nama);
         
+        // Auto fill mata pelajaran (FIELD BARU)
+        $('#mataPelajaran').val(mapel);
+        
         // Jika jabatan ada, auto pilih di dropdown
         if (jabatan && jabatan !== '-') {
             $('#namaJabatan').val(jabatan);
         }
         
-        // Tampilkan info
+        // Tampilkan info card & sembunyikan hasil search
         $('#guruInfo').fadeIn();
         $('#searchResult').hide();
         $('#searchGuru').val(nama);
@@ -842,6 +876,7 @@ $(document).ready(function() {
         $('#selectedNuptk').val('');
         $('#namaJabatan').val('');
         $('#namaPejabat').val('');
+        $('#mataPelajaran').val(''); // Clear field mapel
         $('#guruNama').text('-');
         $('#guruNuptk').text('-');
         $('#guruJabatan').text('-');
@@ -857,6 +892,7 @@ $(document).ready(function() {
         $('#selectedNuptk').val('');
         $('#namaJabatan').val('');
         $('#namaPejabat').val('');
+        $('#mataPelajaran').val(''); // Reset field mapel
         $('#guruNama').text('-');
         $('#guruNuptk').text('-');
         $('#guruJabatan').text('-');
