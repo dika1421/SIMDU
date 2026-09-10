@@ -3,477 +3,663 @@
 @section('title', 'Hak Akses per User')
 
 @section('content')
-{{-- ================= STYLE ================= --}}
 <style>
-    /* Force modern look, override template bawaan */
-    .user-perm-wrapper {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .user-perm-wrapper .header-card {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        color: #fff !important;
-        border: none !important;
-        border-radius: 16px 16px 0 0 !important;
-        padding: 1.5rem !important;
-    }
-    .user-perm-wrapper .header-card h5,
-    .user-perm-wrapper .header-card i {
-        color: #fff !important;
-    }
-    .user-perm-wrapper .modern-card {
-        border: none !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
-        overflow: hidden !important;
-        background: #fff !important;
-        margin-bottom: 1.5rem !important;
-    }
-    .user-perm-wrapper .filter-card {
-        border: none !important;
-        border-radius: 16px !important;
-        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
-        background: #fff !important;
-        padding: 1.5rem !important;
-        margin-bottom: 1.5rem !important;
-    }
-    .user-perm-wrapper .filter-card label {
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-        color: #64748b !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        margin-bottom: 0.5rem !important;
-    }
-    .user-perm-wrapper .filter-card .form-control,
-    .user-perm-wrapper .filter-card .form-select {
-        border-radius: 10px !important;
-        border: 1.5px solid #e2e8f0 !important;
-        padding: 0.6rem 1rem !important;
-        font-size: 0.9rem !important;
-        transition: all 0.2s !important;
-    }
-    .user-perm-wrapper .filter-card .form-control:focus,
-    .user-perm-wrapper .filter-card .form-select:focus {
-        border-color: #4f46e5 !important;
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12) !important;
-    }
+/* ==========================================================================
+   USER PERMISSION - MODERN UI
+   Prefix .up-wrapper + !important untuk mengalahkan CSS bawaan layout
+   ========================================================================== */
 
-    /* Table */
-    .user-perm-wrapper .modern-table {
-        margin-bottom: 0 !important;
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
-    }
-    .user-perm-wrapper .modern-table thead th {
-        background: #f8fafc !important;
-        border-bottom: 2px solid #e2e8f0 !important;
-        color: #64748b !important;
-        font-size: 0.75rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.6px !important;
-        padding: 1rem !important;
-        white-space: nowrap !important;
-    }
-    .user-perm-wrapper .modern-table tbody td {
-        padding: 1rem !important;
-        vertical-align: middle !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        background: #fff !important;
-    }
-    .user-perm-wrapper .modern-table tbody tr {
-        transition: background-color 0.15s ease !important;
-    }
-    .user-perm-wrapper .modern-table tbody tr:hover td {
-        background: #f8faff !important;
-    }
-    .user-perm-wrapper .modern-table tbody tr:last-child td {
-        border-bottom: none !important;
-    }
+.up-wrapper {
+    --up-primary: #4f46e5;
+    --up-primary-dark: #4338ca;
+    --up-purple: #7c3aed;
+    --up-warning: #f59e0b;
+    --up-warning-dark: #d97706;
+    --up-danger: #dc2626;
+    --up-success: #10b981;
+    --up-text: #1e293b;
+    --up-text-muted: #64748b;
+    --up-text-light: #94a3b8;
+    --up-bg-soft: #f8fafc;
+    --up-border: #e2e8f0;
+    --up-radius: 16px;
+    --up-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+    --up-shadow-hover: 0 8px 28px rgba(79, 70, 229, 0.15);
+    color: var(--up-text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-bottom: 2rem;
+}
 
-    /* Avatar */
-    .user-perm-wrapper .avatar-sm {
-        width: 38px !important;
-        height: 38px !important;
-        border-radius: 50% !important;
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        color: #fff !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
-        flex-shrink: 0 !important;
-        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3) !important;
-    }
+/* ---------- Page Header ---------- */
+.up-wrapper .up-page-head {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--up-border);
+}
+.up-wrapper .up-page-title {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--up-text) !important;
+    margin: 0 0 .35rem 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    line-height: 1.3 !important;
+}
+.up-wrapper .up-page-title i {
+    color: var(--up-primary) !important;
+    font-size: 1.4rem !important;
+}
+.up-wrapper .up-page-sub {
+    color: var(--up-text-light) !important;
+    font-size: .9rem !important;
+    margin: 0 !important;
+}
 
-    /* Badges */
-    .user-perm-wrapper .badge-modern {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        padding: 0.4em 0.85em !important;
-        border-radius: 999px !important;
-        font-size: 0.75rem !important;
-        font-weight: 600 !important;
-        line-height: 1 !important;
-    }
-    .user-perm-wrapper .badge-role {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        color: #fff !important;
-    }
-    .user-perm-wrapper .badge-custom {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-        color: #fff !important;
-    }
-    .user-perm-wrapper .badge-default {
-        background: #f1f5f9 !important;
-        color: #64748b !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-    .user-perm-wrapper .badge-norole {
-        background: #94a3b8 !important;
-        color: #fff !important;
-    }
-    .user-perm-wrapper .badge-count {
-        background: #fff !important;
-        color: #4f46e5 !important;
-        padding: 0.5em 1em !important;
-        font-weight: 700 !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-    }
+/* ---------- Alert ---------- */
+.up-wrapper .up-alert {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px 20px !important;
+    border-radius: 12px !important;
+    margin-bottom: 1rem !important;
+    font-weight: 600 !important;
+    font-size: .9rem !important;
+    border: none !important;
+}
+.up-wrapper .up-alert-success {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-left: 4px solid var(--up-success) !important;
+}
+.up-wrapper .up-alert-danger {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+    border-left: 4px solid #ef4444 !important;
+}
 
-    /* Buttons */
-    .user-perm-wrapper .btn-modern {
-        border-radius: 999px !important;
-        padding: 0.5rem 1.25rem !important;
-        font-size: 0.85rem !important;
-        font-weight: 600 !important;
-        border: none !important;
-        transition: all 0.2s ease !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        text-decoration: none !important;
-    }
-    .user-perm-wrapper .btn-primary-modern {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        color: #fff !important;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
-    }
-    .user-perm-wrapper .btn-primary-modern:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4) !important;
-        color: #fff !important;
-    }
-    .user-perm-wrapper .btn-outline-modern {
-        background: #fff !important;
-        color: #475569 !important;
-        border: 1.5px solid #e2e8f0 !important;
-    }
-    .user-perm-wrapper .btn-outline-modern:hover {
-        background: #f8fafc !important;
-        border-color: #cbd5e1 !important;
-        color: #1e293b !important;
-    }
-    .user-perm-wrapper .btn-warning-modern {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-        color: #fff !important;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25) !important;
-    }
-    .user-perm-wrapper .btn-warning-modern:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4) !important;
-        color: #fff !important;
-    }
-    .user-perm-wrapper .btn-danger-outline {
-        background: #fff !important;
-        color: #dc2626 !important;
-        border: 1.5px solid #fecaca !important;
-        padding: 0.5rem 0.9rem !important;
-    }
-    .user-perm-wrapper .btn-danger-outline:hover {
-        background: #fef2f2 !important;
-        border-color: #dc2626 !important;
-        color: #dc2626 !important;
-        transform: translateY(-2px) !important;
-    }
+/* ---------- Filter Card ---------- */
+.up-wrapper .up-filter {
+    background: #fff !important;
+    border-radius: var(--up-radius) !important;
+    box-shadow: var(--up-shadow) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+.up-wrapper .up-filter-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    align-items: flex-end !important;
+}
+.up-wrapper .up-filter-col {
+    flex: 1 1 200px !important;
+    min-width: 0 !important;
+}
+.up-wrapper .up-filter-col.up-grow {
+    flex: 2 1 300px !important;
+}
+.up-wrapper .up-filter label {
+    display: block !important;
+    font-size: .72rem !important;
+    font-weight: 700 !important;
+    color: var(--up-text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: .5px !important;
+    margin-bottom: .5rem !important;
+}
+.up-wrapper .up-filter .form-control,
+.up-wrapper .up-filter .form-select {
+    width: 100% !important;
+    display: block !important;
+    padding: 10px 14px !important;
+    font-size: .9rem !important;
+    line-height: 1.4 !important;
+    color: var(--up-text) !important;
+    background-color: #fff !important;
+    border: 1.5px solid var(--up-border) !important;
+    border-radius: 10px !important;
+    outline: none !important;
+    transition: border-color .2s, box-shadow .2s !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+}
+.up-wrapper .up-filter .form-control:focus,
+.up-wrapper .up-filter .form-select:focus {
+    border-color: var(--up-primary) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, .12) !important;
+}
 
-    /* Alerts */
-    .user-perm-wrapper .alert-modern {
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 1rem 1.25rem !important;
-        font-weight: 500 !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        margin-bottom: 1rem !important;
-    }
-    .user-perm-wrapper .alert-success-modern {
-        background: #ecfdf5 !important;
-        color: #065f46 !important;
-        border-left: 4px solid #10b981 !important;
-    }
-    .user-perm-wrapper .alert-danger-modern {
-        background: #fef2f2 !important;
-        color: #991b1b !important;
-        border-left: 4px solid #ef4444 !important;
-    }
+/* ---------- Buttons ---------- */
+.up-wrapper .up-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 10px 20px !important;
+    font-size: .85rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    border: none !important;
+    border-radius: 999px !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: transform .2s, box-shadow .2s, background .2s !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+.up-wrapper .up-btn-primary {
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, .25) !important;
+}
+.up-wrapper .up-btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, .4) !important;
+    color: #fff !important;
+}
+.up-wrapper .up-btn-outline {
+    background: #fff !important;
+    color: var(--up-text-muted) !important;
+    border: 1.5px solid var(--up-border) !important;
+}
+.up-wrapper .up-btn-outline:hover {
+    background: var(--up-bg-soft) !important;
+    border-color: #cbd5e1 !important;
+    color: var(--up-text) !important;
+    transform: translateY(-2px) !important;
+}
+.up-wrapper .up-btn-warning {
+    background: linear-gradient(135deg, var(--up-warning) 0%, var(--up-warning-dark) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, .25) !important;
+}
+.up-wrapper .up-btn-warning:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(245, 158, 11, .4) !important;
+    color: #fff !important;
+}
+.up-wrapper .up-btn-danger {
+    background: #fff !important;
+    color: var(--up-danger) !important;
+    border: 1.5px solid #fecaca !important;
+    padding: 10px 14px !important;
+}
+.up-wrapper .up-btn-danger:hover {
+    background: #fef2f2 !important;
+    border-color: var(--up-danger) !important;
+    color: var(--up-danger) !important;
+    transform: translateY(-2px) !important;
+}
 
-    /* Empty state */
-    .user-perm-wrapper .empty-state {
-        padding: 4rem 2rem !important;
-        text-align: center !important;
-        animation: fadeInUp 0.5s ease !important;
-    }
-    .user-perm-wrapper .empty-state i {
-        font-size: 4rem !important;
-        color: #cbd5e1 !important;
-        margin-bottom: 1rem !important;
-        display: block !important;
-    }
-    .user-perm-wrapper .empty-state h5 {
-        color: #475569 !important;
-        font-weight: 700 !important;
-        margin-bottom: 0.5rem !important;
-    }
-    .user-perm-wrapper .empty-state p {
-        color: #94a3b8 !important;
-        font-size: 0.9rem !important;
-        margin: 0 !important;
-    }
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+/* ---------- Card ---------- */
+.up-wrapper .up-card {
+    background: #fff !important;
+    border-radius: var(--up-radius) !important;
+    box-shadow: var(--up-shadow) !important;
+    overflow: hidden !important;
+    margin-bottom: 1.5rem !important;
+}
 
-    /* Footer */
-    .user-perm-wrapper .card-footer-modern {
-        background: #f8fafc !important;
-        border-top: 1px solid #e2e8f0 !important;
-        padding: 1.25rem 1.5rem !important;
-        border-radius: 0 0 16px 16px !important;
-    }
+/* ---------- Card Header (gradient) ---------- */
+.up-wrapper .up-card-head {
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%) !important;
+    color: #fff !important;
+    padding: 1.5rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+.up-wrapper .up-card-head h5 {
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.up-wrapper .up-card-head h5 i {
+    color: #fff !important;
+}
+.up-wrapper .up-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #fff !important;
+    color: var(--up-primary) !important;
+    padding: 8px 16px !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    font-size: .8rem !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15) !important;
+}
 
-    /* Pagination */
-    .user-perm-wrapper .pagination {
-        margin-bottom: 0 !important;
-        gap: 4px !important;
-    }
-    .user-perm-wrapper .pagination .page-link {
-        border-radius: 10px !important;
-        border: 1.5px solid #e2e8f0 !important;
-        color: #4f46e5 !important;
-        font-weight: 600 !important;
-        padding: 0.5rem 0.85rem !important;
-        font-size: 0.85rem !important;
-        transition: all 0.15s ease !important;
-        background: #fff !important;
-    }
-    .user-perm-wrapper .pagination .page-link:hover {
-        background: #eef2ff !important;
-        border-color: #4f46e5 !important;
-        color: #4f46e5 !important;
-        transform: translateY(-1px) !important;
-    }
-    .user-perm-wrapper .pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-        border-color: #4f46e5 !important;
-        color: #fff !important;
-        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3) !important;
-    }
-    .user-perm-wrapper .pagination .page-item.disabled .page-link {
-        color: #cbd5e1 !important;
-        background: #f8fafc !important;
-    }
+/* ---------- Table ---------- */
+.up-wrapper .up-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+.up-wrapper table.up-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+}
+.up-wrapper table.up-table thead th {
+    background: var(--up-bg-soft) !important;
+    color: var(--up-text-muted) !important;
+    font-size: .72rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .6px !important;
+    padding: 16px !important;
+    text-align: left !important;
+    border-bottom: 2px solid var(--up-border) !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+.up-wrapper table.up-table tbody td {
+    padding: 16px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle !important;
+    font-size: .875rem !important;
+    color: #334155 !important;
+    background: #fff !important;
+    line-height: 1.4 !important;
+}
+.up-wrapper table.up-table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+.up-wrapper table.up-table tbody tr {
+    transition: background .15s ease !important;
+}
+.up-wrapper table.up-table tbody tr:hover td {
+    background: #f8faff !important;
+}
+.up-wrapper .up-center {
+    text-align: center !important;
+}
+.up-wrapper .up-no {
+    color: var(--up-text-light) !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+}
 
-    /* Header page */
-    .user-perm-wrapper .page-title {
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-        color: #1e293b !important;
-        margin-bottom: 0.25rem !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
+/* ---------- Avatar ---------- */
+.up-wrapper .up-avatar {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: .85rem !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, .3) !important;
+    text-transform: uppercase !important;
+}
+.up-wrapper .up-user {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+.up-wrapper .up-user strong {
+    color: var(--up-text) !important;
+    font-weight: 700 !important;
+}
+.up-wrapper .up-email {
+    color: var(--up-text-light) !important;
+    font-size: .8rem !important;
+}
+
+/* ---------- Badge ---------- */
+.up-wrapper .up-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 5px 12px !important;
+    border-radius: 999px !important;
+    font-size: .72rem !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+.up-wrapper .up-badge-role {
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%) !important;
+    color: #fff !important;
+}
+.up-wrapper .up-badge-custom {
+    background: linear-gradient(135deg, var(--up-warning) 0%, var(--up-warning-dark) 100%) !important;
+    color: #fff !important;
+}
+.up-wrapper .up-badge-default {
+    background: #f1f5f9 !important;
+    color: var(--up-text-muted) !important;
+    border: 1px solid var(--up-border) !important;
+}
+.up-wrapper .up-badge-norole {
+    background: #94a3b8 !important;
+    color: #fff !important;
+}
+.up-wrapper .up-badge-stack {
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+}
+
+/* ---------- Actions ---------- */
+.up-wrapper .up-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+.up-wrapper .up-actions form {
+    margin: 0 !important;
+    display: inline-block !important;
+}
+
+/* ---------- Footer ---------- */
+.up-wrapper .up-card-foot {
+    background: var(--up-bg-soft) !important;
+    border-top: 1px solid var(--up-border) !important;
+    padding: 20px 24px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    font-size: .85rem !important;
+    color: var(--up-text-muted) !important;
+}
+.up-wrapper .up-card-foot strong {
+    color: var(--up-text) !important;
+}
+
+/* ---------- Empty State ---------- */
+.up-wrapper .up-empty {
+    padding: 60px 20px !important;
+    text-align: center !important;
+}
+.up-wrapper .up-empty i {
+    font-size: 4rem !important;
+    color: #cbd5e1 !important;
+    margin-bottom: 16px !important;
+    display: block !important;
+}
+.up-wrapper .up-empty h5 {
+    color: #475569 !important;
+    font-weight: 700 !important;
+    margin: 0 0 6px 0 !important;
+    font-size: 1.1rem !important;
+}
+.up-wrapper .up-empty p {
+    color: var(--up-text-light) !important;
+    font-size: .9rem !important;
+    margin: 0 !important;
+}
+
+/* ---------- Pagination (force modern) ---------- */
+.up-wrapper nav[role="navigation"] {
+    display: flex !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+}
+.up-wrapper .pagination {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+.up-wrapper .pagination > li,
+.up-wrapper .pagination .page-item {
+    display: inline-block !important;
+    margin: 0 !important;
+}
+.up-wrapper .pagination .page-link,
+.up-wrapper .pagination > li > a,
+.up-wrapper .pagination > li > span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    padding: 0 12px !important;
+    font-size: .82rem !important;
+    font-weight: 600 !important;
+    color: var(--up-primary) !important;
+    background: #fff !important;
+    border: 1.5px solid var(--up-border) !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+    transition: all .15s ease !important;
+}
+.up-wrapper .pagination .page-link:hover,
+.up-wrapper .pagination > li > a:hover {
+    background: #eef2ff !important;
+    border-color: var(--up-primary) !important;
+    color: var(--up-primary) !important;
+    transform: translateY(-1px) !important;
+}
+.up-wrapper .pagination .page-item.active .page-link,
+.up-wrapper .pagination .active > span {
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%) !important;
+    border-color: var(--up-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, .3) !important;
+}
+.up-wrapper .pagination .page-item.disabled .page-link,
+.up-wrapper .pagination .disabled > span {
+    color: #cbd5e1 !important;
+    background: var(--up-bg-soft) !important;
+    border-color: var(--up-border) !important;
+    cursor: not-allowed !important;
+}
+.up-wrapper .pagination svg {
+    width: 14px !important;
+    height: 14px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .up-wrapper .up-filter-row {
+        flex-direction: column !important;
     }
-    .user-perm-wrapper .page-title i {
-        color: #4f46e5 !important;
+    .up-wrapper .up-filter-col {
+        width: 100% !important;
+        flex: 1 1 100% !important;
     }
-    .user-perm-wrapper .page-subtitle {
-        color: #94a3b8 !important;
-        font-size: 0.9rem !important;
-        margin: 0 !important;
+    .up-wrapper .up-card-foot {
+        flex-direction: column !important;
+        align-items: flex-start !important;
     }
+    .up-wrapper .up-page-title {
+        font-size: 1.2rem !important;
+    }
+}
 </style>
 
-<div class="container-fluid px-4 user-perm-wrapper">
-    {{-- Header --}}
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-3 mb-3">
-        <div>
-            <h1 class="page-title">
-                <i class="fas fa-users-cog"></i>
-                Hak Akses per User
-            </h1>
-            <p class="page-subtitle">Kelola permission khusus untuk setiap user</p>
-        </div>
+<div class="up-wrapper">
+
+    {{-- ================= PAGE HEADER ================= --}}
+    <div class="up-page-head">
+        <h1 class="up-page-title">
+            <i class="fas fa-users-cog"></i>
+            Hak Akses per User
+        </h1>
+        <p class="up-page-sub">Kelola permission khusus untuk setiap user di sistem</p>
     </div>
 
-    {{-- Alert --}}
+    {{-- ================= ALERT ================= --}}
     @if(session('success'))
-        <div class="alert-modern alert-success-modern alert-dismissible fade show">
-            <i class="fas fa-check-circle fa-lg"></i>
-            <div class="flex-grow-1">{{ session('success') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="up-alert up-alert-success">
+            <i class="fas fa-check-circle" style="font-size:1.1rem;"></i>
+            <div>{{ session('success') }}</div>
         </div>
     @endif
-
     @if(session('error'))
-        <div class="alert-modern alert-danger-modern alert-dismissible fade show">
-            <i class="fas fa-exclamation-circle fa-lg"></i>
-            <div class="flex-grow-1">{{ session('error') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="up-alert up-alert-danger">
+            <i class="fas fa-exclamation-circle" style="font-size:1.1rem;"></i>
+            <div>{{ session('error') }}</div>
         </div>
     @endif
 
-    {{-- Filter Card --}}
-    <div class="filter-card">
-        <form method="GET" class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label>
-                    <i class="fas fa-user-tag me-1"></i> Role
-                </label>
-                <select name="role" class="form-select">
-                    <option value="">Semua Role</option>
-                    @foreach($roles as $role)
-                        <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
-                            {{ ucfirst($role->name) }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-5">
-                <label>
-                    <i class="fas fa-search me-1"></i> Cari
-                </label>
-                <input type="text" name="search" class="form-control"
-                       placeholder="Nama atau email..." value="{{ request('search') }}">
-            </div>
-            <div class="col-md-4 d-flex gap-2">
-                <button type="submit" class="btn-modern btn-primary-modern flex-grow-1 justify-content-center">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-                <a href="{{ route('administrasi.user-permission.index') }}" class="btn-modern btn-outline-modern">
-                    <i class="fas fa-sync"></i> Reset
-                </a>
+    {{-- ================= FILTER ================= --}}
+    <div class="up-filter">
+        <form method="GET" action="{{ route('administrasi.user-permission.index') }}">
+            <div class="up-filter-row">
+                <div class="up-filter-col">
+                    <label for="filter_role">
+                        <i class="fas fa-user-tag me-1"></i> Role
+                    </label>
+                    <select name="role" id="filter_role" class="form-select">
+                        <option value="">Semua Role</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
+                                {{ ucfirst($role->name) }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="up-filter-col up-grow">
+                    <label for="filter_search">
+                        <i class="fas fa-search me-1"></i> Cari
+                    </label>
+                    <input type="text" name="search" id="filter_search" class="form-control"
+                           placeholder="Cari berdasarkan nama atau email..."
+                           value="{{ request('search') }}">
+                </div>
+                <div class="up-filter-col" style="flex:0 1 auto; display:flex; gap:8px;">
+                    <button type="submit" class="up-btn up-btn-primary" style="flex:1;">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="{{ route('administrasi.user-permission.index') }}" class="up-btn up-btn-outline">
+                        <i class="fas fa-sync"></i> Reset
+                    </a>
+                </div>
             </div>
         </form>
     </div>
 
-    {{-- Table Card --}}
-    <div class="modern-card">
-        <div class="header-card">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="mb-0 fw-bold">
-                    <i class="fas fa-list me-2"></i> Daftar User
-                </h5>
-                <span class="badge-modern badge-count">
-                    <i class="fas fa-users"></i> {{ $users->total() }} User
-                </span>
-            </div>
+    {{-- ================= TABLE CARD ================= --}}
+    <div class="up-card">
+        <div class="up-card-head">
+            <h5>
+                <i class="fas fa-list"></i>
+                Daftar User
+            </h5>
+            <span class="up-count">
+                <i class="fas fa-users"></i> {{ $users->total() }} User
+            </span>
         </div>
 
-        <div class="table-responsive">
-            <table class="table modern-table">
+        <div class="up-table-wrap">
+            <table class="up-table">
                 <thead>
                     <tr>
-                        <th width="5%" class="text-center">No</th>
-                        <th width="25%">Nama</th>
-                        <th width="20%">Email</th>
-                        <th width="15%">Role</th>
-                        <th width="15%">Override Permission</th>
-                        <th width="20%" class="text-center">Aksi</th>
+                        <th style="width:60px; text-align:center;">No</th>
+                        <th style="width:25%;">Nama</th>
+                        <th style="width:22%;">Email</th>
+                        <th style="width:14%;">Role</th>
+                        <th style="width:14%;">Override</th>
+                        <th style="width:15%; text-align:center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($users as $index => $user)
-                    <tr>
-                        <td class="text-center text-muted fw-semibold">{{ $users->firstItem() + $index }}</td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="avatar-sm">
-                                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                        @php $overrideCount = $user->userPermissions->count(); @endphp
+                        <tr>
+                            <td class="up-no">{{ $users->firstItem() + $index }}</td>
+                            <td>
+                                <div class="up-user">
+                                    <div class="up-avatar">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </div>
+                                    <strong>{{ $user->name }}</strong>
                                 </div>
-                                <strong style="color:#1e293b;">{{ $user->name }}</strong>
-                            </div>
-                        </td>
-                        <td><small class="text-muted">{{ $user->email }}</small></td>
-                        <td>
-                            @forelse($user->roles as $role)
-                                <span class="badge-modern badge-role">{{ ucfirst($role->name) }}</span>
-                            @empty
-                                <span class="badge-modern badge-norole">No Role</span>
-                            @endforelse
-                        </td>
-                        <td>
-                            @php $overrideCount = $user->userPermissions->count(); @endphp
-                            @if($overrideCount > 0)
-                                <span class="badge-modern badge-custom">
-                                    <i class="fas fa-star"></i> {{ $overrideCount }} Custom
-                                </span>
-                            @else
-                                <span class="badge-modern badge-default">
-                                    <i class="fas fa-check"></i> Default Role
-                                </span>
-                            @endif
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-2">
-                                <a href="{{ route('administrasi.user-permission.edit', $user->id) }}"
-                                   class="btn-modern btn-warning-modern"
-                                   title="Atur Hak Akses">
-                                    <i class="fas fa-shield-alt"></i> Atur
-                                </a>
+                            </td>
+                            <td>
+                                <span class="up-email">{{ $user->email }}</span>
+                            </td>
+                            <td>
+                                <div class="up-badge-stack">
+                                    @forelse($user->roles as $role)
+                                        <span class="up-badge up-badge-role">{{ ucfirst($role->name) }}</span>
+                                    @empty
+                                        <span class="up-badge up-badge-norole">No Role</span>
+                                    @endforelse
+                                </div>
+                            </td>
+                            <td>
                                 @if($overrideCount > 0)
-                                <form action="{{ route('administrasi.user-permission.reset', $user->id) }}"
-                                      method="POST" class="d-inline m-0"
-                                      onsubmit="return confirm('Reset hak akses user ini ke default role?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-modern btn-danger-outline" title="Reset ke default">
-                                        <i class="fas fa-undo"></i>
-                                    </button>
-                                </form>
+                                    <span class="up-badge up-badge-custom">
+                                        <i class="fas fa-star"></i> {{ $overrideCount }} Custom
+                                    </span>
+                                @else
+                                    <span class="up-badge up-badge-default">
+                                        <i class="fas fa-check"></i> Default Role
+                                    </span>
                                 @endif
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                            <td>
+                                <div class="up-actions">
+                                    <a href="{{ route('administrasi.user-permission.edit', $user->id) }}"
+                                       class="up-btn up-btn-warning"
+                                       title="Atur Hak Akses">
+                                        <i class="fas fa-shield-alt"></i> Atur
+                                    </a>
+                                    @if($overrideCount > 0)
+                                        <form action="{{ route('administrasi.user-permission.reset', $user->id) }}"
+                                              method="POST"
+                                              onsubmit="return confirm('Reset hak akses user ini ke default role?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="up-btn up-btn-danger" title="Reset ke default">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="6">
-                            <div class="empty-state">
-                                <i class="fas fa-users-slash"></i>
-                                <h5>Belum ada data user</h5>
-                                <p>Data user akan muncul di sini setelah ditambahkan</p>
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="6">
+                                <div class="up-empty">
+                                    <i class="fas fa-users-slash"></i>
+                                    <h5>Belum ada data user</h5>
+                                    <p>Data user akan muncul di sini setelah ditambahkan</p>
+                                </div>
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="card-footer-modern">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="text-muted small">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Menampilkan <strong>{{ $users->firstItem() ?? 0 }}</strong> -
-                    <strong>{{ $users->lastItem() ?? 0 }}</strong>
-                    dari <strong>{{ $users->total() }}</strong> user
-                </div>
-                <div>{{ $users->appends(request()->query())->links() }}</div>
+        <div class="up-card-foot">
+            <div>
+                <i class="fas fa-info-circle me-1"></i>
+                Menampilkan <strong>{{ $users->firstItem() ?? 0 }}</strong> -
+                <strong>{{ $users->lastItem() ?? 0 }}</strong>
+                dari <strong>{{ $users->total() }}</strong> user
+            </div>
+            <div>
+                {{ $users->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
