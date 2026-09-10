@@ -209,47 +209,6 @@
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
     }
-    
-    .form-label-modern {
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #2c3e50;
-        margin-bottom: 4px;
-    }
-    
-    .form-label-modern .text-danger {
-        color: #dc3545;
-    }
-
-    /* Style untuk Live Search Result */
-    .guru-search-result {
-        max-height: 250px;
-        overflow-y: auto;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        background: white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    
-    .guru-search-result .list-group-item {
-        cursor: pointer;
-        border-left: none;
-        border-right: none;
-        border-radius: 0;
-        padding: 10px 15px;
-    }
-    
-    .guru-search-result .list-group-item:first-child {
-        border-top: none;
-    }
-    
-    .guru-search-result .list-group-item:hover {
-        background-color: #f0f2ff;
-    }
-    
-    .guru-search-result .list-group-item:last-child {
-        border-bottom: none;
-    }
 
     .guru-info-card {
         background: #f0f2ff;
@@ -270,6 +229,118 @@
         font-weight: 600;
         color: #2c3e50;
         font-size: 0.9rem;
+    }
+
+    /* Style untuk dropdown guru yang bisa dicari */
+    .guru-select-wrapper {
+        position: relative;
+    }
+
+    .guru-search-box {
+        position: relative;
+    }
+
+    .guru-search-box input {
+        padding-right: 35px;
+        cursor: pointer;
+    }
+
+    .guru-search-box .dropdown-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #6c757d;
+    }
+
+    .guru-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        z-index: 1050;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 4px;
+    }
+
+    .guru-dropdown .dropdown-search {
+        padding: 10px;
+        border-bottom: 1px solid #e9ecef;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+
+    .guru-dropdown .dropdown-search input {
+        width: 100%;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .guru-dropdown .dropdown-search input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .guru-dropdown .guru-option {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #f8f9fa;
+        transition: background 0.2s;
+    }
+
+    .guru-dropdown .guru-option:last-child {
+        border-bottom: none;
+    }
+
+    .guru-dropdown .guru-option:hover {
+        background: #f0f2ff;
+    }
+
+    .guru-dropdown .guru-option.selected {
+        background: #e8ecff;
+    }
+
+    .guru-dropdown .guru-option .guru-name {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.9rem;
+    }
+
+    .guru-dropdown .guru-option .guru-meta {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .guru-dropdown .guru-option .badge-jabatan {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+    }
+
+    .guru-dropdown .no-result {
+        padding: 20px;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    /* Pastikan modal body tidak overflow hidden */
+    .modal-body {
+        overflow: visible !important;
+    }
+
+    .modal {
+        overflow-y: auto;
     }
 </style>
 
@@ -451,7 +522,7 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL TAMBAH STRUKTUR (LIVE SEARCH + MAPEL) -->
+<!-- MODAL TAMBAH STRUKTUR -->
 <!-- ============================================ -->
 <div class="modal fade" id="tambahStrukturModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -467,25 +538,51 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- Cari Guru dengan Live Search -->
-                        <div class="col-md-12 mb-3 position-relative">
+                        <!-- Pilih Guru (Dropdown Pilihan, bukan ketik) -->
+                        <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold">
-                                <i class="fas fa-search me-1"></i>Cari Guru <span class="text-danger">*</span>
+                                <i class="fas fa-user-graduate me-1"></i>Pilih Guru <span class="text-danger">*</span>
                             </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fas fa-user-graduate text-muted"></i></span>
-                                <input type="text" id="searchGuru" class="form-control" 
-                                       placeholder="Ketik nama atau NUPTK guru..." autocomplete="off">
-                                <button class="btn btn-secondary" type="button" id="btnClearSearch">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <!-- Hasil pencarian muncul melayang -->
-                            <div id="searchResult" class="guru-search-result" style="display: none; position: absolute; z-index: 1000; width: 95%;">
-                                <div class="list-group" id="guruList"></div>
+                            <div class="guru-select-wrapper">
+                                <div class="guru-search-box">
+                                    <input type="text" id="guruDisplay" class="form-control" 
+                                           placeholder="-- Klik untuk memilih guru --" readonly style="background-color: white; cursor: pointer;">
+                                    <i class="fas fa-chevron-down dropdown-icon"></i>
+                                </div>
+                                <!-- Dropdown guru -->
+                                <div id="guruDropdown" class="guru-dropdown" style="display: none;">
+                                    <div class="dropdown-search">
+                                        <input type="text" id="guruFilter" placeholder="Cari nama guru..." autocomplete="off">
+                                    </div>
+                                    <div id="guruOptionList">
+                                        @forelse($guru as $g)
+                                            <div class="guru-option" 
+                                                 data-id="{{ $g->id }}"
+                                                 data-nuptk="{{ $g->nuptk ?? '-' }}"
+                                                 data-nama="{{ $g->user->name ?? $g->nama_lengkap }}"
+                                                 data-jabatan="{{ $g->jabatan ?? 'Guru' }}"
+                                                 data-mapel="{{ $g->mata_pelajaran ?? '-' }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="guru-name">{{ $g->user->name ?? $g->nama_lengkap }}</span>
+                                                    <span class="badge bg-primary badge-jabatan">{{ $g->jabatan ?? 'Guru' }}</span>
+                                                </div>
+                                                <div class="guru-meta">
+                                                    NUPTK: {{ $g->nuptk ?? '-' }} | Mapel: {{ $g->mata_pelajaran ?? '-' }}
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="no-result">
+                                                <i class="fas fa-user-slash me-2"></i>Belum ada data guru
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" name="guru_id" id="selectedGuruId">
                             <input type="hidden" name="nuptk" id="selectedNuptk">
+                            <small class="text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i>Klik kolom di atas untuk memilih guru
+                            </small>
                         </div>
 
                         <!-- Auto Detect Result -->
@@ -549,7 +646,7 @@
                                    placeholder="Akan terisi otomatis" readonly style="background-color: #f0f0f0;">
                         </div>
 
-                        <!-- FIELD BARU: Mata Pelajaran -->
+                        <!-- Mata Pelajaran -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-book-open me-1"></i>Mata Pelajaran
@@ -570,26 +667,36 @@
                             </select>
                         </div>
 
-                        <!-- Atasan (Parent) -->
+                        <!-- Atasan (Parent) - DIPERBAIKI -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-arrow-up me-1"></i>Atasan
                             </label>
-                            <select name="parent_id" class="form-control">
-                                <option value="">Tidak Ada (Root - Pimpinan Tertinggi)</option>
-                                <optgroup label="Pimpinan">
-                                    @foreach($struktur->whereNull('parent_id') as $st)
-                                        <option value="{{ $st->id }}">📌 {{ $st->nama_jabatan ?? $st->nama }}</option>
-                                    @endforeach
-                                </optgroup>
-                                <optgroup label="Staf">
-                                    @foreach($struktur->whereNotNull('parent_id') as $st)
-                                        <option value="{{ $st->id }}">📋 {{ $st->nama_jabatan ?? $st->nama }}</option>
-                                    @endforeach
-                                </optgroup>
+                            <select name="parent_id" class="form-control" style="cursor: pointer;">
+                                <option value="">-- Tidak Ada (Root - Pimpinan Tertinggi) --</option>
+                                @if($struktur->whereNull('parent_id')->count() > 0)
+                                    <optgroup label="📌 Pimpinan (Root)">
+                                        @foreach($struktur->whereNull('parent_id') as $st)
+                                            <option value="{{ $st->id }}">
+                                                {{ $st->nama_jabatan ?? $st->nama }} 
+                                                @if($st->nama_pejabat) - {{ $st->nama_pejabat }} @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                                @if($struktur->whereNotNull('parent_id')->count() > 0)
+                                    <optgroup label="📋 Staf / Sub Struktur">
+                                        @foreach($struktur->whereNotNull('parent_id') as $st)
+                                            <option value="{{ $st->id }}">
+                                                {{ $st->nama_jabatan ?? $st->nama }}
+                                                @if($st->nama_pejabat) - {{ $st->nama_pejabat }} @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
                             <small class="text-muted" style="font-size: 0.7rem;">
-                                <i class="fas fa-info-circle me-1"></i>Pilih atasan langsung dari struktur ini
+                                <i class="fas fa-info-circle me-1"></i>Pilih atasan langsung. Biarkan kosong jika ini pimpinan tertinggi.
                             </small>
                         </div>
 
@@ -710,25 +817,31 @@
                         <!-- Atasan (Parent) -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Atasan</label>
-                            <select name="parent_id" class="form-control">
-                                <option value="">Tidak Ada (Root - Pimpinan Tertinggi)</option>
-                                <optgroup label="Pimpinan">
-                                    @foreach($struktur->whereNull('parent_id') as $st)
-                                        <option value="{{ $st->id }}" {{ $s->parent_id == $st->id ? 'selected' : '' }}>
-                                            📌 {{ $st->nama_jabatan ?? $st->nama }}
-                                        </option>
-                                    @endforeach
-                                </optgroup>
-                                <optgroup label="Staf">
-                                    @foreach($struktur->whereNotNull('parent_id') as $st)
-                                        <option value="{{ $st->id }}" {{ $s->parent_id == $st->id ? 'selected' : '' }}>
-                                            📋 {{ $st->nama_jabatan ?? $st->nama }}
-                                        </option>
-                                    @endforeach
-                                </optgroup>
+                            <select name="parent_id" class="form-control" style="cursor: pointer;">
+                                <option value="">-- Tidak Ada (Root - Pimpinan Tertinggi) --</option>
+                                @if($struktur->whereNull('parent_id')->where('id', '!=', $s->id)->count() > 0)
+                                    <optgroup label="📌 Pimpinan (Root)">
+                                        @foreach($struktur->whereNull('parent_id')->where('id', '!=', $s->id) as $st)
+                                            <option value="{{ $st->id }}" {{ $s->parent_id == $st->id ? 'selected' : '' }}>
+                                                {{ $st->nama_jabatan ?? $st->nama }}
+                                                @if($st->nama_pejabat) - {{ $st->nama_pejabat }} @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                                @if($struktur->whereNotNull('parent_id')->where('id', '!=', $s->id)->count() > 0)
+                                    <optgroup label="📋 Staf / Sub Struktur">
+                                        @foreach($struktur->whereNotNull('parent_id')->where('id', '!=', $s->id) as $st)
+                                            <option value="{{ $st->id }}" {{ $s->parent_id == $st->id ? 'selected' : '' }}>
+                                                {{ $st->nama_jabatan ?? $st->nama }}
+                                                @if($st->nama_pejabat) - {{ $st->nama_pejabat }} @endif
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
                             </select>
                             <small class="text-muted" style="font-size: 0.7rem;">
-                                <i class="fas fa-info-circle me-1"></i>Pilih atasan langsung dari struktur ini
+                                <i class="fas fa-info-circle me-1"></i>Pilih atasan langsung. Biarkan kosong jika ini pimpinan tertinggi.
                             </small>
                         </div>
 
@@ -771,147 +884,116 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ===== LIVE SEARCH GURU (Debounce) =====
-    var searchTimeout;
+    // ===== DROPDOWN GURU (PILIH LANGSUNG, TANPA KETIK) =====
     
-    $('#searchGuru').on('keyup', function() {
-        var keyword = $(this).val().trim();
-        
-        // Clear timeout sebelumnya
-        clearTimeout(searchTimeout);
-        
-        // Jika kosong, sembunyikan hasil
-        if (keyword.length < 2) {
-            $('#searchResult').hide();
-            return;
-        }
-        
-        // Debounce: Tunggu 300ms setelah user berhenti mengetik
-        searchTimeout = setTimeout(function() {
-            $.ajax({
-                url: '{{ route("administrasi.api.guru.search") }}',
-                type: 'GET',
-                data: { q: keyword },
-                success: function(response) {
-                    if (response.success && response.data.length > 0) {
-                        var html = '';
-                        $.each(response.data, function(index, guru) {
-                            // Simpan data mapel di atribut data-mapel
-                            html += '<a href="#" class="list-group-item list-group-item-action" ' +
-                                    'data-id="' + guru.id + '" ' +
-                                    'data-nuptk="' + guru.nuptk + '" ' +
-                                    'data-nama="' + guru.nama + '" ' +
-                                    'data-jabatan="' + (guru.jabatan || 'Guru') + '" ' +
-                                    'data-mapel="' + (guru.mata_pelajaran || '-') + '">';
-                            html += '<div class="d-flex justify-content-between align-items-center">';
-                            html += '<div><strong>' + guru.nama + '</strong></div>';
-                            html += '<span class="badge bg-primary">' + (guru.jabatan || 'Guru') + '</span>';
-                            html += '</div>';
-                            html += '<small class="text-muted">NUPTK: ' + guru.nuptk + ' | Mapel: ' + (guru.mata_pelajaran || '-') + '</small>';
-                            html += '</a>';
-                        });
-                        $('#guruList').html(html);
-                        $('#searchResult').show();
-                    } else {
-                        $('#guruList').html('<div class="list-group-item text-muted text-center py-3"><i class="fas fa-user-slash me-2"></i>Guru tidak ditemukan</div>');
-                        $('#searchResult').show();
-                    }
-                },
-                error: function() {
-                    $('#guruList').html('<div class="list-group-item text-danger text-center py-3"><i class="fas fa-exclamation-triangle me-2"></i>Terjadi kesalahan</div>');
-                    $('#searchResult').show();
-                }
-            });
-        }, 300); // Delay 300ms
+    // Toggle dropdown saat input diklik
+    $('#guruDisplay').on('click', function(e) {
+        e.stopPropagation();
+        $('#guruDropdown').slideToggle(200);
+        $('#guruFilter').val('').focus();
+        // Reset filter tampilkan semua
+        $('.guru-option').show();
     });
 
-    // Sembunyikan hasil jika klik di luar area search
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('#searchGuru, #searchResult').length) {
-            $('#searchResult').hide();
+    // Filter guru saat mengetik di search box dropdown
+    $('#guruFilter').on('keyup', function() {
+        var keyword = $(this).val().toLowerCase().trim();
+        
+        $('.guru-option').each(function() {
+            var nama = $(this).data('nama').toString().toLowerCase();
+            var nuptk = $(this).data('nuptk').toString().toLowerCase();
+            
+            if (nama.includes(keyword) || nuptk.includes(keyword)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // Cek apakah ada hasil
+        var visibleCount = $('.guru-option:visible').length;
+        if (visibleCount === 0) {
+            if ($('#guruOptionList .no-result-filter').length === 0) {
+                $('#guruOptionList').append('<div class="no-result no-result-filter"><i class="fas fa-search me-2"></i>Guru tidak ditemukan</div>');
+            }
+        } else {
+            $('#guruOptionList .no-result-filter').remove();
         }
     });
 
-    // ===== PILIH GURU =====
-    $(document).on('click', '#guruList .list-group-item', function(e) {
-        e.preventDefault();
-        
+    // Klik pilihan guru
+    $(document).on('click', '.guru-option', function() {
         var id = $(this).data('id');
         var nuptk = $(this).data('nuptk');
         var nama = $(this).data('nama');
         var jabatan = $(this).data('jabatan') || '-';
         var mapel = $(this).data('mapel') || '-';
-        
-        // Set value ke hidden input dan tampilan info card
+
+        // Set value
         $('#selectedGuruId').val(id);
         $('#selectedNuptk').val(nuptk);
+        $('#guruDisplay').val(nama);
         $('#guruNama').text(nama);
         $('#guruNuptk').text(nuptk);
         $('#guruJabatan').text(jabatan);
         $('#guruMapel').text(mapel);
-        
-        // Auto fill nama pejabat
+
+        // Auto fill
         $('#namaPejabat').val(nama);
-        
-        // Auto fill mata pelajaran (FIELD BARU)
         $('#mataPelajaran').val(mapel);
-        
-        // Jika jabatan ada, auto pilih di dropdown
+
         if (jabatan && jabatan !== '-') {
             $('#namaJabatan').val(jabatan);
         }
-        
-        // Tampilkan info card & sembunyikan hasil search
+
+        // Highlight pilihan
+        $('.guru-option').removeClass('selected');
+        $(this).addClass('selected');
+
+        // Tampilkan info & tutup dropdown
         $('#guruInfo').fadeIn();
-        $('#searchResult').hide();
-        $('#searchGuru').val(nama);
+        $('#guruDropdown').slideUp(200);
     });
 
-    // ===== CLEAR SEARCH =====
-    $('#btnClearSearch').on('click', function() {
-        $('#searchGuru').val('');
-        $('#searchResult').hide();
-        $('#guruInfo').hide();
-        $('#selectedGuruId').val('');
-        $('#selectedNuptk').val('');
-        $('#namaJabatan').val('');
-        $('#namaPejabat').val('');
-        $('#mataPelajaran').val(''); // Clear field mapel
-        $('#guruNama').text('-');
-        $('#guruNuptk').text('-');
-        $('#guruJabatan').text('-');
-        $('#guruMapel').text('-');
+    // Tutup dropdown jika klik di luar
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.guru-select-wrapper').length) {
+            $('#guruDropdown').slideUp(200);
+        }
     });
 
     // ===== RESET MODAL =====
     $('#tambahStrukturModal').on('hidden.bs.modal', function() {
-        $('#searchGuru').val('');
-        $('#searchResult').hide();
+        $('#guruDisplay').val('');
+        $('#guruDropdown').hide();
+        $('#guruFilter').val('');
         $('#guruInfo').hide();
         $('#selectedGuruId').val('');
         $('#selectedNuptk').val('');
         $('#namaJabatan').val('');
         $('#namaPejabat').val('');
-        $('#mataPelajaran').val(''); // Reset field mapel
+        $('#mataPelajaran').val('');
         $('#guruNama').text('-');
         $('#guruNuptk').text('-');
         $('#guruJabatan').text('-');
         $('#guruMapel').text('-');
+        $('.guru-option').removeClass('selected').show();
+        $('#guruOptionList .no-result-filter').remove();
         $('form').find('.is-invalid').removeClass('is-invalid');
     });
 
     // ===== VALIDASI =====
-    $('form').on('submit', function(e) {
+    $('#tambahStrukturModal form').on('submit', function(e) {
         var guruId = $('#selectedGuruId').val();
         var namaJabatan = $('#namaJabatan').val();
         var namaPejabat = $('#namaPejabat').val();
         var isValid = true;
         
         if (!guruId) {
-            $('#searchGuru').addClass('is-invalid');
+            $('#guruDisplay').addClass('is-invalid');
             isValid = false;
         } else {
-            $('#searchGuru').removeClass('is-invalid');
+            $('#guruDisplay').removeClass('is-invalid');
         }
         
         if (!namaJabatan) {
