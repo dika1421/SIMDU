@@ -41,7 +41,6 @@ class User extends Authenticatable
 
     /**
      * 🔥 RELASI BARU: Many-to-Many ke Role (Multi-Role)
-     * User bisa punya banyak role
      */
     public function roles(): BelongsToMany
     {
@@ -50,7 +49,6 @@ class User extends Authenticatable
 
     /**
      * Relasi ke Role (Single Role - Backward Compatibility)
-     * Untuk user yang hanya punya 1 role
      */
     public function role()
     {
@@ -67,17 +65,18 @@ class User extends Authenticatable
         return $this->hasOne(Siswa::class, 'user_id');
     }
 
+    /**
+     * 🔥 RELASI BARU: Override permission per user
+     */
+    public function userPermissions()
+    {
+        return $this->hasMany(UserPermission::class);
+    }
+
     // =============================================
     // CEK ROLE
     // =============================================
 
-    /**
-     * Cek apakah user memiliki role tertentu.
-     * Mendukung pengecekan via relasi Role model, atau fallback ke kolom 'role' di tabel users.
-     *
-     * @param string|array $roleName
-     * @return bool
-     */
     public function hasRole($roleName): bool
     {
         // 🔥 CEK DI MULTI-ROLE (Many-to-Many)
@@ -107,24 +106,18 @@ class User extends Authenticatable
         return false;
     }
 
-    /**
-     * Ambil semua nama role user (dalam string)
-     */
     public function getRoleNamesAttribute(): string
     {
         $roleNames = [];
 
-        // Ambil dari multi-role
         if ($this->relationLoaded('roles') || $this->roles()->count() > 0) {
             $roleNames = $this->roles->pluck('display_name')->toArray();
         }
 
-        // Tambahkan dari single role
         if ($this->role) {
             $roleNames[] = $this->role->display_name;
         }
 
-        // Fallback ke kolom 'role' string
         if (empty($roleNames) && isset($this->attributes['role'])) {
             $roleNames[] = ucfirst($this->attributes['role']);
         }
@@ -132,15 +125,36 @@ class User extends Authenticatable
         return implode(', ', array_unique($roleNames));
     }
 
+    // =============================================
+    // CEK PERMISSION (DENGAN OVERRIDE PER USER)
+    // =============================================
+
     /**
-     * Cek apakah user memiliki permission tertentu (lewat relasi Role).
+     * Cek apakah user memiliki permission tertentu.
+     *
+     * Prioritas:
+     *  1. 🔥 Override per-user (tabel user_permissions) ← TERTINGGI
+     *  2. Permission dari multi-role
+     *  3. Permission dari single role (role_id)
+     *  4. Permission dari kolom 'role' string (fallback)
      *
      * @param string $permissionName
      * @return bool
      */
     public function hasPermission($permissionName): bool
     {
-        // 🔥 CEK DI MULTI-ROLE
+        // ⚡ 1. CEK OVERRIDE PER-USER (prioritas tertinggi)
+        $override = $this->userPermissions()
+            ->whereHas('permission', function ($q) use ($permissionName) {
+                $q->where('name', $permissionName);
+            })
+            ->first();
+
+        if ($override) {
+            return (bool) $override->granted;
+        }
+
+        // ⚡ 2. CEK DI MULTI-ROLE
         if ($this->relationLoaded('roles') || $this->roles()->count() > 0) {
             foreach ($this->roles as $role) {
                 if ($role->hasPermission($permissionName)) {
@@ -149,13 +163,13 @@ class User extends Authenticatable
             }
         }
 
-        // CEK SINGLE ROLE
+        // ⚡ 3. CEK SINGLE ROLE
         $roleModel = $this->role_id ? Role::find($this->role_id) : null;
         if ($roleModel && $roleModel->hasPermission($permissionName)) {
             return true;
         }
 
-        // CEK KOLOM ROLE STRING (Fallback)
+        // ⚡ 4. CEK KOLOM ROLE STRING (Fallback)
         if (isset($this->attributes['role'])) {
             $roleModel = Role::where('name', $this->attributes['role'])->first();
             if ($roleModel && $roleModel->hasPermission($permissionName)) {
@@ -167,7 +181,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Ambil semua permission user (dari semua role)
+     * Ambil semua permission user (dari role + override per-user).
      */
     public function getAllPermissions(): array
     {
@@ -187,20 +201,50 @@ class User extends Authenticatable
             }
         }
 
-        return array_unique($permissions);
+        // 🔥 Terapkan override per-user
+        foreach ($this->userPermissions()->with('permission')->get() as $override) {
+            if ($override->permission) {
+                $permName = $override->permission->name;
+
+                if ($override->granted) {
+                    // Tambah kalau belum ada
+                    if (!in_array($permName, $permissions)) {
+                        $permissions[] = $permName;
+                    }
+                } else {
+                    // Hapus kalau ada (karena di-revoke)
+                    $key = array_search($permName, $permissions);
+                    if ($key !== false) {
+                        unset($permissions[$key]);
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($permissions));
     }
 
     /**
-     * Sync roles untuk user (multi-role)
+     * Cek apakah user punya override permission tertentu.
      */
+    public function hasPermissionOverride($permissionName): bool
+    {
+        return $this->userPermissions()
+            ->whereHas('permission', function ($q) use ($permissionName) {
+                $q->where('name', $permissionName);
+            })
+            ->exists();
+    }
+
+    // =============================================
+    // SYNC ROLES
+    // =============================================
+
     public function syncRoles(array $roleIds): void
     {
         $this->roles()->sync($roleIds);
     }
 
-    /**
-     * Assign role ke user (multi-role)
-     */
     public function assignRole($role): void
     {
         if (is_string($role)) {
@@ -209,9 +253,6 @@ class User extends Authenticatable
         $this->roles()->syncWithoutDetaching([$role->id]);
     }
 
-    /**
-     * Remove role dari user (multi-role)
-     */
     public function removeRole($role): void
     {
         if (is_string($role)) {

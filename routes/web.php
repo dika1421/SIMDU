@@ -28,6 +28,7 @@ use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Administrasi\RoleController;
 use App\Http\Controllers\Administrasi\PermissionController;
 use App\Http\Controllers\Administrasi\UserRoleController;
+use App\Http\Controllers\Administrasi\UserPermissionController;   // ✅ TAMBAHAN
 use App\Http\Controllers\Administrasi\Api\GuruController as ApiGuruController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
@@ -313,7 +314,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // ============================================
-    // Komunikasi  ✅ (URUTAN DIPERBAIKI)
+    // Komunikasi
     // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
@@ -321,9 +322,9 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
         Route::post('/', [AdministrasiKomunikasi::class, 'store'])->name('store');
-        Route::get('/broadcast', [AdministrasiKomunikasi::class, 'broadcastForm'])->name('broadcast');       // ⬅️ PINDAH KE ATAS
-        Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast'); // ⬅️ PINDAH KE ATAS
-        Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');  // ⬅️ PINDAH KE ATAS
+        Route::get('/broadcast', [AdministrasiKomunikasi::class, 'broadcastForm'])->name('broadcast');
+        Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast');
+        Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
 
         // --- Route dinamis (DENGAN parameter) — TARUH DI BAWAH ---
         Route::get('/{id}', [AdministrasiKomunikasi::class, 'show'])->name('show');
@@ -378,6 +379,17 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::put('/{id}', [UserRoleController::class, 'update'])->name('update');
     });
 
+    // =============================================
+    // MANAJEMEN HAK AKSES PER USER  ✅ BARU
+    // Route statis HARUS di atas route dinamis
+    // =============================================
+    Route::prefix('user-permission')->name('user-permission.')->group(function () {
+        Route::get('/', [UserPermissionController::class, 'index'])->name('index');
+        Route::get('/{id}/edit', [UserPermissionController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [UserPermissionController::class, 'update'])->name('update');
+        Route::delete('/{id}/reset', [UserPermissionController::class, 'reset'])->name('reset');
+    });
+
     // Profil Administrasi
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [AdministrasiDashboard::class, 'profil'])->name('index');
@@ -421,7 +433,7 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
     });
 
     // ============================================
-    // Komunikasi Guru  ✅ (URUTAN DIPERBAIKI)
+    // Komunikasi Guru
     // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
