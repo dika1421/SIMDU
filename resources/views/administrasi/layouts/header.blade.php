@@ -23,7 +23,7 @@
 
     <style>
         /* ============================================================
-           GLOBAL RESET (lebih sopan, tidak agresif)
+           GLOBAL RESET
            ============================================================ */
         html, body {
             height: 100%;
@@ -41,12 +41,10 @@
             line-height: 1.5;
         }
 
-        /* Reset hanya elemen tertentu */
         .app-wrapper, .app-wrapper * {
             box-sizing: border-box;
         }
 
-        /* Pastikan SVG pagination default kecil */
         svg {
             max-width: 100%;
             height: auto;
@@ -57,8 +55,6 @@
             display: inline-block !important;
             vertical-align: middle !important;
         }
-
-        /* Fix panah besar pada pagination Laravel */
         nav[role="navigation"] svg,
         nav[aria-label="Pagination"] svg {
             width: 14px !important;
@@ -408,7 +404,7 @@
         }
 
         /* ============================================================
-           CARD (GLOBAL) - Hati-hati, ini akan override Bootstrap .card
+           CARD (GLOBAL)
            ============================================================ */
         .card {
             border: none;
@@ -778,15 +774,12 @@
                         </div>
                     </li>
 
-                    <!-- LOGOUT -->
+                    <!-- LOGOUT (SATU-SATUNYA DI SINI) -->
                     <li>
                         <a href="#" class="menu-item logout"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                           onclick="event.preventDefault(); confirmLogout();">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
                     </li>
                 </ul>
             </div>
@@ -814,6 +807,7 @@
                         </ul>
                     </div>
 
+                    {{-- Dropdown user — TANPA tombol logout (logout ada di sidebar) --}}
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle"></i>
@@ -821,17 +815,14 @@
                             <i class="fas fa-chevron-down ms-2 small"></i>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('administrasi.profil.index') }}">
-                                <i class="fas fa-user me-2"></i> Profil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('administrasi.pengaturan') }}">
-                                <i class="fas fa-cog me-2"></i> Pengaturan
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="#"
-                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                <a class="dropdown-item" href="{{ route('administrasi.profil.index') }}">
+                                    <i class="fas fa-user me-2"></i> Profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('administrasi.pengaturan') }}">
+                                    <i class="fas fa-cog me-2"></i> Pengaturan
                                 </a>
                             </li>
                         </ul>
@@ -862,6 +853,11 @@
         </main>
     </div>
 
+    {{-- Form logout tersembunyi (dipanggil via JS) --}}
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -889,6 +885,15 @@
                 $('.alert').fadeOut('slow');
             }, 5000);
         });
+
+        // ============================================
+        // LOGOUT — hanya 1 fungsi global
+        // ============================================
+        function confirmLogout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                document.getElementById('logout-form').submit();
+            }
+        }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('appSidebar');
@@ -953,14 +958,6 @@
             if (window.innerWidth > 768 && isCollapsed) {
                 sidebar.classList.add('collapsed');
             }
-        });
-
-        document.querySelectorAll('.menu-item.logout, .dropdown-item.text-danger').forEach(function(el) {
-            el.addEventListener('click', function(e) {
-                if (!confirm('Apakah Anda yakin ingin logout?')) {
-                    e.preventDefault();
-                }
-            });
         });
     </script>
 
