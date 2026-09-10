@@ -13,17 +13,21 @@ use Carbon\Carbon;
 
 class ArsipController extends Controller
 {
+    /**
+     * Daftar kategori yang sesuai dengan CHECK CONSTRAINT database.
+     * Constraint: arsip_dokumen_kategori_check
+     */
     private function kategoriList(): array
     {
         return [
-            'surat_keputusan' => 'Surat Keputusan',
-            'laporan_bulanan' => 'Laporan Bulanan',
-            'sertifikat'      => 'Sertifikat',
-            'dokumen_siswa'   => 'Dokumen Siswa',
-            'dokumen_guru'    => 'Dokumen Guru',
-            'akreditasi'      => 'Akreditasi',
-            'kurikulum'       => 'Kurikulum',
-            'keuangan'        => 'Keuangan',
+            'surat_masuk'  => 'Surat Masuk',
+            'surat_keluar' => 'Surat Keluar',
+            'keputusan'    => 'Surat Keputusan',
+            'laporan'      => 'Laporan',
+            'notulen'      => 'Notulen',
+            'sertifikat'   => 'Sertifikat',
+            'ijazah'       => 'Ijazah',
+            'lainnya'      => 'Lainnya',
         ];
     }
 
@@ -79,7 +83,7 @@ class ArsipController extends Controller
         $request->validate([
             'nama_dokumen'    => 'required|string|max:200',
             'nomor_dokumen'   => 'nullable|string|max:100',
-            'kategori'        => 'required|string|max:100',
+            'kategori'        => 'required|in:surat_masuk,surat_keluar,keputusan,laporan,notulen,sertifikat,ijazah,lainnya',
             'tanggal_dokumen' => 'nullable|date',
             'keterangan'      => 'nullable|string',
             'file'            => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
@@ -163,7 +167,7 @@ class ArsipController extends Controller
             $request->validate([
                 'nama_dokumen'    => 'required|string|max:200',
                 'nomor_dokumen'   => 'nullable|string|max:100',
-                'kategori'        => 'required|string|max:100',
+                'kategori'        => 'required|in:surat_masuk,surat_keluar,keputusan,laporan,notulen,sertifikat,ijazah,lainnya',
                 'tanggal_dokumen' => 'nullable|date',
                 'keterangan'      => 'nullable|string',
                 'file'            => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',

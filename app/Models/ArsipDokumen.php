@@ -62,28 +62,31 @@ class ArsipDokumen extends Model
 
     /* ================= ACCESSOR ================= */
 
+    /**
+     * Badge kategori — sesuai CHECK CONSTRAINT database.
+     */
     public function getKategoriBadgeAttribute()
     {
         $badges = [
-            'surat_keputusan' => 'primary',
-            'laporan_bulanan' => 'info',
-            'sertifikat'      => 'success',
-            'dokumen_siswa'   => 'warning',
-            'dokumen_guru'    => 'danger',
-            'akreditasi'      => 'secondary',
-            'kurikulum'       => 'dark',
-            'keuangan'        => 'success',
+            'surat_masuk'  => 'primary',
+            'surat_keluar' => 'info',
+            'keputusan'    => 'warning',
+            'laporan'      => 'success',
+            'notulen'      => 'secondary',
+            'sertifikat'   => 'dark',
+            'ijazah'       => 'danger',
+            'lainnya'      => 'light',
         ];
 
         $labels = [
-            'surat_keputusan' => 'Surat Keputusan',
-            'laporan_bulanan' => 'Laporan Bulanan',
-            'sertifikat'      => 'Sertifikat',
-            'dokumen_siswa'   => 'Dokumen Siswa',
-            'dokumen_guru'    => 'Dokumen Guru',
-            'akreditasi'      => 'Akreditasi',
-            'kurikulum'       => 'Kurikulum',
-            'keuangan'        => 'Keuangan',
+            'surat_masuk'  => 'Surat Masuk',
+            'surat_keluar' => 'Surat Keluar',
+            'keputusan'    => 'Surat Keputusan',
+            'laporan'      => 'Laporan',
+            'notulen'      => 'Notulen',
+            'sertifikat'   => 'Sertifikat',
+            'ijazah'       => 'Ijazah',
+            'lainnya'      => 'Lainnya',
         ];
 
         $color = $badges[$this->kategori] ?? 'secondary';
