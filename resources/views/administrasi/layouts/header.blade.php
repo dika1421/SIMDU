@@ -204,16 +204,6 @@
             font-size: 0.75rem;
         }
 
-        .menu-item.logout {
-            margin-top: 20px;
-            color: #ff6b6b;
-        }
-
-        .menu-item.logout:hover {
-            background-color: #c0392b;
-            color: white;
-        }
-
         hr {
             border-color: rgba(255, 255, 255, 0.1);
             margin: 15px 0;
@@ -774,13 +764,7 @@
                         </div>
                     </li>
 
-                    <!-- LOGOUT (SATU-SATUNYA DI SINI) -->
-                    <li>
-                        <a href="#" class="menu-item logout"
-                           onclick="event.preventDefault(); confirmLogout();">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
-                    </li>
+                    {{-- ✅ LOGOUT DI SIDEBAR DIHAPUS — logout hanya di dropdown user kanan atas --}}
                 </ul>
             </div>
         </aside>
@@ -807,7 +791,7 @@
                         </ul>
                     </div>
 
-                    {{-- Dropdown user — TANPA tombol logout (logout ada di sidebar) --}}
+                    {{-- ✅ Dropdown user dengan LOGOUT di sini --}}
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle"></i>
@@ -823,6 +807,13 @@
                             <li>
                                 <a class="dropdown-item" href="{{ route('administrasi.pengaturan') }}">
                                     <i class="fas fa-cog me-2"></i> Pengaturan
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#"
+                                   onclick="event.preventDefault(); confirmLogout();">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
                                 </a>
                             </li>
                         </ul>
@@ -887,7 +878,7 @@
         });
 
         // ============================================
-        // LOGOUT — hanya 1 fungsi global
+        // LOGOUT — 1 fungsi global, dipakai dari dropdown user
         // ============================================
         function confirmLogout() {
             if (confirm('Apakah Anda yakin ingin logout?')) {
