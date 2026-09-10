@@ -344,19 +344,13 @@
     }
 </style>
 
-<!-- Header dengan Breadcrumb -->
+<!-- Header (tanpa breadcrumb) -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-2 mb-3 border-bottom">
     <div>
-        <h1 class="h4 mb-1">
+        <h1 class="h4 mb-0">
             <i class="fas fa-sitemap me-2 text-primary"></i>
             Struktur Organisasi
         </h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item"><a href="{{ route('kepala-sekolah.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                <li class="breadcrumb-item active">Struktur Organisasi</li>
-            </ol>
-        </nav>
     </div>
     <div>
         <button type="button" class="btn btn-modern-primary" data-bs-toggle="modal" data-bs-target="#tambahStrukturModal">
@@ -538,7 +532,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <!-- Pilih Guru (Dropdown Pilihan, bukan ketik) -->
+                        <!-- Pilih Guru -->
                         <div class="col-md-12 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-user-graduate me-1"></i>Pilih Guru <span class="text-danger">*</span>
@@ -549,7 +543,6 @@
                                            placeholder="-- Klik untuk memilih guru --" readonly style="background-color: white; cursor: pointer;">
                                     <i class="fas fa-chevron-down dropdown-icon"></i>
                                 </div>
-                                <!-- Dropdown guru -->
                                 <div id="guruDropdown" class="guru-dropdown" style="display: none;">
                                     <div class="dropdown-search">
                                         <input type="text" id="guruFilter" placeholder="Cari nama guru..." autocomplete="off">
@@ -667,7 +660,7 @@
                             </select>
                         </div>
 
-                        <!-- Atasan (Parent) - DIPERBAIKI -->
+                        <!-- Atasan (Parent) -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-arrow-up me-1"></i>Atasan
@@ -891,7 +884,6 @@ $(document).ready(function() {
         e.stopPropagation();
         $('#guruDropdown').slideToggle(200);
         $('#guruFilter').val('').focus();
-        // Reset filter tampilkan semua
         $('.guru-option').show();
     });
 
@@ -910,7 +902,6 @@ $(document).ready(function() {
             }
         });
 
-        // Cek apakah ada hasil
         var visibleCount = $('.guru-option:visible').length;
         if (visibleCount === 0) {
             if ($('#guruOptionList .no-result-filter').length === 0) {
@@ -929,7 +920,6 @@ $(document).ready(function() {
         var jabatan = $(this).data('jabatan') || '-';
         var mapel = $(this).data('mapel') || '-';
 
-        // Set value
         $('#selectedGuruId').val(id);
         $('#selectedNuptk').val(nuptk);
         $('#guruDisplay').val(nama);
@@ -938,7 +928,6 @@ $(document).ready(function() {
         $('#guruJabatan').text(jabatan);
         $('#guruMapel').text(mapel);
 
-        // Auto fill
         $('#namaPejabat').val(nama);
         $('#mataPelajaran').val(mapel);
 
@@ -946,11 +935,9 @@ $(document).ready(function() {
             $('#namaJabatan').val(jabatan);
         }
 
-        // Highlight pilihan
         $('.guru-option').removeClass('selected');
         $(this).addClass('selected');
 
-        // Tampilkan info & tutup dropdown
         $('#guruInfo').fadeIn();
         $('#guruDropdown').slideUp(200);
     });
