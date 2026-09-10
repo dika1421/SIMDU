@@ -161,10 +161,60 @@ class ManajemenSekolahController extends Controller
             TahunAjaran::where('is_aktif', true)->update(['is_aktif' => false]);
         }
 
-        TahunAjaran::create($request->all());
+        TahunAjaran::create([
+            'nama' => $request->nama,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'semester' => $request->semester,
+            'is_aktif' => $request->has('is_aktif') ? true : false,
+        ]);
 
         return redirect()->route('kepala-sekolah.manajemen.tahun-ajaran')
             ->with('success', 'Tahun ajaran berhasil ditambahkan');
+    }
+
+    public function tahunAjaranUpdate(Request $request, $id)
+    {
+        $tahunAjaran = TahunAjaran::findOrFail($id);
+
+        $request->validate([
+            'nama' => 'required',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after:tanggal_mulai',
+            'semester' => 'required|in:ganjil,genap',
+        ]);
+
+        // Jika set sebagai aktif, nonaktifkan yang lain
+        if ($request->has('is_aktif') && $request->is_aktif) {
+            TahunAjaran::where('id', '!=', $id)->update(['is_aktif' => false]);
+        }
+
+        $tahunAjaran->update([
+            'nama' => $request->nama,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'semester' => $request->semester,
+            'is_aktif' => $request->has('is_aktif') ? true : false,
+        ]);
+
+        return redirect()->route('kepala-sekolah.manajemen.tahun-ajaran')
+            ->with('success', 'Tahun ajaran berhasil diupdate');
+    }
+
+    public function tahunAjaranDestroy($id)
+    {
+        $tahunAjaran = TahunAjaran::findOrFail($id);
+
+        // Cegah hapus tahun ajaran yang sedang aktif
+        if ($tahunAjaran->is_aktif) {
+            return redirect()->route('kepala-sekolah.manajemen.tahun-ajaran')
+                ->with('error', 'Tahun ajaran yang sedang aktif tidak dapat dihapus. Silakan set tahun ajaran lain sebagai aktif terlebih dahulu.');
+        }
+
+        $tahunAjaran->delete();
+
+        return redirect()->route('kepala-sekolah.manajemen.tahun-ajaran')
+            ->with('success', 'Tahun ajaran berhasil dihapus');
     }
 
     public function tahunAjaranSetAktif($id)
