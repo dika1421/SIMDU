@@ -19,9 +19,6 @@
             <a href="#keamanan" class="list-group-item list-group-item-action" data-bs-toggle="list">
                 <i class="fas fa-shield-alt me-2"></i> Keamanan
             </a>
-            <a href="#hak-akses" class="list-group-item list-group-item-action" data-bs-toggle="list">
-                <i class="fas fa-users-cog me-2"></i> Hak Akses
-            </a>
             <a href="#backup" class="list-group-item list-group-item-action" data-bs-toggle="list">
                 <i class="fas fa-database me-2"></i> Backup & Restore
             </a>
@@ -120,71 +117,6 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
                         </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hak Akses -->
-            <div class="tab-pane" id="hak-akses">
-                <div class="card">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Manajemen Hak Akses</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>Role</th>
-                                        <th>Dashboard</th>
-                                        <th>Siswa</th>
-                                        <th>Guru</th>
-                                        <th>Keuangan</th>
-                                        <th>Laporan</th>
-                                        <th>Pengaturan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Kepala Sekolah</td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                        <td class="text-center"><input type="checkbox" checked disabled></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Administrasi</td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Guru</td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Siswa</td>
-                                        <td class="text-center"><input type="checkbox" checked></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                        <td class="text-center"><input type="checkbox"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <button class="btn btn-primary">Simpan Hak Akses</button>
                     </div>
                 </div>
             </div>
