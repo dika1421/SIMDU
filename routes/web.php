@@ -69,8 +69,12 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/jurusan', [ManajemenSekolahController::class, 'jurusanStore'])->name('jurusan.store');
         Route::put('/jurusan/{id}', [ManajemenSekolahController::class, 'jurusanUpdate'])->name('jurusan.update');
         Route::delete('/jurusan/{id}', [ManajemenSekolahController::class, 'jurusanDestroy'])->name('jurusan.destroy');
+
+        // ================== TAHUN AJARAN ==================
         Route::get('/tahun-ajaran', [ManajemenSekolahController::class, 'tahunAjaran'])->name('tahun-ajaran');
         Route::post('/tahun-ajaran', [ManajemenSekolahController::class, 'tahunAjaranStore'])->name('tahun-ajaran.store');
+        Route::put('/tahun-ajaran/{id}', [ManajemenSekolahController::class, 'tahunAjaranUpdate'])->name('tahun-ajaran.update');
+        Route::delete('/tahun-ajaran/{id}', [ManajemenSekolahController::class, 'tahunAjaranDestroy'])->name('tahun-ajaran.destroy');
         Route::post('/tahun-ajaran/{id}/set-aktif', [ManajemenSekolahController::class, 'tahunAjaranSetAktif'])->name('tahun-ajaran.set-aktif');
     });
 
@@ -166,7 +170,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
     // =============================================
-    // API UNTUK ADMINISTRASI (🔥 DITAMBAHKAN)
+    // API UNTUK ADMINISTRASI
     // =============================================
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('/guru/search', [ApiGuruController::class, 'search'])->name('guru.search');
@@ -313,7 +317,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // =============================================
-    // 🔥 BARU: MANAJEMEN USER ROLE (Multi-Role)
+    // MANAJEMEN USER ROLE (Multi-Role)
     // =============================================
     Route::prefix('user-roles')->name('user-roles.')->group(function () {
         Route::get('/', [UserRoleController::class, 'index'])->name('index');
