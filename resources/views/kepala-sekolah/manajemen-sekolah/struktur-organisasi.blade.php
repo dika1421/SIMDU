@@ -342,6 +342,63 @@
     }
 </style>
 
+@php
+    /**
+     * Mapping Mata Pelajaran dari Excel "JADWAL TERBARU SMK.xlsx"
+     * Sheet: "Pembagian Tugas"
+     * Key: nama guru (lowercase, tanpa gelar) => value: mata pelajaran
+     * 
+     * Digunakan sebagai FALLBACK jika kolom `mata_pelajaran_utama` di DB kosong.
+     */
+    $mapelFromExcel = [
+        'jubaedah' => 'Produk Kreatif dan Kewirausahaan',
+        'khadri imbali' => 'PAI',
+        'deswita' => 'Elemen 4',
+        'sri gustina' => 'Administrasi Transaksi',
+        'rojudin' => 'A. Projek IPAS',
+        'alfiyah zahra alwahdi' => 'A. Bahasa Arab',
+        'nining indraningsi' => 'Bahasa Indonesia',
+        'syarifudin' => 'A. Sejarah',
+        'asep purwadi' => 'A. Informatika',
+        'euis suryani' => 'Agama Mulok',
+        'siti hamimah' => 'Bahasa Indonesia',
+        'aceng masum' => "Penjaskes",
+        'maliyah' => 'PPKn',
+        'nur septiani' => 'Matematika',
+        'siti sopiyah' => 'Bahasa Inggris',
+        'suardi' => 'Bahasa Sunda',
+        'nurlailah qadariyah' => 'Elemen 1 dan 2 BDP',
+        'nurma fitriyani' => 'A. Seni Budaya',
+        'fadilah' => 'Matematika',
+        'maemunah busroh' => 'A. Produk Pastry dan Bakery (elemen 2)',
+        'agustami' => 'A. Boga Dasar (Elemen 2 dan 6)',
+        'kholilah' => 'Elemen 1, 3 dan 4',
+        'abdul azis' => 'Bahasa Inggris',
+        'ilham amaludin' => 'PPKn',
+        'lulu saidah' => 'Pendidikan Agama dan Budi Pengerti (PAI)',
+        'adelia gita cahyani' => 'A. Produck Kreatif Kewirausahaan',
+        'nouval nurrahmatullah' => 'Praktik Ibadah (PAI Mulok)',
+        'ainan salsabila' => 'Bahasa Inggris',
+        'krisdianarti' => 'PJOK',
+        'larasati anindhita' => 'A. Desain Grafis',
+    ];
+
+    /**
+     * Helper: ambil mapel dari mapping Excel berdasarkan nama guru.
+     */
+    if (!function_exists('getMapelFromExcel')) {
+        function getMapelFromExcel($namaGuru, $mapelFromExcel) {
+            $namaLower = strtolower($namaGuru);
+            foreach ($mapelFromExcel as $key => $mapel) {
+                if (strpos($namaLower, $key) !== false) {
+                    return $mapel;
+                }
+            }
+            return null;
+        }
+    }
+@endphp
+
 <!-- Header -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-2 mb-3 border-bottom">
     <div>
@@ -548,18 +605,27 @@
                                     <div id="guruOptionList">
                                         @forelse($guru as $g)
                                             @php
-                                                // Ambil mapel dari kolom yang benar
-                                                $mapelGuru = $g->mata_pelajaran_utama ?? '-';
+                                                $namaGuru = $g->user->name ?? $g->nama_lengkap;
+
+                                                // Prioritas 1: dari DB (kolom mata_pelajaran_utama)
+                                                $mapelGuru = $g->mata_pelajaran_utama ?? null;
+
+                                                // Prioritas 2: fallback dari Excel
+                                                if (empty($mapelGuru) || $mapelGuru === '-') {
+                                                    $mapelGuru = getMapelFromExcel($namaGuru, $mapelFromExcel) ?? '-';
+                                                }
+
+                                                // Jabatan
                                                 $jabatanGuru = $g->jabatan->nama ?? ($g->jabatan ?? 'Guru');
                                             @endphp
                                             <div class="guru-option" 
                                                  data-id="{{ $g->id }}"
                                                  data-nuptk="{{ $g->nuptk ?? '-' }}"
-                                                 data-nama="{{ $g->user->name ?? $g->nama_lengkap }}"
+                                                 data-nama="{{ $namaGuru }}"
                                                  data-jabatan="{{ $jabatanGuru }}"
                                                  data-mapel="{{ $mapelGuru }}">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <span class="guru-name">{{ $g->user->name ?? $g->nama_lengkap }}</span>
+                                                    <span class="guru-name">{{ $namaGuru }}</span>
                                                     <span class="badge bg-primary badge-jabatan">{{ $jabatanGuru }}</span>
                                                 </div>
                                                 <div class="guru-meta">
@@ -930,7 +996,7 @@ $(document).ready(function() {
 
         $('#namaPejabat').val(nama);
 
-        // Set field Mata Pelajaran (yang di lingkari merah)
+        // Set field Mata Pelajaran
         if (mapel && mapel !== '-') {
             $('#mataPelajaran').val(mapel);
         } else {
