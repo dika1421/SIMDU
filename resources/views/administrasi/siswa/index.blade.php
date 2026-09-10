@@ -33,7 +33,7 @@
         color: white;
         font-weight: 500;
     }
-    .filter-card .form-control, 
+    .filter-card .form-control,
     .filter-card .form-select {
         border-radius: 10px;
         border: none;
@@ -83,15 +83,17 @@
         Data Siswa
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        {{-- Tombol Import Excel --}}
         <button type="button" class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#importModal">
             <i class="fas fa-file-excel"></i> Import Excel
         </button>
-        <a href="{{ url('administrasi/siswa/download-template') }}" class="btn btn-sm btn-info me-2">
-            <i class="fas fa-download"></i> Template
-        </a>
-        <a href="{{ url('administrasi/siswa/export') }}" class="btn btn-sm btn-secondary me-2">
+
+        {{-- Tombol Export — sudah dihubungkan ke route --}}
+        <a href="{{ route('administrasi.siswa.export') }}" class="btn btn-sm btn-secondary me-2">
             <i class="fas fa-file-export"></i> Export
         </a>
+
+        {{-- Tombol Tambah Siswa --}}
         <a href="{{ route('administrasi.siswa.create') }}" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i> Tambah Siswa
         </a>
@@ -230,7 +232,7 @@
                 <label class="form-label">
                     <i class="fas fa-search me-1"></i> Cari
                 </label>
-                <input type="text" name="search" class="form-control" 
+                <input type="text" name="search" class="form-control"
                        placeholder="Nama / NIS / NISN..." value="{{ request('search') }}">
             </div>
             <div class="col-md-2">
@@ -319,16 +321,16 @@
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('administrasi.siswa.show', $s->id) }}" 
+                                <a href="{{ route('administrasi.siswa.show', $s->id) }}"
                                    class="btn btn-info" title="Detail">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('administrasi.siswa.edit', $s->id) }}" 
+                                <a href="{{ route('administrasi.siswa.edit', $s->id) }}"
                                    class="btn btn-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button type="button" 
-                                        class="btn btn-danger" 
+                                <button type="button"
+                                        class="btn btn-danger"
                                         onclick="confirmDelete({{ $s->id }}, '{{ addslashes($s->nama_lengkap) }}')"
                                         title="Hapus">
                                     <i class="fas fa-trash"></i>
@@ -350,12 +352,12 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Pagination -->
         @if($siswa->hasPages())
             <div class="d-flex justify-content-between align-items-center p-3 border-top">
                 <div class="text-muted small">
-                    Menampilkan {{ $siswa->firstItem() ?? 0 }} - {{ $siswa->lastItem() ?? 0 }} 
+                    Menampilkan {{ $siswa->firstItem() ?? 0 }} - {{ $siswa->lastItem() ?? 0 }}
                     dari {{ $siswa->total() ?? 0 }} siswa
                 </div>
                 <div>
@@ -377,7 +379,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ url('administrasi/siswa/import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+            <form action="{{ route('administrasi.siswa.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
                 @csrf
                 <div class="modal-body">
                     <div class="alert alert-info">
@@ -386,11 +388,10 @@
                         <ul class="mb-0 mt-2">
                             <li>File harus berformat <strong>.CSV</strong> dengan separator koma (,)</li>
                             <li>Ukuran maksimal file: <strong>2 MB</strong></li>
-                            <li>Download template terlebih dahulu</li>
                             <li>Kolom wajib: <strong>NIS, NAMA SISWA, JENIS KELAMIN</strong></li>
                         </ul>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pilih File <span class="text-danger">*</span></label>
                         <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
@@ -398,7 +399,7 @@
                     </div>
 
                     <div class="progress d-none" id="importProgress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
                              role="progressbar" style="width: 0%"></div>
                     </div>
                 </div>
@@ -463,13 +464,13 @@
             const fileInput = document.getElementById('file');
             const progressDiv = document.getElementById('importProgress');
             const btnImport = document.getElementById('btnImport');
-            
+
             if (!fileInput.files.length) {
                 e.preventDefault();
                 Swal.fire('Error', 'Silakan pilih file terlebih dahulu!', 'error');
                 return false;
             }
-            
+
             const fileName = fileInput.files[0].name;
             const extension = fileName.split('.').pop().toLowerCase();
             if (extension !== 'csv') {
@@ -477,28 +478,27 @@
                 Swal.fire('Error', 'Format file harus .csv!', 'error');
                 return false;
             }
-            
+
             progressDiv.classList.remove('d-none');
             btnImport.disabled = true;
             btnImport.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
         });
-        
+
         // Submit delete form via AJAX
         $('#deleteForm').on('submit', function(e) {
             e.preventDefault();
             var form = $(this);
             var url = form.attr('action');
-            var siswaName = $('#siswaName').text();
-            
+
             $('#deleteModal').modal('hide');
-            
+
             Swal.fire({
                 title: 'Memproses...',
                 text: 'Sedang menghapus data',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
-            
+
             $.ajax({
                 url: url,
                 type: 'POST',
@@ -522,7 +522,7 @@
                 }
             });
         });
-        
+
         // Auto close alert
         setTimeout(function() { $('.alert').fadeOut('slow'); }, 3000);
     });

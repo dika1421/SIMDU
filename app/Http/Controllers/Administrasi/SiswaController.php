@@ -4,518 +4,534 @@ namespace App\Http\Controllers\Administrasi;
 
 use App\Http\Controllers\Controller;
 use App\Models\Siswa;
-use App\Models\User;
 use App\Models\Kelas;
-use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class SiswaController extends Controller
 {
     /**
-     * Constructor - Cek permission di sini
+     * Tampilkan daftar siswa.
      */
-    public function __construct()
-    {
-        // Middleware untuk permission
-        $this->middleware('permission:siswa.view')->only(['index', 'show']);
-        $this->middleware('permission:siswa.create')->only(['create', 'store', 'import', 'downloadTemplate']);
-        $this->middleware('permission:siswa.edit')->only(['edit', 'update', 'mutasi', 'resetPassword']);
-        $this->middleware('permission:siswa.delete')->only(['destroy']);
-        $this->middleware('permission:siswa.export')->only(['export']);
-    }
-
     public function index(Request $request)
     {
-        try {
-            // Cek permission di controller (opsional, karena sudah di middleware)
-            // if (!auth()->user()->hasPermission('siswa.view')) {
-            //     abort(403, 'Anda tidak memiliki izin untuk melihat data siswa.');
-            // }
+        $query = Siswa::with(['user', 'kelas']);
 
-            $query = Siswa::with(['user', 'kelas']);
-            if (Schema::hasColumn('siswa','kelas_id') && method_exists(\App\Models\Kelas::class,'jurusan')) {
-                $query = Siswa::with(['user', 'kelas.jurusan']);
-            }
-
-            if ($request->filled('kelas')) {
-                $query->where('kelas_id', $request->kelas);
-            }
-
-            if ($request->filled('status') && Schema::hasColumn('siswa','status')) {
-                $query->where('status', $request->status);
-            }
-
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('nis', 'ILIKE', "%{$search}%");
-                    if (Schema::hasColumn('siswa','nisn')) {
-                        $q->orWhere('nisn', 'ILIKE', "%{$search}%");
-                    }
-                    if (Schema::hasColumn('siswa','nama')) {
-                        $q->orWhere('nama', 'ILIKE', "%{$search}%");
-                    }
-                    if (Schema::hasColumn('siswa','nama_lengkap')) {
-                        $q->orWhere('nama_lengkap', 'ILIKE', "%{$search}%");
-                    }
-                    $q->orWhereHas('user', function($u) use ($search) {
-                        $u->where('name', 'ILIKE', "%{$search}%");
-                    });
-                });
-            }
-
-            $siswa = $query->orderBy('created_at', 'desc')->paginate(10);
-            $siswa->appends($request->query());
-            $kelas = Kelas::orderBy('nama_kelas')->get();
-
-            return view('administrasi.siswa.index', compact('siswa', 'kelas'));
-            
-        } catch (\Exception $e) {
-            Log::error('Error in siswa index: '. $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: '. $e->getMessage());
+        // Filter kelas
+        if ($request->filled('kelas')) {
+            $query->where('kelas_id', $request->kelas);
         }
+
+        // Filter status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nis', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($u) use ($search) {
+                      $u->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $siswa = $query->latest()->paginate(10)->withQueryString();
+
+        // Statistik
+        $totalSiswa   = Siswa::count();
+        $siswaAktif   = Siswa::where('status', 'aktif')->count();
+        $siswaLulus   = Siswa::where('status', 'lulus')->count();
+        $kelas        = Kelas::orderBy('nama')->get();
+
+        return view('administrasi.siswa.index', compact(
+            'siswa',
+            'totalSiswa',
+            'siswaAktif',
+            'siswaLulus',
+            'kelas'
+        ));
     }
 
+    /**
+     * Tampilkan form tambah siswa.
+     */
     public function create()
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.create')) {
-            abort(403, 'Anda tidak memiliki izin untuk menambah siswa.');
-        }
-
-        $kelas = Kelas::orderBy('nama_kelas')->get();
-        $roles = Role::all(); // Untuk pilihan role jika diperlukan
-        
-        return view('administrasi.siswa.create', compact('kelas', 'roles'));
+        $kelas = Kelas::orderBy('nama')->get();
+        return view('administrasi.siswa.create', compact('kelas'));
     }
 
+    /**
+     * Simpan data siswa baru.
+     */
     public function store(Request $request)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.create')) {
-            abort(403, 'Anda tidak memiliki izin untuk menambah siswa.');
-        }
+        $request->validate([
+            'nama_lengkap'   => 'required|string|max:255',
+            'nis'            => 'required|string|max:20|unique:siswa,nis',
+            'nisn'           => 'nullable|string|max:20|unique:siswa,nisn',
+            'jenis_kelamin'  => 'required|in:L,P',
+            'kelas_id'       => 'nullable|exists:kelas,id',
+            'tanggal_lahir'  => 'nullable|date',
+            'tempat_lahir'   => 'nullable|string|max:100',
+            'alamat'         => 'nullable|string',
+            'telepon'        => 'nullable|string|max:20',
+            'email'          => 'nullable|email|max:255|unique:users,email',
+            'status'         => 'required|in:aktif,nonaktif,lulus,dropout',
+            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-        $rules = [
-            'nis' => 'required|string|unique:siswa,nis',
-            'email' => 'required|email|unique:users,email',
-            'kelas_id' => 'nullable|exists:kelas,id',
-        ];
-
-        // validasi dinamis
-        if (Schema::hasColumn('siswa','nama') || $request->has('nama')) $rules['nama'] = 'required|string|max:255';
-        if (Schema::hasColumn('siswa','nama_lengkap') || $request->has('nama_lengkap')) $rules['nama_lengkap'] = 'required|string|max:255';
-        if (Schema::hasColumn('siswa','nisn')) $rules['nisn'] = 'nullable|string|unique:siswa,nisn';
-
-        $request->validate($rules);
-
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-            
-            $nama = $request->nama ?? $request->nama_lengkap;
-            $password = $request->filled('password') ? $request->password : $request->nis;
+            // Buat user login
+            $user = User::create([
+                'name'     => $request->nama_lengkap,
+                'email'    => $request->email ?? $request->nis . '@siswa.simdu.id',
+                'password' => Hash::make($request->nis),
+                'role'     => 'siswa',
+            ]);
 
-            // Data User
-            $userData = [
-                'name' => $nama,
-                'email' => $request->email,
-                'password' => Hash::make($password),
-            ];
-            
-            // Tambahkan role_id (default: siswa)
-            $roleSiswa = Role::where('name', 'siswa')->first();
-            if ($roleSiswa) {
-                $userData['role_id'] = $roleSiswa->id;
-            }
-            
-            if (Schema::hasColumn('users','role')) $userData['role'] = 'siswa';
-            if (Schema::hasColumn('users','status')) $userData['status'] = 'aktif';
-            if (Schema::hasColumn('users','no_telepon') && $request->filled('no_telp_ortu')) {
-                $userData['no_telepon'] = $request->no_telp_ortu;
+            // Simpan data siswa
+            $data = $request->only([
+                'nama_lengkap', 'nis', 'nisn', 'jenis_kelamin',
+                'kelas_id', 'tanggal_lahir', 'tempat_lahir',
+                'alamat', 'telepon', 'status',
+            ]);
+            $data['user_id'] = $user->id;
+
+            // Upload foto
+            if ($request->hasFile('foto')) {
+                $data['foto'] = $request->file('foto')->store('siswa/foto', 'public');
             }
 
-            $user = User::create($userData);
+            Siswa::create($data);
 
-            // Data Siswa
-            $siswaData = [
-                'user_id' => $user->id,
-                'nis' => $request->nis,
-                'kelas_id' => $request->kelas_id,
-            ];
-            
-            if (Schema::hasColumn('siswa','nama')) $siswaData['nama'] = $nama;
-            if (Schema::hasColumn('siswa','nama_lengkap')) $siswaData['nama_lengkap'] = $nama;
-            if (Schema::hasColumn('siswa','nisn')) $siswaData['nisn'] = $request->nisn ?? null;
-            if (Schema::hasColumn('siswa','rfid_card')) $siswaData['rfid_card'] = $request->rfid_card ?? null;
-            if (Schema::hasColumn('siswa','status')) $siswaData['status'] = 'aktif';
-
-            // kolom optional lama, hanya isi jika ada
-            foreach(['tempat_lahir','tanggal_lahir','jenis_kelamin','alamat','agama','nama_ayah','nama_ibu','no_telepon','no_telepon_orangtua','pekerjaan_orangtua','tahun_masuk'] as $col){
-                if (Schema::hasColumn('siswa',$col) && $request->filled($col)) {
-                    $siswaData[$col] = $request->$col;
-                }
-            }
-
-            Siswa::create($siswaData);
-            
             DB::commit();
-            
+
             return redirect()
                 ->route('administrasi.siswa.index')
-                ->with('success', 'Siswa berhasil ditambahkan! Password: ' . $password);
-
+                ->with('success', 'Data siswa berhasil ditambahkan. Password default: NIS siswa.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error store: '.$e->getMessage());
             return back()
-                ->with('error', 'Gagal: '.$e->getMessage())
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Gagal menambahkan siswa: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Tampilkan detail siswa.
+     */
     public function show($id)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.view')) {
-            abort(403, 'Anda tidak memiliki izin untuk melihat detail siswa.');
-        }
-
-        try {
-            $siswa = Siswa::with(['user', 'kelas'])->findOrFail($id);
-            return view('administrasi.siswa.show', compact('siswa'));
-        } catch (\Exception $e) {
-            return redirect()
-                ->route('administrasi.siswa.index')
-                ->with('error', 'Data tidak ditemukan');
-        }
+        $siswa = Siswa::with(['user', 'kelas'])->findOrFail($id);
+        return view('administrasi.siswa.show', compact('siswa'));
     }
 
+    /**
+     * Tampilkan form edit siswa.
+     */
     public function edit($id)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.edit')) {
-            abort(403, 'Anda tidak memiliki izin untuk mengedit siswa.');
-        }
-
         $siswa = Siswa::with('user')->findOrFail($id);
-        $kelas = Kelas::orderBy('nama_kelas')->get();
-        
+        $kelas = Kelas::orderBy('nama')->get();
         return view('administrasi.siswa.edit', compact('siswa', 'kelas'));
     }
 
+    /**
+     * Update data siswa.
+     */
     public function update(Request $request, $id)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.edit')) {
-            abort(403, 'Anda tidak memiliki izin untuk mengedit siswa.');
-        }
+        $siswa = Siswa::with('user')->findOrFail($id);
 
-        $siswa = Siswa::findOrFail($id);
-        
+        $request->validate([
+            'nama_lengkap'   => 'required|string|max:255',
+            'nis'            => 'required|string|max:20|unique:siswa,nis,' . $siswa->id,
+            'nisn'           => 'nullable|string|max:20|unique:siswa,nisn,' . $siswa->id,
+            'jenis_kelamin'  => 'required|in:L,P',
+            'kelas_id'       => 'nullable|exists:kelas,id',
+            'tanggal_lahir'  => 'nullable|date',
+            'tempat_lahir'   => 'nullable|string|max:100',
+            'alamat'         => 'nullable|string',
+            'telepon'        => 'nullable|string|max:20',
+            'email'          => 'nullable|email|max:255|unique:users,email,' . ($siswa->user->id ?? 0),
+            'status'         => 'required|in:aktif,nonaktif,lulus,dropout',
+            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-            
-            $nama = $request->nama ?? $request->nama_lengkap;
-            
-            // Update User
+            // Update user
             if ($siswa->user) {
-                $siswa->user->update(['name' => $nama]);
-                if ($request->filled('password')) {
-                    $siswa->user->update(['password' => Hash::make($request->password)]);
-                }
+                $siswa->user->update([
+                    'name'  => $request->nama_lengkap,
+                    'email' => $request->email ?? $siswa->user->email,
+                ]);
             }
-            
-            // Update Siswa
-            $upd = [];
-            if (Schema::hasColumn('siswa','nama')) $upd['nama'] = $nama;
-            if (Schema::hasColumn('siswa','nama_lengkap')) $upd['nama_lengkap'] = $nama;
-            if (Schema::hasColumn('siswa','kelas_id')) $upd['kelas_id'] = $request->kelas_id;
-            
-            foreach(['tempat_lahir','tanggal_lahir','jenis_kelamin','alamat','agama','nama_ayah','nama_ibu','no_telepon_orangtua','pekerjaan_orangtua','status'] as $c){
-                if (Schema::hasColumn('siswa',$c) && $request->filled($c)) {
-                    $upd[$c] = $request->$c;
+
+            // Update siswa
+            $data = $request->only([
+                'nama_lengkap', 'nis', 'nisn', 'jenis_kelamin',
+                'kelas_id', 'tanggal_lahir', 'tempat_lahir',
+                'alamat', 'telepon', 'status',
+            ]);
+
+            // Upload foto baru
+            if ($request->hasFile('foto')) {
+                if ($siswa->foto && Storage::disk('public')->exists($siswa->foto)) {
+                    Storage::disk('public')->delete($siswa->foto);
                 }
+                $data['foto'] = $request->file('foto')->store('siswa/foto', 'public');
             }
-            
-            $siswa->update($upd);
-            
+
+            $siswa->update($data);
+
             DB::commit();
-            
+
             return redirect()
                 ->route('administrasi.siswa.index')
-                ->with('success', 'Data siswa berhasil diupdate!');
-
+                ->with('success', 'Data siswa berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
-                ->with('error', $e->getMessage())
-                ->withInput();
+                ->withInput()
+                ->with('error', 'Gagal memperbarui siswa: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Hapus data siswa.
+     */
     public function destroy($id)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.delete')) {
-            abort(403, 'Anda tidak memiliki izin untuk menghapus siswa.');
-        }
-
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-            
-            $siswa = Siswa::findOrFail($id);
-            $nama = $siswa->nama ?? $siswa->nama_lengkap ?? 'Siswa';
-            
-            if ($siswa->user) {
-                $siswa->user->delete();
+            $siswa = Siswa::with('user')->findOrFail($id);
+
+            // Hapus foto
+            if ($siswa->foto && Storage::disk('public')->exists($siswa->foto)) {
+                Storage::disk('public')->delete($siswa->foto);
             }
+
+            $user = $siswa->user;
             $siswa->delete();
-            
+
+            if ($user) {
+                $user->delete();
+            }
+
             DB::commit();
-            
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data siswa berhasil dihapus.',
+                ]);
+            }
+
             return redirect()
                 ->route('administrasi.siswa.index')
-                ->with('success', "Data siswa {$nama} berhasil dihapus");
-
+                ->with('success', 'Data siswa berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', $e->getMessage());
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus siswa: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return back()->with('error', 'Gagal menghapus siswa: ' . $e->getMessage());
         }
     }
 
-    public function mutasi(Request $request, $id)
-    {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.edit')) {
-            abort(403, 'Anda tidak memiliki izin untuk melakukan mutasi siswa.');
-        }
-
-        $request->validate([
-            'kelas_tujuan' => 'required|exists:kelas,id'
-        ]);
-        
-        $siswa = Siswa::findOrFail($id);
-        $kelasTujuan = Kelas::find($request->kelas_tujuan);
-        $siswa->update(['kelas_id' => $request->kelas_tujuan]);
-        
-        return back()->with('success', "Mutasi siswa ke kelas {$kelasTujuan->nama_kelas} berhasil");
-    }
-
-    public function resetPassword($id)
-    {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.edit')) {
-            abort(403, 'Anda tidak memiliki izin untuk reset password siswa.');
-        }
-
-        $siswa = Siswa::findOrFail($id);
-        
-        if (!$siswa->user) {
-            return back()->with('error', 'User tidak ditemukan');
-        }
-        
-        $siswa->user->update(['password' => Hash::make($siswa->nis)]);
-        $nama = $siswa->nama ?? $siswa->nama_lengkap ?? 'Siswa';
-        
-        return back()->with('success', "Password {$nama} direset ke NIS: {$siswa->nis}");
-    }
-
-    // =============================================
-    // IMPORT & EXPORT
-    // =============================================
-
+    /**
+     * Import data siswa dari file CSV.
+     */
     public function import(Request $request)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.import')) {
-            abort(403, 'Anda tidak memiliki izin untuk import siswa.');
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        if (!$handle) {
+            return back()->with('error', 'Gagal membuka file.');
         }
 
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:5120'
-        ]);
-        
-        $file = $request->file('file');
-        $success = 0;
-        $failed = 0;
+        // Skip BOM jika ada
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        $header = fgetcsv($handle, 0, ',');
+        if (!$header) {
+            fclose($handle);
+            return back()->with('error', 'File CSV kosong atau format tidak valid.');
+        }
+
+        // Normalisasi header
+        $header = array_map(function ($h) {
+            return strtolower(trim(str_replace([' ', '-'], '_', $h)));
+        }, $header);
+
+        $berhasil = 0;
+        $gagal = 0;
         $errors = [];
-        
-        $handle = fopen($file->getPathname(), 'r');
-        $rowNum = 0;
-        
+        $rowNum = 1;
+
         DB::beginTransaction();
         try {
             while (($row = fgetcsv($handle, 0, ',')) !== false) {
                 $rowNum++;
-                if ($rowNum == 1) continue;
-                if (count(array_filter($row)) < 2) continue;
 
-                // Support 2 format
-                $nis = '';
-                $nama = '';
-                $kelasNama = '';
-                $nisn = '';
-                
-                if (count($row) >= 4 && !empty($row[0]) && !empty($row[2]) && !empty($row[3]) && is_numeric($row[0])) {
-                    // Format lama NO,NISN,NIS,NAMA
-                    $nisn = trim($row[1] ?? '');
-                    $nis = trim($row[2] ?? '');
-                    $nama = trim($row[3] ?? '');
-                } else {
-                    // Format baru nis,nama,kelas,rfid
-                    $nis = trim($row[0] ?? '');
-                    $nama = trim($row[1] ?? '');
-                    $kelasNama = trim($row[2] ?? '');
-                }
-                
-                $nis = str_replace('.0', '', $nis);
-                
-                if (empty($nis) || empty($nama)) {
-                    $failed++;
-                    $errors[] = "Baris {$rowNum}: NIS/Nama kosong";
+                if (count(array_filter($row)) === 0) {
                     continue;
                 }
-                
+
+                $data = array_combine($header, array_pad($row, count($header), null));
+
+                // Ambil field (fleksibel terhadap variasi nama kolom)
+                $nama  = trim($data['nama_siswa'] ?? $data['nama_lengkap'] ?? $data['nama'] ?? '');
+                $nis   = trim($data['nis'] ?? '');
+                $nisn  = trim($data['nisn'] ?? '');
+                $jk    = strtoupper(trim($data['jenis_kelamin'] ?? $data['jk'] ?? ''));
+
+                if (empty($nama) || empty($nis)) {
+                    $errors[] = "Baris {$rowNum}: NIS dan Nama Siswa wajib diisi.";
+                    $gagal++;
+                    continue;
+                }
+
+                // Cek duplikat NIS
                 if (Siswa::where('nis', $nis)->exists()) {
-                    $failed++;
-                    $errors[] = "Baris {$rowNum}: NIS {$nis} sudah ada";
-                    continue;
-                }
-                
-                if (!empty($nisn) && Schema::hasColumn('siswa','nisn') && Siswa::where('nisn', $nisn)->exists()) {
-                    $failed++;
-                    $errors[] = "Baris {$rowNum}: NISN {$nisn} sudah ada";
+                    $errors[] = "Baris {$rowNum}: NIS {$nis} sudah terdaftar.";
+                    $gagal++;
                     continue;
                 }
 
-                // Buat User
-                $email = $nis . '@siswa.simdu.sch.id';
-                if (User::where('email', $email)->exists()) {
-                    $email = $nis . '_' . time() . rand(1,9) . '@siswa.simdu.sch.id';
+                // Normalisasi jenis kelamin
+                if (in_array($jk, ['L', 'LAKI-LAKI', 'LAKI LAKI', 'MALE'])) {
+                    $jk = 'L';
+                } elseif (in_array($jk, ['P', 'PEREMPUAN', 'FEMALE'])) {
+                    $jk = 'P';
+                } else {
+                    $jk = null;
                 }
-                
-                // Cari role siswa
-                $roleSiswa = Role::where('name', 'siswa')->first();
-                
-                $userData = [
-                    'name' => $nama,
-                    'email' => $email,
+
+                // Buat user
+                $user = User::create([
+                    'name'     => $nama,
+                    'email'    => $nis . '@siswa.simdu.id',
                     'password' => Hash::make($nis),
-                ];
-                
-                if ($roleSiswa) {
-                    $userData['role_id'] = $roleSiswa->id;
-                }
-                
-                $user = User::create($userData);
+                    'role'     => 'siswa',
+                ]);
 
-                // Buat Siswa
-                $create = [
-                    'user_id' => $user->id,
-                    'nis' => $nis,
-                ];
-                
-                if (Schema::hasColumn('siswa','nama')) $create['nama'] = $nama;
-                if (Schema::hasColumn('siswa','nama_lengkap')) $create['nama_lengkap'] = $nama;
-                if (Schema::hasColumn('siswa','nisn')) $create['nisn'] = $nisn ?: null;
-                
-                if (!empty($kelasNama)) {
-                    $k = Kelas::where('nama_kelas', 'ILIKE', "%{$kelasNama}%")->first();
-                    if ($k) $create['kelas_id'] = $k->id;
-                }
-                
-                Siswa::create($create);
-                $success++;
+                Siswa::create([
+                    'user_id'        => $user->id,
+                    'nama_lengkap'   => $nama,
+                    'nis'            => $nis,
+                    'nisn'           => $nisn ?: null,
+                    'jenis_kelamin'  => $jk,
+                    'status'         => 'aktif',
+                ]);
+
+                $berhasil++;
             }
-            
+
             fclose($handle);
+
+            if ($berhasil === 0) {
+                DB::rollBack();
+                return back()
+                    ->with('warning', "Tidak ada data yang berhasil diimport. Gagal: {$gagal}")
+                    ->with('import_errors', $errors);
+            }
+
             DB::commit();
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            if (is_resource($handle)) fclose($handle);
-            return back()->with('error', 'Gagal import: ' . $e->getMessage());
-        }
-        
-        $msg = "Import: {$success} berhasil, {$failed} gagal";
-        
-        if ($failed > 0) {
+
+            $message = "Berhasil import {$berhasil} siswa.";
+            if ($gagal > 0) {
+                $message .= " Gagal: {$gagal} baris.";
+            }
+
             return redirect()
                 ->route('administrasi.siswa.index')
-                ->with('warning', $msg)
+                ->with('success', $message)
+                ->with('import_errors', $errors);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($handle) fclose($handle);
+
+            return back()
+                ->with('error', 'Gagal import: ' . $e->getMessage())
                 ->with('import_errors', $errors);
         }
-        
-        return redirect()
-            ->route('administrasi.siswa.index')
-            ->with('success', $msg);
     }
 
+    /**
+     * Download template CSV untuk import siswa.
+     */
     public function downloadTemplate()
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.import')) {
-            abort(403, 'Anda tidak memiliki izin untuk download template.');
-        }
+        $fileName = 'template-import-siswa.csv';
 
-        $headers = ['nis', 'nama', 'kelas', 'rfid'];
-        $data = [
-            ['2526027', 'Abdul Rahman Al Hafiz', 'X A PEMASARAN', ''],
-            ['2526029', 'Achmad Guntur Anggara', 'X A PEMASARAN', ''],
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
         ];
-        
-        $callback = function() use ($headers, $data) {
-            $h = fopen('php://output', 'w');
-            fwrite($h, "\xEF\xBB\xBF");
-            fputcsv($h, $headers);
-            foreach ($data as $r) {
-                fputcsv($h, $r);
-            }
-            fclose($h);
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF"); // BOM untuk Excel
+
+            // Header
+            fputcsv($file, ['NIS', 'NISN', 'NAMA SISWA', 'JENIS KELAMIN', 'KELAS']);
+
+            // Contoh baris
+            fputcsv($file, ['232410074', '0012345678', 'Tiara Kirania Salsabila', 'P', 'XII KULINER']);
+            fputcsv($file, ['232410075', '0012345679', 'Try Nazwa', 'P', 'XII KULINER']);
+            fputcsv($file, ['232410076', '0012345680', 'Shereen Kayla', 'P', 'XII KULINER']);
+
+            fclose($file);
         };
-        
-        return response()->streamDownload(
-            $callback,
-            'template_siswa.csv',
-            ['Content-Type' => 'text/csv']
-        );
+
+        return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Export data siswa ke file CSV.
+     */
     public function export(Request $request)
     {
-        // Cek permission
-        if (!auth()->user()->hasPermission('siswa.export')) {
-            abort(403, 'Anda tidak memiliki izin untuk export data siswa.');
+        $fileName = 'data-siswa-' . date('Y-m-d-His') . '.csv';
+
+        $query = Siswa::with(['user', 'kelas']);
+
+        // Terapkan filter yang sama seperti di index
+        if ($request->filled('kelas')) {
+            $query->where('kelas_id', $request->kelas);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nis', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($u) use ($search) {
+                      $u->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        $siswa = Siswa::with('kelas')->orderBy('nis')->get();
-        $headers = ['NO', 'NIS', 'NAMA', 'KELAS'];
-        
-        $callback = function() use ($headers, $siswa) {
-            $h = fopen('php://output', 'w');
-            fwrite($h, "\xEF\xBB\xBF");
-            fputcsv($h, $headers);
-            $no = 1;
-            foreach ($siswa as $s) {
-                fputcsv($h, [
-                    $no++,
-                    $s->nis,
-                    $s->nama ?? $s->nama_lengkap ?? '-',
-                    $s->kelas->nama_kelas ?? '-'
+        $data = $query->latest()->get();
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($data) {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF"); // BOM untuk Excel
+
+            // Header kolom
+            fputcsv($file, [
+                'No',
+                'NIS',
+                'NISN',
+                'Nama Lengkap',
+                'Email',
+                'Jenis Kelamin',
+                'Kelas',
+                'Tingkat',
+                'Jurusan',
+                'Status',
+            ]);
+
+            foreach ($data as $i => $s) {
+                fputcsv($file, [
+                    $i + 1,
+                    $s->nis ?? '-',
+                    $s->nisn ?? '-',
+                    $s->user->name ?? $s->nama_lengkap ?? '-',
+                    $s->user->email ?? '-',
+                    $s->jenis_kelamin == 'L' ? 'Laki-laki' : ($s->jenis_kelamin == 'P' ? 'Perempuan' : '-'),
+                    $s->kelas->nama ?? '-',
+                    $s->kelas->tingkat ?? '-',
+                    $s->kelas->jurusan->nama ?? '-',
+                    ucfirst($s->status ?? '-'),
                 ]);
             }
-            fclose($h);
+
+            fclose($file);
         };
-        
-        return response()->streamDownload(
-            $callback,
-            'data_siswa_' . date('Y-m-d') . '.csv',
-            ['Content-Type' => 'text/csv']
-        );
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Reset password siswa ke NIS.
+     */
+    public function resetPassword($id)
+    {
+        try {
+            $siswa = Siswa::with('user')->findOrFail($id);
+
+            if (!$siswa->user) {
+                return back()->with('error', 'User tidak ditemukan untuk siswa ini.');
+            }
+
+            $siswa->user->update([
+                'password' => Hash::make($siswa->nis),
+            ]);
+
+            return back()->with('success', "Password siswa {$siswa->nama_lengkap} berhasil direset ke NIS: {$siswa->nis}");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal reset password: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mutasi siswa (pindah kelas).
+     */
+    public function mutasi(Request $request, $id)
+    {
+        $request->validate([
+            'kelas_id' => 'required|exists:kelas,id',
+        ]);
+
+        try {
+            $siswa = Siswa::findOrFail($id);
+            $siswa->update(['kelas_id' => $request->kelas_id]);
+
+            return back()->with('success', 'Siswa berhasil dimutasi ke kelas baru.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mutasi siswa: ' . $e->getMessage());
+        }
     }
 }

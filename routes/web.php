@@ -158,13 +158,18 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/mapel/download-template', [MapelController::class, 'downloadTemplate'])->name('mapel.download-template');
     Route::get('/mapel/export', [MapelController::class, 'export'])->name('mapel.export');
 
-    // Manajemen Siswa
-    Route::resource('siswa', SiswaController::class);
-    Route::post('/siswa/{siswa}/mutasi', [SiswaController::class, 'mutasi'])->name('siswa.mutasi');
-    Route::get('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
+    // ============================================
+    // Manajemen Siswa  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas Route::resource
+    // ============================================
     Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
     Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplate'])->name('siswa.download-template');
     Route::get('/siswa/export', [SiswaController::class, 'export'])->name('siswa.export');
+    Route::get('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
+    Route::post('/siswa/{siswa}/mutasi', [SiswaController::class, 'mutasi'])->name('siswa.mutasi');
+
+    // Resource ditaruh paling bawah agar tidak "memakan" route statis
+    Route::resource('siswa', SiswaController::class);
 
     // Manajemen Guru
     Route::resource('guru', AdministrasiGuruController::class);
