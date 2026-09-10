@@ -186,6 +186,12 @@
                 </thead>
                 <tbody>
                     @foreach($guru as $index => $g)
+                    @php
+                        // Generate password preview: simdu# + 3 (kode guru) + 4 digit terakhir NUPTK
+                        $nuptk = $g->nuptk ?? '';
+                        $last4 = strlen($nuptk) >= 4 ? substr($nuptk, -4) : str_pad($nuptk, 4, '0', STR_PAD_LEFT);
+                        $previewPassword = 'simdu#3' . $last4;
+                    @endphp
                     <tr>
                         <td class="text-center">{{ $loop->iteration + ($guru->currentPage() - 1) * $guru->perPage() }}</td>
                         <td class="text-center">
@@ -302,7 +308,17 @@
                                             <p>Reset password untuk guru <strong>{{ $g->nama_lengkap }}</strong>?</p>
                                             <div class="alert alert-info">
                                                 <i class="fas fa-info-circle me-2"></i>
-                                                <small>Password akan direset menjadi: <strong>password123</strong></small>
+                                                <small>Password akan direset menjadi: <strong>{{ $previewPassword }}</strong></small>
+                                            </div>
+                                            <div class="alert alert-secondary mb-0">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Format: <code>simdu#3</code> + 4 digit terakhir NUPTK<br>
+                                                    <span class="badge bg-dark">3</span> = kode entitas Guru
+                                                    @if(empty($g->nuptk))
+                                                        <br><span class="text-danger">⚠ NUPTK kosong, password default: <strong>simdu#30000</strong></span>
+                                                    @endif
+                                                </small>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
