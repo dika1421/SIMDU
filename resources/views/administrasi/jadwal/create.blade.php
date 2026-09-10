@@ -117,6 +117,15 @@
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         outline: none;
     }
+    .form-control-modern.is-invalid,
+    .form-select-modern.is-invalid {
+        border-color: #ef4444;
+        background-image: none;
+    }
+    .form-control-modern.is-invalid:focus,
+    .form-select-modern.is-invalid:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+    }
 
     .info-card {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -514,6 +523,7 @@ $(document).ready(function() {
         var jurusanKelas = opt.data('jurusan') || '';
         var val = $('#kelas_id').val();
 
+        // Prioritas: kode kelas → 5 huruf pertama nama → KLS-<id>
         var ruangan = '';
         if (kodeKelas) {
             ruangan = kodeKelas;
@@ -534,9 +544,13 @@ $(document).ready(function() {
             $('#ruangHint').html('<i class="fas fa-info-circle"></i> Terisi otomatis dari kode kelas');
         }
         $('#ruangan').val(ruangan);
+
+        // Hapus error state pada kelas
+        $('#kelas_id').removeClass('is-invalid');
     }
 
     $('#kelas_id').on('change', updateKelasInfo);
+
     // Trigger saat halaman load (untuk handle old value)
     if ($('#kelas_id').val()) {
         updateKelasInfo();
@@ -555,24 +569,35 @@ $(document).ready(function() {
     }
     $('#jam_mulai, #jam_selesai').on('change', validateTime);
 
+    // ========== REAL-TIME VALIDATION (saat blur) ==========
+    $('#kelas_id, #mapel_id, #guru_id, #hari, #jam_mulai, #jam_selesai, #ruangan').on('blur change', function() {
+        if ($(this).val()) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
     // ========== VALIDASI FORM SEBELUM SUBMIT ==========
     $('#jadwalForm').on('submit', function(e) {
         // Cek jam
         if (!validateTime()) {
             e.preventDefault();
-            Swal.fire('Periksa Jam!', 'Jam selesai harus lebih besar dari jam mulai.', 'warning');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Periksa Jam!',
+                text: 'Jam selesai harus lebih besar dari jam mulai.'
+            });
             return false;
         }
 
         // Cek field wajib
         var requiredFields = [
-            { id: '#kelas_id', label: 'Kelas' },
-            { id: '#mapel_id', label: 'Mata Pelajaran' },
-            { id: '#guru_id', label: 'Guru Pengajar' },
-            { id: '#hari', label: 'Hari' },
-            { id: '#jam_mulai', label: 'Jam Mulai' },
+            { id: '#kelas_id',    label: 'Kelas' },
+            { id: '#mapel_id',    label: 'Mata Pelajaran' },
+            { id: '#guru_id',     label: 'Guru Pengajar' },
+            { id: '#hari',        label: 'Hari' },
+            { id: '#jam_mulai',   label: 'Jam Mulai' },
             { id: '#jam_selesai', label: 'Jam Selesai' },
-            { id: '#ruangan', label: 'Ruangan' }
+            { id: '#ruangan',     label: 'Ruangan' }
         ];
 
         for (var i = 0; i < requiredFields.length; i++) {
@@ -580,7 +605,11 @@ $(document).ready(function() {
             if (!$(field.id).val()) {
                 e.preventDefault();
                 $(field.id).addClass('is-invalid').focus();
-                Swal.fire('Lengkapi Form!', 'Field "' + field.label + '" wajib diisi.', 'warning');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Lengkapi Form!',
+                    text: 'Field "' + field.label + '" wajib diisi.'
+                });
                 return false;
             }
         }
@@ -594,25 +623,60 @@ $(document).ready(function() {
     $('#resetBtn').on('click', function(e) {
         e.preventDefault();
 
-        $('#jadwalForm')[0].reset();
-        $('#kelasPreview').hide();
-        $('#ruangan').val('');
-        $('#ruangHint').html('<i class="fas fa-info-circle"></i> Terisi otomatis dari kode kelas');
+        Swal.fire({
+            icon: 'question',
+            title: 'Reset Form?',
+            text: 'Semua data yang sudah diisi akan dihapus.',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Reset',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-        // Reset default tahun ajaran & semester
-        @if(isset($tahunAjaranAktif) && $tahunAjaranAktif)
-            $('#tahun_ajaran').val('{{ $tahunAjaranAktif->nama_tahun }}');
-        @endif
-        @if(isset($semesterAktif) && $semesterAktif)
-            $('#semester').val('{{ $semesterAktif }}');
-        @endif
+            // Reset semua field
+            $('#jadwalForm')[0].reset();
+            $('#kelasPreview').hide();
+            $('#ruangan').val('');
+            $('#ruangHint').html('<i class="fas fa-info-circle"></i> Terisi otomatis dari kode kelas');
 
-        // Reset validation state
-        $('.is-invalid').removeClass('is-invalid');
+            // Set default tahun ajaran & semester
+            @if(isset($tahunAjaranAktif) && $tahunAjaranAktif)
+                $('#tahun_ajaran').val('{{ $tahunAjaranAktif->nama_tahun }}');
+            @endif
+            @if(isset($semesterAktif) && $semesterAktif)
+                $('#semester').val('{{ $semesterAktif }}');
+            @endif
 
-        // Reset tombol submit
-        $('#submitBtn').html('<i class="fas fa-save"></i> Simpan Jadwal').prop('disabled', false);
+            // Bersihkan semua error state
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+            $('.alert-danger').fadeOut();
+
+            // Reset tombol submit
+            $('#submitBtn').html('<i class="fas fa-save"></i> Simpan Jadwal').prop('disabled', false);
+
+            // Notifikasi sukses
+            Swal.fire({
+                icon: 'success',
+                title: 'Form Direset',
+                timer: 1000,
+                showConfirmButton: false
+            });
+        });
     });
+
+    // ========== SCROLL KE ERROR PERTAMA ==========
+    @if($errors->any())
+        var firstInvalid = $('.is-invalid').first();
+        if (firstInvalid.length) {
+            $('html, body').animate({
+                scrollTop: firstInvalid.offset().top - 120
+            }, 500);
+        }
+    @endif
+
 });
 </script>
 @endpush
