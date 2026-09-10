@@ -15,11 +15,12 @@ class PengaturanController extends Controller
     public function index()
     {
         $pengaturan = PengaturanSekolah::getPengaturan();
-        return view('kepala-sekolah.pengaturan.index', compact('pengaturan'));
+        return view('kepala-sekolah.Pengaturan.index', compact('pengaturan'));
+        //                          ^^^^^^^^^^ huruf P BESAR
     }
 
     /**
-     * Simpan profil sekolah.s
+     * Simpan profil sekolah.
      */
     public function updateProfil(Request $request)
     {
@@ -48,7 +49,6 @@ class PengaturanController extends Controller
             'website',
         ]);
 
-        // Handle upload logo
         if ($request->hasFile('logo')) {
             if ($pengaturan->logo && Storage::disk('public')->exists($pengaturan->logo)) {
                 Storage::disk('public')->delete($pengaturan->logo);
