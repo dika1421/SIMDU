@@ -141,22 +141,34 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     // Dashboard
     Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])->name('dashboard');
 
+    // ============================================
     // Manajemen Jurusan
+    // ============================================
     Route::resource('jurusan', JurusanController::class);
 
-    // Manajemen Kelas
+    // ============================================
+    // Manajemen Kelas  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas Route::resource
+    // ============================================
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
     Route::get('/kelas/download-template', [KelasController::class, 'downloadTemplate'])->name('kelas.download-template');
     Route::get('/kelas/export', [KelasController::class, 'export'])->name('kelas.export');
-    Route::resource('kelas', KelasController::class);
     Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])->name('kelas.get-list');
 
-    // Manajemen Mata Pelajaran
-    Route::resource('mapel', MapelController::class);
+    // Resource ditaruh paling bawah
+    Route::resource('kelas', KelasController::class);
+
+    // ============================================
+    // Manajemen Mata Pelajaran  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas Route::resource
+    // ============================================
     Route::get('/mapel/get-mapel-list', [MapelController::class, 'getMapelList'])->name('mapel.get-list');
     Route::post('/mapel/import', [MapelController::class, 'import'])->name('mapel.import');
     Route::get('/mapel/download-template', [MapelController::class, 'downloadTemplate'])->name('mapel.download-template');
     Route::get('/mapel/export', [MapelController::class, 'export'])->name('mapel.export');
+
+    // Resource ditaruh paling bawah
+    Route::resource('mapel', MapelController::class);
 
     // ============================================
     // Manajemen Siswa  ✅ (URUTAN DIPERBAIKI)
@@ -171,11 +183,16 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     // Resource ditaruh paling bawah agar tidak "memakan" route statis
     Route::resource('siswa', SiswaController::class);
 
-    // Manajemen Guru
-    Route::resource('guru', AdministrasiGuruController::class);
+    // ============================================
+    // Manajemen Guru  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas Route::resource
+    // ============================================
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
+
+    // Resource ditaruh paling bawah
+    Route::resource('guru', AdministrasiGuruController::class);
 
     // =============================================
     // API UNTUK ADMINISTRASI
