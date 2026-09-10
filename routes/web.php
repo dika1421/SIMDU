@@ -188,7 +188,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
-    Route::get('/guru/download-template', [AdministrasiGuruController::class, 'downloadTemplate'])->name('guru.download-template');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
     // Resource ditaruh paling bawah

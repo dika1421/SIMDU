@@ -63,14 +63,14 @@
         Daftar Guru
     </h1>
     <div class="btn-toolbar">
+        {{-- Tombol Import CSV --}}
         <button type="button" class="btn btn-sm btn-success me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#importModal">
             <i class="fas fa-file-csv me-1"></i> Import CSV
         </button>
-        
-        <a href="{{ route('administrasi.guru.download-template') }}" class="btn btn-sm btn-info me-2 shadow-sm text-white">
-            <i class="fas fa-download me-1"></i> Template CSV
-        </a>
-        
+
+        {{-- ❌ Tombol Template CSV DIHAPUS --}}
+
+        {{-- Tombol Tambah Guru --}}
         <a href="{{ route('administrasi.guru.create') }}" class="btn btn-sm btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Tambah Guru
         </a>
@@ -148,7 +148,7 @@
             <div class="col-md-6">
                 <form action="{{ route('administrasi.guru.index') }}" method="GET" class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" name="search" class="form-control" placeholder="Cari nama guru, NUPTK, NIP, atau jabatan..." 
+                    <input type="text" name="search" class="form-control" placeholder="Cari nama guru, NUPTK, NIP, atau jabatan..."
                            value="{{ request('search') }}" style="padding-left: 40px;">
                 </form>
             </div>
@@ -282,7 +282,7 @@
                                 <a href="{{ route('administrasi.guru.edit', $g->id) }}" class="btn btn-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button type="button" class="btn btn-danger" title="Hapus" 
+                                <button type="button" class="btn btn-danger" title="Hapus"
                                         onclick="confirmDelete({{ $g->id }}, '{{ addslashes($g->nama_lengkap ?? '') }}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -371,11 +371,11 @@
                         <strong>Petunjuk Import CSV:</strong>
                         <ul class="mb-0 mt-2">
                             <li>File harus berformat <strong>.CSV</strong> dengan separator <strong>koma (,)</strong></li>
-                            <li>Download template CSV terlebih dahulu dengan klik tombol "Template CSV"</li>
+                            <li>Kolom wajib: <strong>Nama, NUPTK, NIP, Jenis Kelamin, Jabatan</strong></li>
                             <li>Mata pelajaran dipisahkan dengan koma, contoh: Matematika, Fisika, Kimia</li>
                         </ul>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pilih File CSV <span class="text-danger">*</span></label>
                         <input type="file" name="file" id="file" class="form-control" accept=".csv" required>
@@ -404,33 +404,28 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmDelete(id, name) {
-        // Set nama guru di modal
         document.getElementById('guruName').innerText = name;
-        
-        // Set action form dengan ID yang benar - PERBAIKAN UTAMA
+
         var deleteForm = document.getElementById('deleteForm');
         var url = "{{ route('administrasi.guru.destroy', ':id') }}";
         url = url.replace(':id', id);
         deleteForm.action = url;
-        
-        // Tampilkan modal
+
         var myModal = new bootstrap.Modal(document.getElementById('deleteModal'));
         myModal.show();
     }
 
-    // Submit form on search (Enter key)
     document.querySelector('.search-box input')?.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             this.closest('form').submit();
         }
     });
 
-    // Progress bar untuk import
     document.getElementById('importForm')?.addEventListener('submit', function(e) {
         const fileInput = document.getElementById('file');
         const progressDiv = document.getElementById('importProgress');
         const btnImport = document.getElementById('btnImport');
-        
+
         if (!fileInput.files.length) {
             e.preventDefault();
             Swal.fire({
@@ -440,8 +435,7 @@
             });
             return false;
         }
-        
-        // Validasi ekstensi file
+
         const fileName = fileInput.files[0].name;
         const extension = fileName.split('.').pop().toLowerCase();
         if (extension !== 'csv') {
@@ -453,11 +447,11 @@
             });
             return false;
         }
-        
+
         progressDiv.classList.remove('d-none');
         btnImport.disabled = true;
         btnImport.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Memproses...';
-        
+
         let progress = 0;
         const interval = setInterval(function() {
             progress += 10;
