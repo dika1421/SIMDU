@@ -28,7 +28,8 @@ use App\Http\Controllers\Administrasi\ProfilController as AdministrasiProfil;
 use App\Http\Controllers\Administrasi\RoleController;
 use App\Http\Controllers\Administrasi\PermissionController;
 use App\Http\Controllers\Administrasi\UserRoleController;
-use App\Http\Controllers\Administrasi\UserPermissionController;   // ✅ TAMBAHAN
+use App\Http\Controllers\Administrasi\UserPermissionController;
+use App\Http\Controllers\Administrasi\PengaturanController as AdministrasiPengaturan;
 use App\Http\Controllers\Administrasi\Api\GuruController as ApiGuruController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboard;
 use App\Http\Controllers\Guru\NilaiController;
@@ -131,7 +132,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/change-password', [KepalaSekolahProfil::class, 'changePassword'])->name('change-password');
     });
 
-    // ================== PENGATURAN ==================
+    // ================== PENGATURAN KEPALA SEKOLAH ==================
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [KepalaSekolahPengaturan::class, 'updateProfil'])->name('pengaturan.update-profil');
     Route::put('/pengaturan/keamanan', [KepalaSekolahPengaturan::class, 'updateKeamanan'])->name('pengaturan.update-keamanan');
@@ -149,7 +150,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Manajemen Kelas
-    // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
     Route::get('/kelas/download-template', [KelasController::class, 'downloadTemplate'])->name('kelas.download-template');
@@ -160,7 +160,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Manajemen Mata Pelajaran
-    // Route statis HARUS di atas Route::resource
     // ============================================
     Route::get('/mapel/get-mapel-list', [MapelController::class, 'getMapelList'])->name('mapel.get-list');
     Route::post('/mapel/import', [MapelController::class, 'import'])->name('mapel.import');
@@ -171,7 +170,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Manajemen Siswa
-    // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
     Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplate'])->name('siswa.download-template');
@@ -183,7 +181,6 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Manajemen Guru
-    // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
@@ -202,14 +199,12 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     // MANAJEMEN JADWAL
     // =============================================
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
-        // Route statis dulu (tanpa parameter)
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
         Route::get('/create', [JadwalController::class, 'create'])->name('create');
 
-        // Route dinamis (dengan parameter)
         Route::get('/', [JadwalController::class, 'index'])->name('index');
         Route::post('/', [JadwalController::class, 'store'])->name('store');
         Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
@@ -259,11 +254,8 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // KEUANGAN
-    // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
-
-        // --- Route statis (tanpa parameter) ---
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])->name('get-siswa-by-kelas');
         Route::get('/cari-siswa', [KeuanganController::class, 'cariSiswa'])->name('cari-siswa');
 
@@ -282,7 +274,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/laporan', [KeuanganController::class, 'laporanKeuangan'])->name('laporan');
         Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
 
-        // --- Route dinamis (dengan parameter) — TARUH PALING BAWAH ---
+        // Dinamis
         Route::get('/spp/{id}/edit', [KeuanganController::class, 'sppEdit'])->name('spp.edit');
         Route::put('/spp/{id}', [KeuanganController::class, 'sppUpdate'])->name('spp.update');
         Route::delete('/spp/{id}', [KeuanganController::class, 'sppDestroy'])->name('spp.destroy');
@@ -294,16 +286,13 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Arsip
-    // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('arsip')->name('arsip.')->group(function () {
-        // --- Route statis ---
         Route::get('/', [ArsipController::class, 'index'])->name('index');
         Route::get('/create', [ArsipController::class, 'create'])->name('create');
         Route::post('/', [ArsipController::class, 'store'])->name('store');
         Route::get('/trash', [ArsipController::class, 'trash'])->name('trash');
 
-        // --- Route dinamis ---
         Route::get('/{id}', [ArsipController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [ArsipController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ArsipController::class, 'update'])->name('update');
@@ -315,10 +304,8 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 
     // ============================================
     // Komunikasi
-    // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
-        // --- Route statis (TANPA parameter) — TARUH DI ATAS ---
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
         Route::post('/', [AdministrasiKomunikasi::class, 'store'])->name('store');
@@ -326,22 +313,18 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast');
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
 
-        // --- Route dinamis (DENGAN parameter) — TARUH DI BAWAH ---
         Route::get('/{id}', [AdministrasiKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [AdministrasiKomunikasi::class, 'destroy'])->name('destroy');
     });
 
     // ============================================
     // Galeri
-    // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('galeri')->name('galeri.')->group(function () {
-        // --- Route statis ---
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
         Route::post('/', [GaleriController::class, 'store'])->name('store');
 
-        // --- Route dinamis ---
         Route::get('/{id}', [GaleriController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [GaleriController::class, 'edit'])->name('edit');
         Route::put('/{id}', [GaleriController::class, 'update'])->name('update');
@@ -380,8 +363,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // =============================================
-    // MANAJEMEN HAK AKSES PER USER  ✅ BARU
-    // Route statis HARUS di atas route dinamis
+    // MANAJEMEN HAK AKSES PER USER
     // =============================================
     Route::prefix('user-permission')->name('user-permission.')->group(function () {
         Route::get('/', [UserPermissionController::class, 'index'])->name('index');
@@ -398,10 +380,21 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
     });
 
-    // Pengaturan Administrasi
-    Route::get('/pengaturan', function () {
-        return view('administrasi.pengaturan.index');
-    })->name('pengaturan');
+    // =============================================
+    // ✅ PENGATURAN ADMINISTRASI (UPDATED)
+    // =============================================
+    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
+        // Halaman utama pengaturan
+        Route::get('/', [AdministrasiPengaturan::class, 'index'])->name('index');
+
+        // Update tiap tab
+        Route::put('/umum', [AdministrasiPengaturan::class, 'updateUmum'])->name('update-umum');
+        Route::put('/notifikasi', [AdministrasiPengaturan::class, 'updateNotifikasi'])->name('update-notifikasi');
+        Route::put('/keamanan', [AdministrasiPengaturan::class, 'updateKeamanan'])->name('update-keamanan');
+
+        // Backup database
+        Route::post('/backup', [AdministrasiPengaturan::class, 'backup'])->name('backup');
+    });
 });
 
 // ================== GURU ==================
@@ -432,26 +425,19 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::get('/get-mata-pelajaran', [AbsensiSiswaController::class, 'getMataPelajaranByKelas'])->name('get-mata-pelajaran');
     });
 
-    // ============================================
-    // Komunikasi Guru
-    // Route statis HARUS di atas route dinamis
-    // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
-        // --- Route statis ---
         Route::get('/', [GuruKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [GuruKomunikasi::class, 'create'])->name('create');
         Route::post('/', [GuruKomunikasi::class, 'store'])->name('store');
         Route::get('/mark-all-read', [GuruKomunikasi::class, 'markAllAsRead'])->name('mark-all-read');
         Route::get('/unread-count', [GuruKomunikasi::class, 'getUnreadCount'])->name('unread-count');
 
-        // --- Route dinamis ---
         Route::get('/{id}', [GuruKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [GuruKomunikasi::class, 'destroy'])->name('destroy');
         Route::post('/{id}/mark-read', [GuruKomunikasi::class, 'markAsRead'])->name('mark-read');
         Route::post('/{id}/reply', [GuruKomunikasi::class, 'reply'])->name('reply');
     });
 
-    // ================== KALENDER GURU ==================
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [KalenderController::class, 'index'])->name('index');
         Route::get('/events', [KalenderController::class, 'getEvents'])->name('events');
@@ -504,7 +490,6 @@ Route::middleware(['auth', 'check.role:siswa'])->prefix('siswa')->name('siswa.')
         Route::delete('/{id}/batal', [SiswaTugas::class, 'batalKumpul'])->name('batal');
     });
 
-    // ================== KALENDER SISWA ==================
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [SiswaKalender::class, 'index'])->name('index');
         Route::get('/api/events', [SiswaKalender::class, 'getEvents'])->name('api.events');
