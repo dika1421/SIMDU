@@ -381,7 +381,7 @@
             <i class="fas fa-users-cog"></i>
             Hak Akses per User
         </h1>
-        <p class="up-page-sub">Kelola permission khusus untuk setiap user di sistem</p>
+        <p class="up-page-sub">Kelola Role khusus untuk setiap user di sistem</p>
     </div>
 
     @if(session('success'))
