@@ -2,6 +2,19 @@
 
 @section('title', 'Edit Pembayaran Lain')
 
+@php
+    // 🔥 Fallback: cek berbagai kemungkinan nama variabel dari controller
+    $data = $pembayaran
+        ?? $pembayaranLain
+        ?? $data
+        ?? $item
+        ?? null;
+
+    if (!$data) {
+        abort(500, 'Variabel $pembayaran tidak ditemukan. Cek controller Anda.');
+    }
+@endphp
+
 @section('content')
 <style>
     /* ========== PAGE HEADER ========== */
@@ -239,7 +252,7 @@
         <h5>Form Edit Pembayaran Lain</h5>
     </div>
     <div class="form-card-body">
-        <form action="{{ route('administrasi.keuangan.pembayaran-lain.update', $pembayaran->id) }}" method="POST">
+        <form action="{{ route('administrasi.keuangan.pembayaran-lain.update', $data->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -250,8 +263,8 @@
                     </label>
                     <select name="siswa_id" class="form-select-modern @error('siswa_id') is-invalid @enderror" required>
                         <option value="">-- Pilih Siswa --</option>
-                        @foreach($siswaByKelas as $s)
-                            <option value="{{ $s->id }}" {{ old('siswa_id', $pembayaran->siswa_id) == $s->id ? 'selected' : '' }}>
+                        @foreach($siswaByKelas ?? [] as $s)
+                            <option value="{{ $s->id }}" {{ old('siswa_id', $data->siswa_id) == $s->id ? 'selected' : '' }}>
                                 {{ $s->nis }} - {{ $s->user->name ?? $s->nama_lengkap }} ({{ $s->kelas->nama_kelas ?? $s->kelas->nama ?? $s->kelas->kelas ?? '-' }})
                             </option>
                         @endforeach
@@ -267,8 +280,8 @@
                     </label>
                     <select name="kategori" class="form-select-modern @error('kategori') is-invalid @enderror" required>
                         <option value="">-- Pilih Kategori --</option>
-                        @foreach($kategoriList as $key => $value)
-                            <option value="{{ $key }}" {{ old('kategori', $pembayaran->kategori) == $key ? 'selected' : '' }}>
+                        @foreach($kategoriList ?? [] as $key => $value)
+                            <option value="{{ $key }}" {{ old('kategori', $data->kategori) == $key ? 'selected' : '' }}>
                                 {{ $value }}
                             </option>
                         @endforeach
@@ -285,7 +298,7 @@
                     <div class="input-group input-group-modern">
                         <span class="input-group-text">Rp</span>
                         <input type="number" name="jumlah" class="form-control form-control-modern @error('jumlah') is-invalid @enderror"
-                               value="{{ old('jumlah', $pembayaran->jumlah) }}" required min="1000">
+                               value="{{ old('jumlah', $data->jumlah) }}" required min="1000">
                     </div>
                     @error('jumlah')
                         <div class="text-danger small mt-1">{{ $message }}</div>
@@ -298,8 +311,8 @@
                     </label>
                     <select name="metode_bayar" class="form-select-modern @error('metode_bayar') is-invalid @enderror" required>
                         <option value="">-- Pilih Metode --</option>
-                        @foreach($metodeList as $key => $value)
-                            <option value="{{ $key }}" {{ old('metode_bayar', $pembayaran->metode_bayar) == $key ? 'selected' : '' }}>
+                        @foreach($metodeList ?? [] as $key => $value)
+                            <option value="{{ $key }}" {{ old('metode_bayar', $data->metode_bayar) == $key ? 'selected' : '' }}>
                                 {{ $value }}
                             </option>
                         @endforeach
@@ -314,7 +327,7 @@
                         <i class="fas fa-calendar-check"></i> Tanggal Bayar
                     </label>
                     <input type="date" name="tanggal_bayar" class="form-control-modern @error('tanggal_bayar') is-invalid @enderror"
-                           value="{{ old('tanggal_bayar', $pembayaran->tanggal_bayar ? date('Y-m-d', strtotime($pembayaran->tanggal_bayar)) : date('Y-m-d')) }}">
+                           value="{{ old('tanggal_bayar', $data->tanggal_bayar ? date('Y-m-d', strtotime($data->tanggal_bayar)) : date('Y-m-d')) }}">
                     @error('tanggal_bayar')
                         <div class="text-danger small mt-1">{{ $message }}</div>
                     @enderror
@@ -324,7 +337,7 @@
                     <label class="form-label-modern">
                         <i class="fas fa-comment"></i> Keterangan
                     </label>
-                    <textarea name="keterangan" class="form-control-modern" rows="3">{{ old('keterangan', $pembayaran->keterangan) }}</textarea>
+                    <textarea name="keterangan" class="form-control-modern" rows="3">{{ old('keterangan', $data->keterangan) }}</textarea>
                 </div>
             </div>
 

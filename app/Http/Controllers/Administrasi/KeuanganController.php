@@ -119,12 +119,20 @@ class KeuanganController extends Controller
         return view('administrasi.keuangan.spp.index', compact('spp','kelas','kelasList','bulanList','tahunList','statusList','kategoriList','bulan','tahun'));
     }
 
+    // ✅ DIPERBAIKI: tambah $metodeList agar view create bisa dipakai
     public function sppCreate(){ 
         $kelasList = Kelas::orderBy('nama_kelas')->get();
         $kelas = $kelasList;
         $siswa = Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get(); 
         $kategoriList = ['SPP Bulanan'=>'SPP Bulanan', 'SPP Tahunan'=>'SPP Tahunan', 'SPP Semester'=>'SPP Semester'];
-        return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','kategoriList')); 
+        $metodeList = [
+            'Tunai'           => 'Tunai',
+            'Transfer'        => 'Transfer Bank',
+            'Virtual Account' => 'Virtual Account',
+            'QRIS'            => 'QRIS',
+            'EDC'             => 'EDC',
+        ];
+        return view('administrasi.keuangan.spp.create', compact('kelas','kelasList','siswa','kategoriList','metodeList')); 
     }
 
     public function getSiswaByKelas(Request $request){ 
@@ -346,12 +354,24 @@ class KeuanganController extends Controller
         return view('administrasi.keuangan.pembayaran-lain.index', compact('pembayaranLain','pembayaran','kelas','kelasList','jenisList'));
     }
 
+    // ✅ DIPERBAIKI: tambah $kategoriList, $metodeList, $siswaByKelas
     public function pembayaranLainCreate(){ 
         $kelas = Kelas::orderBy('nama_kelas')->get(); 
         $kelasList = $kelas;
         $siswa = Siswa::with('user','kelas')->where('status','aktif')->orderBy('nama')->get();
+        $siswaByKelas = $siswa;
         $jenisList = ['Uang Gedung'=>'Uang Gedung','Uang Seragam'=>'Uang Seragam','Uang Buku'=>'Uang Buku','Uang Kegiatan'=>'Uang Kegiatan','Daftar Ulang'=>'Daftar Ulang','Lainnya'=>'Lainnya']; 
-        return view('administrasi.keuangan.pembayaran-lain.create', compact('kelas','kelasList','siswa','jenisList')); 
+        $kategoriList = $jenisList;
+        $metodeList = [
+            'Tunai'           => 'Tunai',
+            'Transfer'        => 'Transfer Bank',
+            'Virtual Account' => 'Virtual Account',
+            'QRIS'            => 'QRIS',
+            'EDC'             => 'EDC',
+        ];
+        return view('administrasi.keuangan.pembayaran-lain.create', compact(
+            'kelas','kelasList','siswa','siswaByKelas','jenisList','kategoriList','metodeList'
+        )); 
     }
 
     public function pembayaranLainStore(Request $request){ 
@@ -413,23 +433,55 @@ class KeuanganController extends Controller
         }
     }
 
+    // ✅ DIPERBAIKI: kirim $pembayaran + $kategoriList + $metodeList + $siswaByKelas
     public function pembayaranLainEdit($id){ 
         $kelas = Kelas::orderBy('nama_kelas')->get(); 
         $kelasList = $kelas;
-        $pembayaranLain = PembayaranLain::findOrFail($id); 
+        $pembayaran = PembayaranLain::with(['siswa.user','siswa.kelas'])->findOrFail($id); 
+        $siswaByKelas = Siswa::with('user','kelas')->orderBy('nama')->get();
         $jenisList = ['Uang Gedung'=>'Uang Gedung','Uang Seragam'=>'Uang Seragam','Uang Buku'=>'Uang Buku','Uang Kegiatan'=>'Uang Kegiatan','Daftar Ulang'=>'Daftar Ulang','Lainnya'=>'Lainnya']; 
-        return view('administrasi.keuangan.pembayaran-lain.edit', compact('kelas','kelasList','pembayaranLain','jenisList')); 
+        $kategoriList = $jenisList;
+        $metodeList = [
+            'Tunai'           => 'Tunai',
+            'Transfer'        => 'Transfer Bank',
+            'Virtual Account' => 'Virtual Account',
+            'QRIS'            => 'QRIS',
+            'EDC'             => 'EDC',
+        ];
+        return view('administrasi.keuangan.pembayaran-lain.edit', compact(
+            'kelas','kelasList','pembayaran','siswaByKelas','jenisList','kategoriList','metodeList'
+        )); 
     }
     
+    // ✅ DIPERBAIKI: mapping field manual agar konsisten dengan view
     public function pembayaranLainUpdate(Request $request, $id){ 
+        $validator = Validator::make($request->all(), [
+            'siswa_id'   => 'required|integer|min:1',
+            'kategori'   => 'required|string',
+            'jumlah'     => 'required|numeric|min:1000',
+            'metode_bayar' => 'required|string',
+            'tanggal_bayar' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Validasi gagal: ' . implode(', ', $validator->errors()->all()));
+        }
+
         try {
-            $data = $request->all();
-            if($request->filled('kategori_pembayaran')){
-                $data['jenis_pembayaran'] = $request->kategori_pembayaran;
-                $data['kategori_pembayaran'] = $request->kategori_pembayaran;
-            }
             $pembayaran = PembayaranLain::findOrFail($id);
-            $pembayaran->update($data); 
+            $pembayaran->update([
+                'siswa_id'             => $request->siswa_id,
+                'jenis_pembayaran'     => $request->kategori,
+                'kategori_pembayaran'  => $request->kategori,
+                'jumlah'               => $request->jumlah,
+                'metode_bayar'         => $request->metode_bayar,
+                'status'               => $request->status ?? 'lunas',
+                'keterangan'           => $request->keterangan,
+                'tanggal_bayar'        => $request->tanggal_bayar,
+            ]);
             return redirect()->route('administrasi.keuangan.pembayaran-lain.index')->with('success','Pembayaran Lain berhasil diupdate');
         } catch (\Exception $e) {
             Log::error('Error pembayaranLainUpdate: ' . $e->getMessage());
