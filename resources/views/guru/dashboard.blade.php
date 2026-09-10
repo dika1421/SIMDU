@@ -11,6 +11,31 @@
         --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
+    /* ===== Page Header (Fixed) ===== */
+    .page-header-guru {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 1rem 0 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .page-title-guru {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
+    .page-subtitle-guru {
+        color: #94a3b8;
+        font-size: .85rem;
+        margin: 4px 0 0;
+    }
+
     .stat-card {
         transition: all 0.3s ease;
         cursor: pointer;
@@ -193,18 +218,6 @@
         color: white;
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
     }
-    .breadcrumb-modern {
-        background: transparent;
-        padding: 0;
-        margin: 0;
-    }
-    .breadcrumb-modern .breadcrumb-item {
-        font-size: 0.9rem;
-    }
-    .breadcrumb-modern .breadcrumb-item.active {
-        color: var(--primary);
-        font-weight: 600;
-    }
     .badge-status {
         padding: 6px 16px;
         border-radius: 20px;
@@ -229,21 +242,18 @@
         .stat-number { font-size: 1.5rem; }
         .grid-2 { grid-template-columns: 1fr; }
         .welcome-avatar { width: 48px; height: 48px; font-size: 1.4rem; }
+        .page-title-guru { font-size: 1.25rem; }
     }
 </style>
 
-<!-- Page Title -->
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3">
+<!-- ===== Page Title (Clean, tanpa icon garis & breadcrumb) ===== -->
+<div class="page-header-guru">
     <div>
-        <h1 class="h2 fw-bold mb-0">
-            <i class="fas fa-grip-lines me-2 text-primary" style="font-size: 1.2rem;"></i>
-            Dashboard Guru
-        </h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb breadcrumb-modern">
-                <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-        </nav>
+        <h1 class="page-title-guru">Dashboard Guru</h1>
+        <p class="page-subtitle-guru">
+            <i class="far fa-calendar-alt me-1"></i>
+            {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
+        </p>
     </div>
     <div>
         <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="window.location.reload()">
@@ -352,7 +362,7 @@
                         <div class="stat-number mt-1">{{ number_format($rataNilai ?? 0, 1) }}</div>
                         <div class="progress progress-sm mt-2" style="width: 100%;">
                             @php $persentase = min(($rataNilai ?? 0), 100); @endphp
-                            <div class="progress-bar bg-{{ $persentase >= 75 ? 'success' : 'warning' }}" 
+                            <div class="progress-bar bg-{{ $persentase >= 75 ? 'success' : 'warning' }}"
                                  style="width: {{ $persentase }}%"></div>
                         </div>
                     </div>
@@ -388,7 +398,7 @@
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                         <span class="schedule-time">
                                             <i class="far fa-clock me-1"></i>
-                                            {{ \Carbon\Carbon::parse($j->jam_mulai)->format('H:i') }} - 
+                                            {{ \Carbon\Carbon::parse($j->jam_mulai)->format('H:i') }} -
                                             {{ \Carbon\Carbon::parse($j->jam_selesai)->format('H:i') }}
                                         </span>
                                         <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
@@ -507,14 +517,14 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('nilaiChart').getContext('2d');
-    
+
     const labels = {!! json_encode($chartLabels ?? ['Belum Ada Data']) !!};
     const data = {!! json_encode($chartData ?? [0]) !!};
-    
+
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
     gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
     gradient.addColorStop(1, 'rgba(118, 75, 162, 0.8)');
-    
+
     new Chart(ctx, {
         type: 'bar',
         data: {
