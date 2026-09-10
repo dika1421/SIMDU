@@ -66,22 +66,28 @@
                     <i class="fas fa-info-circle me-2"></i> Informasi Dokumen
                 </h5>
                 <div class="row">
+                    {{-- NOMOR DOKUMEN (dari kode_arsip) --}}
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Kode Arsip</label>
-                        <input type="text" name="kode_arsip" class="form-control @error('kode_arsip') is-invalid @enderror" 
-                               placeholder="Contoh: ARS-001" value="{{ old('kode_arsip') }}">
+                        <label class="form-label">Nomor Dokumen</label>
+                        <input type="text" name="nomor_dokumen" 
+                               class="form-control @error('nomor_dokumen') is-invalid @enderror" 
+                               placeholder="Contoh: ARS-001" 
+                               value="{{ old('nomor_dokumen') }}">
                         <small class="text-muted">Opsional, untuk pengkodean arsip</small>
-                        @error('kode_arsip')
+                        @error('nomor_dokumen')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     
+                    {{-- KATEGORI --}}
                     <div class="col-md-6 mb-3">
                         <label class="form-label required-field">Kategori</label>
                         <select name="kategori" class="form-select @error('kategori') is-invalid @enderror" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($kategoriList as $key => $value)
-                                <option value="{{ $key }}" {{ old('kategori') == $key ? 'selected' : '' }}>{{ $value }}</option>
+                                <option value="{{ $key }}" {{ old('kategori') == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
                             @endforeach
                         </select>
                         @error('kategori')
@@ -89,34 +95,54 @@
                         @enderror
                     </div>
                     
+                    {{-- NAMA DOKUMEN (dari judul) --}}
                     <div class="col-md-12 mb-3">
-                        <label class="form-label required-field">Judul Dokumen</label>
-                        <input type="text" name="judul" class="form-control @error('judul') is-invalid @enderror" 
-                               placeholder="Masukkan judul/nama dokumen" value="{{ old('judul') }}" required>
-                        @error('judul')
+                        <label class="form-label required-field">Nama Dokumen</label>
+                        <input type="text" name="nama_dokumen" 
+                               class="form-control @error('nama_dokumen') is-invalid @enderror" 
+                               placeholder="Masukkan nama dokumen" 
+                               value="{{ old('nama_dokumen') }}" required>
+                        @error('nama_dokumen')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     
+                    {{-- JENIS DOKUMEN (optional) --}}
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Jenis Dokumen</label>
+                        <input type="text" name="jenis_dokumen" 
+                               class="form-control @error('jenis_dokumen') is-invalid @enderror" 
+                               placeholder="Contoh: Dokumen Guru"
+                               value="{{ old('jenis_dokumen') }}">
+                        @error('jenis_dokumen')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    {{-- TANGGAL DOKUMEN --}}
                     <div class="col-md-6 mb-3">
                         <label class="form-label required-field">Tanggal Dokumen</label>
-                        <input type="date" name="tanggal_dokumen" class="form-control @error('tanggal_dokumen') is-invalid @enderror" 
+                        <input type="date" name="tanggal_dokumen" 
+                               class="form-control @error('tanggal_dokumen') is-invalid @enderror" 
                                value="{{ old('tanggal_dokumen', date('Y-m-d')) }}" required>
                         @error('tanggal_dokumen')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     
-                    <div class="col-md-6 mb-3">
+                    {{-- FILE DOKUMEN --}}
+                    <div class="col-md-12 mb-3">
                         <label class="form-label required-field">File Dokumen</label>
-                        <input type="file" name="file" id="file" class="form-control @error('file') is-invalid @enderror" 
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" required>
+                        <input type="file" name="file" id="file" 
+                               class="form-control @error('file') is-invalid @enderror" 
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png" required>
                         <small class="text-muted">
                             <i class="fas fa-info-circle me-1"></i>
-                            Maksimal 10MB. Format: PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, PNG
+                            Maksimal 10MB. Format: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, JPEG, PNG
                         </small>
                         <div class="progress mt-2 d-none" id="uploadProgress">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%">0%</div>
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                 role="progressbar" style="width: 0%">0%</div>
                         </div>
                         @error('file')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -130,11 +156,14 @@
                     <i class="fas fa-align-left me-2"></i> Informasi Tambahan
                 </h5>
                 <div class="row">
+                    {{-- KETERANGAN (dari deskripsi) --}}
                     <div class="col-md-12 mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" 
-                                  rows="3" placeholder="Deskripsi singkat tentang dokumen ini...">{{ old('deskripsi') }}</textarea>
-                        @error('deskripsi')
+                        <label class="form-label">Keterangan</label>
+                        <textarea name="keterangan" 
+                                  class="form-control @error('keterangan') is-invalid @enderror" 
+                                  rows="3" 
+                                  placeholder="Keterangan singkat tentang dokumen ini...">{{ old('keterangan') }}</textarea>
+                        @error('keterangan')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
