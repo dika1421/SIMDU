@@ -1,6 +1,6 @@
 @extends('administrasi.layouts.header')
 
-@section('title', 'Atur Hak Akses User')
+@section('title', 'Atur Role User')
 
 @section('content')
 <style>
@@ -80,16 +80,6 @@
     background: var(--up-bg-soft) !important;
     color: var(--up-text) !important;
 }
-.up-edit-wrapper .up-btn-light {
-    background: #fff !important;
-    color: var(--up-primary) !important;
-    font-weight: 700 !important;
-}
-.up-edit-wrapper .up-btn-light-outline {
-    background: transparent !important;
-    color: #fff !important;
-    border: 1.5px solid rgba(255,255,255,.5) !important;
-}
 .up-edit-wrapper .up-card {
     background: #fff !important;
     border-radius: var(--up-radius) !important;
@@ -153,17 +143,6 @@
     background: #94a3b8;
     color: #fff;
 }
-.up-edit-wrapper .up-info-note {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 12px;
-    padding: 14px 18px;
-    font-size: .85rem;
-    color: #1e40af;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
 .up-edit-wrapper .up-card-head {
     background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%);
     color: #fff;
@@ -183,123 +162,102 @@
     align-items: center;
     gap: 8px;
 }
-.up-edit-wrapper .up-card-head small {
-    color: rgba(255,255,255,.85);
-    font-size: .8rem;
-}
 .up-edit-wrapper .up-card-body {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
     background: var(--up-bg-soft);
 }
-.up-edit-wrapper .up-group-grid {
+
+/* Role Selector */
+.up-edit-wrapper .up-role-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
 }
-.up-edit-wrapper .up-group {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(15,23,42,.06);
-    overflow: hidden;
-    transition: transform .2s, box-shadow .2s;
+.up-edit-wrapper .up-role-option {
+    position: relative;
 }
-.up-edit-wrapper .up-group:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(15,23,42,.1);
+.up-edit-wrapper .up-role-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
 }
-.up-edit-wrapper .up-group-head {
+.up-edit-wrapper .up-role-label {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 14px 18px;
+    gap: 14px;
+    padding: 18px 20px;
     background: #fff;
-    border-bottom: 1px solid #f1f5f9;
-}
-.up-edit-wrapper .up-group-title {
-    font-size: .9rem;
-    font-weight: 700;
-    color: var(--up-text);
+    border: 2px solid var(--up-border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all .2s ease;
     margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    width: 100%;
 }
-.up-edit-wrapper .up-group-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: #eef2ff;
-    color: var(--up-primary);
+.up-edit-wrapper .up-role-label:hover {
+    border-color: var(--up-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(79,70,229,.12);
+}
+.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label {
+    border-color: var(--up-primary);
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+    box-shadow: 0 6px 18px rgba(79,70,229,.18);
+}
+.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label .up-role-icon {
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%);
+    color: #fff;
+}
+.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label .up-role-check {
+    opacity: 1;
+    transform: scale(1);
+}
+.up-edit-wrapper .up-role-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: var(--up-text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: .75rem;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: all .2s ease;
 }
-.up-edit-wrapper .up-group-count {
-    background: var(--up-primary);
-    color: #fff;
-    font-size: .7rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-}
-.up-edit-wrapper .up-group-body {
-    padding: 8px 0;
-}
-.up-edit-wrapper .up-perm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px;
-    transition: background .15s;
-}
-.up-edit-wrapper .up-perm-item:hover {
-    background: #f8faff;
-}
-.up-edit-wrapper .up-perm-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.up-edit-wrapper .up-role-info {
     flex-grow: 1;
     min-width: 0;
 }
-.up-edit-wrapper .up-perm-label {
-    font-size: .82rem;
-    color: #334155;
-    cursor: pointer;
-    word-break: break-word;
+.up-edit-wrapper .up-role-name {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--up-text);
+    margin: 0 0 2px 0;
+    text-transform: capitalize;
 }
-.up-edit-wrapper .form-check-input {
-    cursor: pointer;
-    width: 2.4em;
-    height: 1.2em;
+.up-edit-wrapper .up-role-desc {
+    font-size: .75rem;
+    color: var(--up-text-light);
     margin: 0;
 }
-.up-edit-wrapper .form-check-input:checked {
-    background-color: var(--up-primary);
-    border-color: var(--up-primary);
-}
-.up-edit-wrapper .up-perm-badges {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-.up-edit-wrapper .up-badge-role-tag {
-    background: #dcfce7;
-    color: #166534;
+.up-edit-wrapper .up-role-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: .65rem;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-weight: 700;
+    opacity: 0;
+    transform: scale(.5);
+    transition: all .2s ease;
+    flex-shrink: 0;
 }
-.up-edit-wrapper .up-badge-custom-tag {
-    background: #fef3c7;
-    color: #92400e;
-    font-size: .65rem;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-weight: 700;
-}
+
+/* Footer */
 .up-edit-wrapper .up-card-foot {
     background: #fff;
     border-top: 1px solid var(--up-border);
@@ -310,14 +268,42 @@
     flex-wrap: wrap;
     gap: 12px;
 }
-.up-edit-wrapper .up-card-foot .up-foot-info {
+.up-edit-wrapper .up-foot-info {
     color: var(--up-text-muted);
     font-size: .85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 .up-edit-wrapper .up-foot-buttons {
     display: flex;
     gap: 8px;
 }
+
+/* Empty state */
+.up-edit-wrapper .up-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--up-text-muted);
+}
+
+/* Alert */
+.up-edit-wrapper .up-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: .9rem;
+}
+.up-edit-wrapper .up-alert-danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
 @media (max-width: 768px) {
     .up-edit-wrapper .up-card-foot {
         flex-direction: column;
@@ -338,15 +324,37 @@
     <div class="up-page-head">
         <div>
             <h1 class="up-page-title">
-                <i class="fas fa-shield-alt"></i>
-                Atur Hak Akses User
+                <i class="fas fa-user-shield"></i>
+                Atur Role User
             </h1>
-            <p class="up-page-sub">Override permission khusus untuk user ini</p>
+            <p class="up-page-sub">Pilih role untuk user ini — permission akan otomatis mengikuti role</p>
         </div>
         <a href="{{ route('administrasi.user-permission.index') }}" class="up-btn up-btn-outline">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
+
+    {{-- Alert Error --}}
+    @if(session('error'))
+        <div class="up-alert up-alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>{{ session('error') }}</div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="up-alert up-alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>Terjadi kesalahan:</strong>
+                <ul style="margin:4px 0 0 0; padding-left:18px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
 
     {{-- Info User --}}
     <div class="up-info-card">
@@ -360,134 +368,76 @@
                     <i class="fas fa-envelope me-1"></i> {{ $user->email }}
                 </p>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                    <span style="font-size:.75rem; color:var(--up-text-muted); font-weight:600;">ROLE:</span>
-                    @php
-                        $displayRoles = collect();
-                        if ($user->roles->count() > 0) {
-                            $displayRoles = $user->roles->pluck('name');
-                        } elseif ($role) {
-                            $displayRoles = collect([$role->name]);
-                        } elseif (!empty($user->role)) {
-                            $displayRoles = collect([$user->role]);
-                        }
-                    @endphp
-
-                    @forelse($displayRoles as $roleName)
-                        <span class="up-badge up-badge-role">{{ ucfirst($roleName) }}</span>
-                    @empty
-                        <span class="up-badge up-badge-norole">No Role</span>
-                    @endforelse
-                </div>
-            </div>
-            <div style="flex:1 1 300px; min-width:280px;">
-                <div class="up-info-note">
-                    <i class="fas fa-info-circle" style="margin-top:2px;"></i>
-                    <div>
-                        Permission default berasal dari <strong>Role</strong>.
-                        Kamu bisa <em>override</em> permission khusus untuk user ini —
-                        permission yang <strong>sama dengan role</strong> tidak akan disimpan sebagai override.
-                    </div>
+                    <span style="font-size:.75rem; color:var(--up-text-muted); font-weight:600;">ROLE SAAT INI:</span>
+                    @if($currentRoleName)
+                        <span class="up-badge up-badge-role">{{ ucfirst($currentRoleName) }}</span>
+                    @else
+                        <span class="up-badge up-badge-norole">Belum ada role</span>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Form --}}
+    {{-- Form Pilih Role --}}
     <form action="{{ route('administrasi.user-permission.update', ['id' => $user->id]) }}"
-          method="POST" id="permissionForm">
+          method="POST" id="roleForm">
         @csrf
         @method('PUT')
 
         <div class="up-card">
             <div class="up-card-head">
-                <div>
-                    <h5><i class="fas fa-key"></i> Daftar Permission</h5>
-                    <small><i class="fas fa-check-circle me-1"></i>
-                        <span id="selectedCount">0</span> permission dipilih
-                    </small>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <button type="button" class="up-btn up-btn-light" onclick="selectAll(true)">
-                        <i class="fas fa-check-double"></i> Pilih Semua
-                    </button>
-                    <button type="button" class="up-btn up-btn-light-outline" onclick="selectAll(false)">
-                        <i class="fas fa-times"></i> Hapus Semua
-                    </button>
-                </div>
+                <h5><i class="fas fa-user-tag"></i> Pilih Role</h5>
             </div>
 
             <div class="up-card-body">
-                @php
-                    // Group permission berdasarkan prefix nama (sebelum tanda '-')
-                    $grouped = $allPermissions->groupBy(function($perm) {
-                        $parts = explode('-', $perm->name);
-                        return $parts[0] ?? 'lainnya';
-                    });
-                @endphp
-
-                <div class="up-group-grid">
-                    @foreach($grouped as $group => $permissions)
-                        <div class="up-group">
-                            <div class="up-group-head">
-                                <h6 class="up-group-title">
-                                    <span class="up-group-icon">
-                                        <i class="fas fa-folder"></i>
-                                    </span>
-                                    {{ ucfirst($group) }}
-                                </h6>
-                                <span class="up-group-count">{{ $permissions->count() }}</span>
-                            </div>
-                            <div class="up-group-body">
-                                @foreach($permissions as $perm)
-                                    @php
-                                        $fromRole = in_array($perm->name, $rolePermissions);
-                                        $override = $userOverrides[$perm->id] ?? null;
-                                        $checked  = ($override !== null) ? $override : $fromRole;
-                                    @endphp
-                                    <div class="up-perm-item">
-                                        <div class="up-perm-left">
-                                            <div class="form-check form-switch" style="margin:0;">
-                                                <input class="form-check-input permission-checkbox"
-                                                       type="checkbox"
-                                                       name="permissions[]"
-                                                       value="{{ $perm->name }}"
-                                                       id="perm_{{ $perm->id }}"
-                                                       {{ $checked ? 'checked' : '' }}>
-                                            </div>
-                                            <label class="up-perm-label" for="perm_{{ $perm->id }}">
-                                                {{ $perm->name }}
-                                            </label>
-                                        </div>
-                                        <div class="up-perm-badges">
-                                            @if($fromRole && $override === null)
-                                                <span class="up-badge-role-tag">
-                                                    <i class="fas fa-check"></i> Role
-                                                </span>
-                                            @elseif($override !== null)
-                                                <span class="up-badge-custom-tag">
-                                                    <i class="fas fa-star"></i> Custom
-                                                </span>
-                                            @endif
-                                        </div>
+                @if($roles->isEmpty())
+                    <div class="up-empty">
+                        <i class="fas fa-folder-open fa-3x mb-3" style="opacity:.4;"></i>
+                        <h5>Belum ada role</h5>
+                        <p>Silakan buat role terlebih dahulu di menu Data Role.</p>
+                    </div>
+                @else
+                    <div class="up-role-grid">
+                        @foreach($roles as $r)
+                            <div class="up-role-option">
+                                <input type="radio"
+                                       name="role_id"
+                                       id="role_{{ $r->id }}"
+                                       value="{{ $r->id }}"
+                                       {{ (string) old('role_id', $currentRoleId) === (string) $r->id ? 'checked' : '' }}>
+                                <label class="up-role-label" for="role_{{ $r->id }}">
+                                    <div class="up-role-icon">
+                                        <i class="fas fa-user-shield"></i>
                                     </div>
-                                @endforeach
+                                    <div class="up-role-info">
+                                        <p class="up-role-name">{{ ucfirst($r->name) }}</p>
+                                        <p class="up-role-desc">
+                                            {{ $r->display_name ?? 'Role ' . ucfirst($r->name) }}
+                                        </p>
+                                    </div>
+                                    <div class="up-role-check">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </label>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
             <div class="up-card-foot">
                 <div class="up-foot-info">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Permission yang <strong>sama dengan role</strong> tidak akan disimpan sebagai override.
+                    <i class="fas fa-info-circle"></i>
+                    Semua override permission user akan direset dan mengikuti role baru.
                 </div>
                 <div class="up-foot-buttons">
                     <a href="{{ route('administrasi.user-permission.index') }}" class="up-btn up-btn-outline">
                         <i class="fas fa-times"></i> Batal
                     </a>
-                    <button type="submit" class="up-btn up-btn-primary">
-                        <i class="fas fa-save"></i> Simpan Hak Akses
+                    <button type="submit" class="up-btn up-btn-primary"
+                            {{ $roles->isEmpty() ? 'disabled' : '' }}>
+                        <i class="fas fa-save"></i> Simpan Role
                     </button>
                 </div>
             </div>
@@ -496,23 +446,22 @@
 </div>
 
 <script>
-    function selectAll(checked) {
-        document.querySelectorAll('.permission-checkbox').forEach(function(cb) {
-            cb.checked = checked;
-        });
-        updateCount();
-    }
+    // Konfirmasi sebelum submit kalau role berubah
+    document.getElementById('roleForm')?.addEventListener('submit', function(e) {
+        const selected = document.querySelector('input[name="role_id"]:checked');
+        if (!selected) {
+            e.preventDefault();
+            alert('Silakan pilih role terlebih dahulu.');
+            return false;
+        }
 
-    function updateCount() {
-        const total = document.querySelectorAll('.permission-checkbox:checked').length;
-        const el = document.getElementById('selectedCount');
-        if (el) el.textContent = total;
-    }
-
-    document.querySelectorAll('.permission-checkbox').forEach(function(cb) {
-        cb.addEventListener('change', updateCount);
+        const currentRoleId = '{{ $currentRoleId }}';
+        if (selected.value !== currentRoleId) {
+            if (!confirm('Ubah role user ini? Semua override permission akan direset.')) {
+                e.preventDefault();
+                return false;
+            }
+        }
     });
-
-    document.addEventListener('DOMContentLoaded', updateCount);
 </script>
 @endsection

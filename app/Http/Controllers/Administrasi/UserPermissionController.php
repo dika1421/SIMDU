@@ -10,25 +10,25 @@ use App\Models\UserPermission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 
 class UserPermissionController extends Controller
 {
+    /**
+     * Daftar user dengan ringkasan role & override.
+     */
     public function index(Request $request)
     {
         try {
-            $query = User::with(['roles', 'userPermissions.permission']);
+            $query = User::with(['role', 'roles', 'userPermissions']);
 
             if ($request->filled('role')) {
                 $roleFilter = $request->role;
                 $query->where(function ($q) use ($roleFilter) {
-                    if (is_numeric($roleFilter)) {
-                        $q->where('role_id', $roleFilter);
-                    }
-                    $q->orWhere('role', $roleFilter);
-                    $q->orWhereHas('roles', function ($rq) use ($roleFilter) {
-                        $rq->where('name', $roleFilter);
-                    });
+                    $q->where('role_id', $roleFilter)
+                      ->orWhere('role', $roleFilter)
+                      ->orWhereHas('roles', function ($rq) use ($roleFilter) {
+                          $rq->where('name', $roleFilter);
+                      });
                 });
             }
 
@@ -51,54 +51,36 @@ class UserPermissionController extends Controller
         }
     }
 
+    /**
+     * Form edit role user.
+     */
     public function edit($id)
     {
         try {
-            $user = User::with(['roles', 'userPermissions.permission'])
-                        ->findOrFail($id);
+            $user = User::with(['role', 'roles', 'userPermissions'])->findOrFail($id);
 
-            // ✅ FIX: Ambil role lewat role_id, bukan $user->role
-            $role = $user->role_id
-                ? Role::with('permissions')->find($user->role_id)
-                : null;
+            // Semua role untuk dropdown
+            $roles = Role::orderBy('name')->get();
 
-            // Ambil semua permission
-            $permissionQuery = Permission::query();
-            if (Schema::hasColumn('permissions', 'group')) {
-                $permissionQuery->orderBy('group');
-            }
-            $allPermissions = $permissionQuery->orderBy('name')->get();
+            // Role user saat ini (prioritas: role_id, lalu role string, lalu multi-role pertama)
+            $currentRoleId = $user->role_id;
+            $currentRoleName = $user->role;
 
-            if ($allPermissions->isEmpty()) {
-                return redirect()->route('administrasi.user-permission.index')
-                    ->with('error', 'Belum ada data permission.');
+            if (!$currentRoleId && $user->roles->count() > 0) {
+                $currentRoleId = $user->roles->first()->id;
+                $currentRoleName = $user->roles->first()->name;
             }
 
-            // Permission dari single role
-            $rolePermissions = [];
-            if ($role) {
-                $rolePermissions = $role->permissions->pluck('name')->toArray();
-            }
-
-            // Permission dari multi-role
-            if ($user->roles()->count() > 0) {
-                foreach ($user->roles as $r) {
-                    foreach ($r->permissions as $perm) {
-                        if (!in_array($perm->name, $rolePermissions)) {
-                            $rolePermissions[] = $perm->name;
-                        }
-                    }
-                }
-            }
-
-            // Override per-user
-            $userOverrides = [];
-            foreach ($user->userPermissions as $override) {
-                $userOverrides[$override->permission_id] = (bool) $override->granted;
+            if (!$currentRoleName && $currentRoleId) {
+                $r = Role::find($currentRoleId);
+                $currentRoleName = $r ? $r->name : null;
             }
 
             return view('administrasi.user-permission.edit', compact(
-                'user', 'role', 'allPermissions', 'rolePermissions', 'userOverrides'
+                'user',
+                'roles',
+                'currentRoleId',
+                'currentRoleName'
             ));
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -115,11 +97,16 @@ class UserPermissionController extends Controller
         }
     }
 
+    /**
+     * Update role user.
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'permissions'   => 'nullable|array',
-            'permissions.*' => 'string|exists:permissions,name',
+            'role_id' => 'required|exists:roles,id',
+        ], [
+            'role_id.required' => 'Role wajib dipilih.',
+            'role_id.exists'   => 'Role yang dipilih tidak valid.',
         ]);
 
         try {
@@ -127,75 +114,57 @@ class UserPermissionController extends Controller
 
             $user = User::findOrFail($id);
 
-            $checkedNames = $request->input('permissions', []);
-            $checkedIds = Permission::whereIn('name', $checkedNames)
-                                    ->pluck('id')
-                                    ->toArray();
+            $newRole = Role::findOrFail($request->role_id);
 
-            // ✅ FIX: Ambil role lewat role_id
-            $role = $user->role_id
-                ? Role::with('permissions')->find($user->role_id)
-                : null;
+            // Update role_id di tabel users
+            $user->role_id = $newRole->id;
+            // Sinkronkan kolom 'role' string (untuk backward compatibility)
+            $user->role = $newRole->name;
+            $user->save();
 
-            $rolePermIds = [];
-            if ($role) {
-                $rolePermIds = $role->permissions->pluck('id')->toArray();
+            // Sinkronkan tabel pivot role_user (kalau kamu pakai multi-role)
+            try {
+                $user->roles()->sync([$newRole->id]);
+            } catch (\Exception $e) {
+                // Kalau tabel role_user tidak ada, abaikan
+                Log::info('Sync role_user pivot gagal: ' . $e->getMessage());
             }
 
-            // Multi-role
-            if ($user->roles()->count() > 0) {
-                foreach ($user->roles as $r) {
-                    foreach ($r->permissions as $perm) {
-                        if (!in_array($perm->id, $rolePermIds)) {
-                            $rolePermIds[] = $perm->id;
-                        }
-                    }
-                }
-            }
-
-            $allPermIds = Permission::pluck('id')->toArray();
-
+            // Reset semua override permission user (karena role berubah)
+            // Permission akan mengikuti role baru
             UserPermission::where('user_id', $user->id)->delete();
-
-            $overrideCount = 0;
-            foreach ($allPermIds as $permId) {
-                $isChecked = in_array($permId, $checkedIds);
-                $fromRole  = in_array($permId, $rolePermIds);
-
-                if ($isChecked !== $fromRole) {
-                    UserPermission::create([
-                        'user_id'       => $user->id,
-                        'permission_id' => $permId,
-                        'granted'       => $isChecked,
-                    ]);
-                    $overrideCount++;
-                }
-            }
 
             DB::commit();
 
-            $message = 'Hak akses user ' . $user->name . ' berhasil diperbarui.';
-            $message .= $overrideCount > 0
-                ? " ({$overrideCount} override tersimpan)"
-                : ' (semua sama dengan role)';
-
             return redirect()->route('administrasi.user-permission.index')
-                ->with('success', $message);
+                ->with('success', 'Role user ' . $user->name . ' berhasil diubah menjadi ' . ucfirst($newRole->name) . '. Permission mengikuti role baru.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return redirect()->route('administrasi.user-permission.index')
+                ->with('error', "User atau Role dengan ID {$id} tidak ditemukan.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal update user permission: ' . $e->getMessage());
-            return back()->with('error', 'Gagal update: ' . $e->getMessage())->withInput();
+            Log::error('Gagal update role user: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()
+                ->with('error', 'Gagal update: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
+    /**
+     * Reset override user (kembali ke default role).
+     */
     public function reset($id)
     {
         try {
             $user = User::findOrFail($id);
             $deletedCount = UserPermission::where('user_id', $user->id)->delete();
 
-            $message = 'Hak akses user ' . $user->name . ' berhasil direset.';
+            $message = 'Override hak akses user ' . $user->name . ' berhasil direset.';
             $message .= $deletedCount > 0 ? " ({$deletedCount} override dihapus)" : '';
 
             return redirect()->route('administrasi.user-permission.index')
