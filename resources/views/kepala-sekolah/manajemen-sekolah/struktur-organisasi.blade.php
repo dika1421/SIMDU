@@ -231,7 +231,6 @@
         font-size: 0.9rem;
     }
 
-    /* Style untuk dropdown guru yang bisa dicari */
     .guru-select-wrapper {
         position: relative;
     }
@@ -334,7 +333,6 @@
         font-size: 0.85rem;
     }
 
-    /* Pastikan modal body tidak overflow hidden */
     .modal-body {
         overflow: visible !important;
     }
@@ -344,7 +342,7 @@
     }
 </style>
 
-<!-- Header (tanpa breadcrumb) -->
+<!-- Header -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-2 mb-3 border-bottom">
     <div>
         <h1 class="h4 mb-0">
@@ -549,18 +547,23 @@
                                     </div>
                                     <div id="guruOptionList">
                                         @forelse($guru as $g)
+                                            @php
+                                                // Ambil mapel dari kolom yang benar
+                                                $mapelGuru = $g->mata_pelajaran_utama ?? '-';
+                                                $jabatanGuru = $g->jabatan->nama ?? ($g->jabatan ?? 'Guru');
+                                            @endphp
                                             <div class="guru-option" 
                                                  data-id="{{ $g->id }}"
                                                  data-nuptk="{{ $g->nuptk ?? '-' }}"
                                                  data-nama="{{ $g->user->name ?? $g->nama_lengkap }}"
-                                                 data-jabatan="{{ $g->jabatan ?? 'Guru' }}"
-                                                 data-mapel="{{ $g->mata_pelajaran ?? '-' }}">
+                                                 data-jabatan="{{ $jabatanGuru }}"
+                                                 data-mapel="{{ $mapelGuru }}">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <span class="guru-name">{{ $g->user->name ?? $g->nama_lengkap }}</span>
-                                                    <span class="badge bg-primary badge-jabatan">{{ $g->jabatan ?? 'Guru' }}</span>
+                                                    <span class="badge bg-primary badge-jabatan">{{ $jabatanGuru }}</span>
                                                 </div>
                                                 <div class="guru-meta">
-                                                    NUPTK: {{ $g->nuptk ?? '-' }} | Mapel: {{ $g->mata_pelajaran ?? '-' }}
+                                                    NUPTK: {{ $g->nuptk ?? '-' }} | Mapel: {{ $mapelGuru }}
                                                 </div>
                                             </div>
                                         @empty
@@ -877,9 +880,7 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ===== DROPDOWN GURU (PILIH LANGSUNG, TANPA KETIK) =====
-    
-    // Toggle dropdown saat input diklik
+    // ===== DROPDOWN GURU =====
     $('#guruDisplay').on('click', function(e) {
         e.stopPropagation();
         $('#guruDropdown').slideToggle(200);
@@ -887,7 +888,6 @@ $(document).ready(function() {
         $('.guru-option').show();
     });
 
-    // Filter guru saat mengetik di search box dropdown
     $('#guruFilter').on('keyup', function() {
         var keyword = $(this).val().toLowerCase().trim();
         
@@ -912,13 +912,13 @@ $(document).ready(function() {
         }
     });
 
-    // Klik pilihan guru
+    // Klik pilihan guru — ambil semua data termasuk mapel
     $(document).on('click', '.guru-option', function() {
-        var id = $(this).data('id');
-        var nuptk = $(this).data('nuptk');
-        var nama = $(this).data('nama');
+        var id      = $(this).data('id');
+        var nuptk   = $(this).data('nuptk');
+        var nama    = $(this).data('nama');
         var jabatan = $(this).data('jabatan') || '-';
-        var mapel = $(this).data('mapel') || '-';
+        var mapel   = $(this).data('mapel') || '-';
 
         $('#selectedGuruId').val(id);
         $('#selectedNuptk').val(nuptk);
@@ -929,7 +929,13 @@ $(document).ready(function() {
         $('#guruMapel').text(mapel);
 
         $('#namaPejabat').val(nama);
-        $('#mataPelajaran').val(mapel);
+
+        // Set field Mata Pelajaran (yang di lingkari merah)
+        if (mapel && mapel !== '-') {
+            $('#mataPelajaran').val(mapel);
+        } else {
+            $('#mataPelajaran').val('-');
+        }
 
         if (jabatan && jabatan !== '-') {
             $('#namaJabatan').val(jabatan);
@@ -942,7 +948,6 @@ $(document).ready(function() {
         $('#guruDropdown').slideUp(200);
     });
 
-    // Tutup dropdown jika klik di luar
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.guru-select-wrapper').length) {
             $('#guruDropdown').slideUp(200);
