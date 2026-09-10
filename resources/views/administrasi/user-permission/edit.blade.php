@@ -80,6 +80,16 @@
     background: var(--up-bg-soft) !important;
     color: var(--up-text) !important;
 }
+.up-edit-wrapper .up-btn-light {
+    background: #fff !important;
+    color: var(--up-primary) !important;
+    font-weight: 700 !important;
+}
+.up-edit-wrapper .up-btn-light-outline {
+    background: transparent !important;
+    color: #fff !important;
+    border: 1.5px solid rgba(255,255,255,.5) !important;
+}
 .up-edit-wrapper .up-card {
     background: #fff !important;
     border-radius: var(--up-radius) !important;
@@ -162,21 +172,28 @@
     align-items: center;
     gap: 8px;
 }
+.up-edit-wrapper .up-card-head small {
+    color: rgba(255,255,255,.9);
+    font-size: .8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 .up-edit-wrapper .up-card-body {
     padding: 2rem 1.5rem;
     background: var(--up-bg-soft);
 }
 
-/* Role Selector */
+/* Role Checkbox Grid */
 .up-edit-wrapper .up-role-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
 }
 .up-edit-wrapper .up-role-option {
     position: relative;
 }
-.up-edit-wrapper .up-role-option input[type="radio"] {
+.up-edit-wrapper .up-role-option input[type="checkbox"] {
     position: absolute;
     opacity: 0;
     pointer-events: none;
@@ -199,16 +216,16 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(79,70,229,.12);
 }
-.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label {
+.up-edit-wrapper .up-role-option input[type="checkbox"]:checked + .up-role-label {
     border-color: var(--up-primary);
     background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
     box-shadow: 0 6px 18px rgba(79,70,229,.18);
 }
-.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label .up-role-icon {
+.up-edit-wrapper .up-role-option input[type="checkbox"]:checked + .up-role-label .up-role-icon {
     background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%);
     color: #fff;
 }
-.up-edit-wrapper .up-role-option input[type="radio"]:checked + .up-role-label .up-role-check {
+.up-edit-wrapper .up-role-option input[type="checkbox"]:checked + .up-role-label .up-role-check {
     opacity: 1;
     transform: scale(1);
 }
@@ -242,15 +259,15 @@
     margin: 0;
 }
 .up-edit-wrapper .up-role-check {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
     background: linear-gradient(135deg, var(--up-primary) 0%, var(--up-purple) 100%);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: .65rem;
+    font-size: .7rem;
     opacity: 0;
     transform: scale(.5);
     transition: all .2s ease;
@@ -327,7 +344,7 @@
                 <i class="fas fa-user-shield"></i>
                 Atur Role User
             </h1>
-            <p class="up-page-sub">Pilih role untuk user ini — permission akan otomatis mengikuti role</p>
+            <p class="up-page-sub">Pilih satu atau lebih role — permission akan digabung dari semua role yang dipilih</p>
         </div>
         <a href="{{ route('administrasi.user-permission.index') }}" class="up-btn up-btn-outline">
             <i class="fas fa-arrow-left"></i> Kembali
@@ -369,17 +386,17 @@
                 </p>
                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
                     <span style="font-size:.75rem; color:var(--up-text-muted); font-weight:600;">ROLE SAAT INI:</span>
-                    @if($currentRoleName)
-                        <span class="up-badge up-badge-role">{{ ucfirst($currentRoleName) }}</span>
-                    @else
+                    @forelse($currentRoles as $cr)
+                        <span class="up-badge up-badge-role">{{ ucfirst($cr->name) }}</span>
+                    @empty
                         <span class="up-badge up-badge-norole">Belum ada role</span>
-                    @endif
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Form Pilih Role --}}
+    {{-- Form Pilih Role (Multi) --}}
     <form action="{{ route('administrasi.user-permission.update', ['id' => $user->id]) }}"
           method="POST" id="roleForm">
         @csrf
@@ -387,7 +404,21 @@
 
         <div class="up-card">
             <div class="up-card-head">
-                <h5><i class="fas fa-user-tag"></i> Pilih Role</h5>
+                <div>
+                    <h5><i class="fas fa-user-tag"></i> Pilih Role</h5>
+                    <small>
+                        <i class="fas fa-check-circle"></i>
+                        <span id="selectedCount">0</span> role dipilih
+                    </small>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="up-btn up-btn-light" onclick="selectAllRole(true)">
+                        <i class="fas fa-check-double"></i> Pilih Semua
+                    </button>
+                    <button type="button" class="up-btn up-btn-light-outline" onclick="selectAllRole(false)">
+                        <i class="fas fa-times"></i> Hapus Semua
+                    </button>
+                </div>
             </div>
 
             <div class="up-card-body">
@@ -400,12 +431,16 @@
                 @else
                     <div class="up-role-grid">
                         @foreach($roles as $r)
+                            @php
+                                $isChecked = in_array((int) $r->id, $selectedRoleIds, true);
+                            @endphp
                             <div class="up-role-option">
-                                <input type="radio"
-                                       name="role_id"
+                                <input type="checkbox"
+                                       name="role_ids[]"
                                        id="role_{{ $r->id }}"
                                        value="{{ $r->id }}"
-                                       {{ (string) old('role_id', $currentRoleId) === (string) $r->id ? 'checked' : '' }}>
+                                       class="role-checkbox"
+                                       {{ $isChecked ? 'checked' : '' }}>
                                 <label class="up-role-label" for="role_{{ $r->id }}">
                                     <div class="up-role-icon">
                                         <i class="fas fa-user-shield"></i>
@@ -429,7 +464,7 @@
             <div class="up-card-foot">
                 <div class="up-foot-info">
                     <i class="fas fa-info-circle"></i>
-                    Semua override permission user akan direset dan mengikuti role baru.
+                    Bisa pilih lebih dari 1 role. Permission akan digabung & override user akan direset.
                 </div>
                 <div class="up-foot-buttons">
                     <a href="{{ route('administrasi.user-permission.index') }}" class="up-btn up-btn-outline">
@@ -446,17 +481,40 @@
 </div>
 
 <script>
-    // Konfirmasi sebelum submit kalau role berubah
+    // Update counter
+    function updateRoleCount() {
+        const total = document.querySelectorAll('.role-checkbox:checked').length;
+        const el = document.getElementById('selectedCount');
+        if (el) el.textContent = total;
+    }
+
+    // Pilih semua / hapus semua
+    function selectAllRole(checked) {
+        document.querySelectorAll('.role-checkbox').forEach(function(cb) {
+            cb.checked = checked;
+        });
+        updateRoleCount();
+    }
+
+    // Event listener tiap checkbox
+    document.querySelectorAll('.role-checkbox').forEach(function(cb) {
+        cb.addEventListener('change', updateRoleCount);
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', updateRoleCount);
+
+    // Konfirmasi sebelum submit
     document.getElementById('roleForm')?.addEventListener('submit', function(e) {
-        const selected = document.querySelector('input[name="role_id"]:checked');
-        if (!selected) {
+        const selected = document.querySelectorAll('.role-checkbox:checked');
+        if (selected.length === 0) {
             e.preventDefault();
-            alert('Silakan pilih role terlebih dahulu.');
+            alert('Silakan pilih minimal 1 role.');
             return false;
         }
 
-        const currentRoleId = '{{ $currentRoleId }}';
-        if (selected.value !== currentRoleId) {
+        const currentCount = {{ count($selectedRoleIds) }};
+        if (selected.length !== currentCount) {
             if (!confirm('Ubah role user ini? Semua override permission akan direset.')) {
                 e.preventDefault();
                 return false;
