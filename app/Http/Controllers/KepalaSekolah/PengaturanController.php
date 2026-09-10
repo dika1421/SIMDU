@@ -15,11 +15,11 @@ class PengaturanController extends Controller
     public function index()
     {
         $pengaturan = PengaturanSekolah::getPengaturan();
-        return view('kepala-sekolah.pengaturan.index', compact('Pengaturan'));
+        return view('kepala-sekolah.pengaturan.index', compact('pengaturan'));
     }
 
     /**
-     * Simpan profil sekolah.
+     * Simpan profil sekolah.s
      */
     public function updateProfil(Request $request)
     {
