@@ -15,7 +15,7 @@ class PengaturanController extends Controller
     public function index()
     {
         $pengaturan = PengaturanSekolah::getPengaturan();
-        return view('kepala-sekolah.pengaturan.index', compact('pengaturan'));
+        return view('kepala-sekolah.pengaturan.index', compact('Pengaturan'));
     }
 
     /**
