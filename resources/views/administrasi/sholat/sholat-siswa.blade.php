@@ -4,243 +4,538 @@
 
 @section('content')
 <style>
-    .table-absen th {
-        background: #f8f9fa;
+    /* ========== PAGE HEADER ========== */
+    .page-header-sholat {
+        background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+        border-radius: 18px;
+        padding: 22px 26px;
+        color: #fff;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header-sholat::before {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    .page-header-sholat .content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+    .page-header-sholat h1 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0 0 4px 0;
+    }
+    .page-header-sholat p {
+        margin: 0;
+        font-size: 0.82rem;
+        opacity: 0.95;
+    }
+    .btn-glass {
+        background: rgba(255,255,255,0.22);
+        border: 1px solid rgba(255,255,255,0.35);
+        color: #fff;
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all 0.25s;
+        text-decoration: none;
+    }
+    .btn-glass:hover {
+        background: rgba(255,255,255,0.35);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    /* ========== FILTER CARD ========== */
+    .filter-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px 22px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 20px;
+    }
+    .filter-card .form-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .filter-card .form-control,
+    .filter-card .form-select {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 9px 14px;
+        font-size: 0.85rem;
+    }
+    .filter-card .form-control:focus,
+    .filter-card .form-select:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+    }
+
+    /* ========== LIVE SEARCH ========== */
+    .live-search-card {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border-radius: 14px;
+        padding: 16px 20px;
+        border: 1px solid #bae6fd;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .live-search-card .search-icon-big {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+    .live-search-input {
+        flex: 1;
+        min-width: 240px;
+        border-radius: 12px;
+        border: 1.5px solid #bae6fd;
+        padding: 11px 16px;
+        font-size: 0.88rem;
+        background: #fff;
+    }
+    .live-search-input:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+        outline: none;
+    }
+    .live-search-count {
+        background: #fff;
+        border: 1px solid #bae6fd;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        color: #0369a1;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ========== MAIN CARD ========== */
+    .main-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+    }
+    .main-card-header {
+        padding: 16px 22px;
+        background: linear-gradient(135deg, #e0f2fe, #cffafe);
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .main-card-header h5 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .main-card-header h5 i { color: #0284c7; }
+    .period-badge {
+        background: linear-gradient(135deg, #cffafe, #a5f3fc);
+        color: #155e75;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid #67e8f9;
+    }
+
+    /* ========== TABLE ========== */
+    .table-sholat {
+        margin: 0;
+        font-size: 0.8rem;
+    }
+    .table-sholat thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        border: none;
+        padding: 12px 10px;
+        white-space: nowrap;
         vertical-align: middle;
     }
-    .status-select {
-        min-width: 120px;
+    .table-sholat thead th.sholat-head {
+        background: #f0f9ff;
+        color: #0369a1;
+        text-align: center;
     }
-    .btn-save-fixed {
+    .table-sholat tbody td {
+        padding: 12px 10px;
+        vertical-align: top;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+    .table-sholat tbody tr:hover {
+        background: #f8fafc;
+    }
+    .table-sholat tbody tr.search-highlight {
+        background: #fef3c7 !important;
+    }
+
+    .avatar-siswa-small {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+    .nis-badge {
+        font-family: 'Courier New', monospace;
+        background: #f1f5f9;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+    }
+    .kelas-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        background: #f1f5f9;
+        color: #334155;
+        padding: 3px 9px;
+        border-radius: 8px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    /* ========== SHOLAT CELL ========== */
+    .sholat-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .sholat-cell .form-select-sm {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .sholat-cell .form-select-sm:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+    .sholat-cell .form-select-sm[data-status="tepat_waktu"] {
+        background: #d1fae5; border-color: #6ee7b7; color: #065f46;
+    }
+    .sholat-cell .form-select-sm[data-status="terlambat"] {
+        background: #fef3c7; border-color: #fcd34d; color: #92400e;
+    }
+    .sholat-cell .form-select-sm[data-status="tidak_hadir"] {
+        background: #fee2e2; border-color: #fca5a5; color: #991b1b;
+    }
+    .sholat-cell .form-select-sm[data-status="izin"] {
+        background: #cffafe; border-color: #67e8f9; color: #155e75;
+    }
+    .sholat-cell .input-mini {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+    .sholat-cell .input-mini:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+    }
+
+    /* ========== FLOATING SAVE BUTTON ========== */
+    .btn-save-floating {
         position: fixed;
         bottom: 30px;
         right: 30px;
         z-index: 1000;
-        padding: 12px 25px;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: #fff;
+        border: none;
+        padding: 14px 26px;
         border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        font-weight: 700;
+        font-size: 0.88rem;
+        box-shadow: 0 8px 24px rgba(14, 165, 233, 0.4);
+        transition: all 0.25s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
-    .search-highlight {
-        background-color: #fff3cd !important;
+    .btn-save-floating:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 32px rgba(14, 165, 233, 0.5);
+        color: #fff;
     }
-    .filter-row {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
+
+    /* ========== EMPTY STATE ========== */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e0f2fe, #cffafe);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0284c7;
+        font-size: 2.5rem;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+        .page-header-sholat { padding: 18px; }
+        .page-header-sholat h1 { font-size: 1.15rem; }
+        .btn-save-floating { bottom: 20px; right: 20px; padding: 12px 20px; }
     }
 </style>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-user-graduate me-2"></i>
-        Input Absensi Sholat Siswa
-    </h1>
-    <div class="btn-toolbar">
-        <a href="{{ route('administrasi.absensi-sholat.dashboard') }}" class="btn btn-sm btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali
+{{-- ============ PAGE HEADER ============ --}}
+<div class="page-header-sholat">
+    <div class="content">
+        <div>
+            <h1>
+                <i class="fas fa-user-graduate me-2"></i>
+                Input Absensi Sholat Siswa
+            </h1>
+            <p>
+                <i class="fas fa-info-circle me-1"></i>
+                Catat kehadiran sholat 5 waktu untuk siswa
+            </p>
+        </div>
+        <a href="{{ route('administrasi.absensi-sholat.dashboard') }}" class="btn-glass">
+            <i class="fas fa-arrow-left me-1"></i> Kembali
         </a>
     </div>
 </div>
 
-<!-- Filter Form -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <i class="fas fa-filter me-2"></i> Filter Data
-    </div>
-    <div class="card-body">
-        <form method="GET" action="{{ route('administrasi.absensi-sholat.siswa') }}" class="row g-3" id="filterForm">
-            <div class="col-md-2">
-                <label class="form-label">Tanggal Absensi</label>
-                <input type="date" name="tanggal" class="form-control" value="{{ request('tanggal', date('Y-m-d')) }}">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Kelas</label>
-                <select name="kelas_id" class="form-select" id="kelasSelect">
-                    <option value="">-- Semua Kelas --</option>
-                    @foreach($kelasList ?? [] as $k)
+{{-- ============ FILTER CARD ============ --}}
+<div class="filter-card">
+    <form method="GET" action="{{ route('administrasi.absensi-sholat.siswa') }}" class="row g-3 align-items-end" id="filterForm">
+        <div class="col-md-2">
+            <label class="form-label">
+                <i class="fas fa-calendar-alt"></i> Tanggal
+            </label>
+            <input type="date" name="tanggal" class="form-control"
+                   value="{{ request('tanggal', date('Y-m-d')) }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">
+                <i class="fas fa-school"></i> Kelas
+            </label>
+            <select name="kelas_id" class="form-select" id="kelasSelect">
+                <option value="">-- Semua Kelas --</option>
+                @foreach($kelasList ?? [] as $k)
                     <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>
                         {{ $k->nama }}
                     </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Cari NIS/Nama</label>
-                <input type="text" name="search" id="searchInput" class="form-control" placeholder="NIS / Nama Siswa" value="{{ request('search') }}">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <button type="submit" class="btn btn-primary form-control">
-                    <i class="fas fa-search"></i> Tampilkan
-                </button>
-            </div>
-            <div class="col-md-1">
-                <label class="form-label">&nbsp;</label>
-                <a href="{{ route('administrasi.absensi-sholat.siswa') }}" class="btn btn-secondary form-control">
-                    <i class="fas fa-sync-alt"></i> Reset
-                </a>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <button type="button" class="btn btn-success form-control" onclick="setAllStatus('tepat_waktu')">
-                    <i class="fas fa-check-circle"></i> Set Semua Hadir
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Live Search (Client Side) -->
-<div class="card mb-3">
-    <div class="card-header bg-info text-white">
-        <i class="fas fa-search me-2"></i> Pencarian Cepat (Live Search)
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <input type="text" id="liveSearch" class="form-control" placeholder="Ketik NIS atau Nama siswa...">
-                <small class="text-muted">Pencarian langsung tanpa reload halaman</small>
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-outline-primary" onclick="clearSearch()">
-                    <i class="fas fa-times"></i> Clear Search
-                </button>
-            </div>
-            <div class="col-md-5 text-end">
-                <span id="searchResultCount" class="badge bg-primary">0</span> siswa ditemukan
-            </div>
+                @endforeach
+            </select>
         </div>
-    </div>
+        <div class="col-md-2">
+            <label class="form-label">
+                <i class="fas fa-search"></i> Cari NIS/Nama
+            </label>
+            <input type="text" name="search" class="form-control"
+                   placeholder="NIS / Nama"
+                   value="{{ request('search') }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100 rounded-3 fw-semibold" style="padding:9px">
+                <i class="fas fa-search me-1"></i> Tampilkan
+            </button>
+        </div>
+        <div class="col-md-1">
+            <a href="{{ route('administrasi.absensi-sholat.siswa') }}"
+               class="btn btn-secondary w-100 rounded-3" style="padding:9px">
+                <i class="fas fa-sync-alt"></i>
+            </a>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-success w-100 rounded-3 fw-semibold" style="padding:9px"
+                    onclick="setAllStatus('tepat_waktu')">
+                <i class="fas fa-check-double me-1"></i> Semua Hadir
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- Form Absensi -->
+{{-- ============ LIVE SEARCH ============ --}}
+<div class="live-search-card">
+    <div class="search-icon-big">
+        <i class="fas fa-search"></i>
+    </div>
+    <input type="text" id="liveSearch" class="live-search-input"
+           placeholder="Ketik NIS atau Nama siswa untuk pencarian cepat...">
+    <button type="button" class="btn btn-outline-secondary rounded-3" onclick="clearSearch()">
+        <i class="fas fa-times me-1"></i> Clear
+    </button>
+    <span class="live-search-count">
+        <i class="fas fa-user-check me-1"></i>
+        <span id="searchResultCount">{{ $siswa->count() ?? 0 }}</span> ditemukan
+    </span>
+</div>
+
+{{-- ============ MAIN CARD ============ --}}
 <form method="POST" action="{{ route('administrasi.absensi-sholat.manual-store') }}" id="absensiForm">
     @csrf
     <input type="hidden" name="role" value="siswa">
     <input type="hidden" name="tanggal" value="{{ request('tanggal', date('Y-m-d')) }}">
-    
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-edit me-2"></i> 
-            Input Absensi Sholat Tanggal: {{ \Carbon\Carbon::parse(request('tanggal', date('Y-m-d')))->format('d F Y') }}
-            <span class="badge bg-light text-dark ms-2" id="totalSiswa">{{ $siswa->count() ?? 0 }}</span>
-            <span class="badge bg-light text-dark ms-2" id="totalSiswaLabel">Total Siswa</span>
+
+    <div class="main-card">
+        <div class="main-card-header">
+            <h5>
+                <i class="fas fa-mosque"></i>
+                Input Absensi Sholat 5 Waktu
+            </h5>
+            <div class="period-badge">
+                <i class="fas fa-calendar-day"></i>
+                {{ \Carbon\Carbon::parse(request('tanggal', date('Y-m-d')))->translatedFormat('l, d F Y') }}
+            </div>
         </div>
-        <div class="card-body table-responsive">
-            <table class="table table-bordered table-hover" id="tabelSiswa">
+
+        <div class="table-responsive">
+            <table class="table table-sholat mb-0" id="tabelSiswa">
                 <thead>
-                    <tr class="table-light">
-                        <th width="5%">No</th>
-                        <th width="10%">NIS</th>
-                        <th width="20%">Nama Siswa</th>
-                        <th width="12%">Kelas</th>
-                        <th width="9%">Subuh</th>
-                        <th width="9%">Dzuhur</th>
-                        <th width="9%">Ashar</th>
-                        <th width="9%">Maghrib</th>
-                        <th width="9%">Isya</th>
+                    <tr>
+                        <th width="4%" class="text-center">No</th>
+                        <th width="9%">NIS</th>
+                        <th width="18%">Nama Siswa</th>
+                        <th width="9%">Kelas</th>
+                        <th width="12%" class="sholat-head"><i class="fas fa-moon me-1"></i> Subuh</th>
+                        <th width="12%" class="sholat-head"><i class="fas fa-sun me-1"></i> Dzuhur</th>
+                        <th width="12%" class="sholat-head"><i class="fas fa-cloud-sun me-1"></i> Ashar</th>
+                        <th width="12%" class="sholat-head"><i class="fas fa-cloud-moon me-1"></i> Maghrib</th>
+                        <th width="12%" class="sholat-head"><i class="fas fa-star me-1"></i> Isya</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     @forelse($siswa ?? [] as $index => $s)
                     @php
-                        // Ambil data absensi dengan aman
-                        $absensiSubuh = $s->absensi['subuh'] ?? null;
-                        $absensiDzuhur = $s->absensi['dzuhur'] ?? null;
-                        $absensiAshar = $s->absensi['ashar'] ?? null;
+                        $absensiSubuh   = $s->absensi['subuh']   ?? null;
+                        $absensiDzuhur  = $s->absensi['dzuhur']  ?? null;
+                        $absensiAshar   = $s->absensi['ashar']   ?? null;
                         $absensiMaghrib = $s->absensi['maghrib'] ?? null;
-                        $absensiIsya = $s->absensi['isya'] ?? null;
+                        $absensiIsya    = $s->absensi['isya']    ?? null;
+                        $initial = strtoupper(substr($s->user->name ?? $s->nama ?? 'S', 0, 1));
                     @endphp
-                    <tr data-nis="{{ $s->nis ?? '' }}" data-nama="{{ strtolower($s->user->name ?? $s->nama ?? '') }}" data-id="{{ $s->id }}">
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td class="nis-cell">{{ $s->nis ?? '-' }}</td>
+                    <tr data-nis="{{ $s->nis ?? '' }}"
+                        data-nama="{{ strtolower($s->user->name ?? $s->nama ?? '') }}"
+                        data-id="{{ $s->id }}">
+                        <td class="text-center fw-bold text-muted">{{ $index + 1 }}</td>
                         <td>
-                            <strong>{{ $s->user->name ?? $s->nama ?? '-' }}</strong>
+                            <span class="nis-badge">{{ $s->nis ?? '-' }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar-siswa-small">{{ $initial }}</div>
+                                <span class="fw-semibold text-dark text-truncate" style="max-width:150px;">
+                                    {{ $s->user->name ?? $s->nama ?? '-' }}
+                                </span>
+                            </div>
                             <input type="hidden" name="absensi[{{ $s->id }}][user_id]" value="{{ $s->id }}">
                         </td>
-                        <td>{{ $s->kelas->nama ?? '-' }}</td>
-                        
-                        <!-- Subuh -->
-                        <td class="text-center">
-                            <select name="absensi[{{ $s->id }}][subuh][status]" class="form-select form-select-sm status-select status-subuh-{{ $s->id }}">
-                                <option value="">-- Pilih --</option>
-                                @foreach($statusList ?? [] as $key => $label)
-                                <option value="{{ $key }}" {{ ($absensiSubuh && $absensiSubuh->status == $key) ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="absensi[{{ $s->id }}][subuh][sholat]" value="subuh">
-                            <input type="time" name="absensi[{{ $s->id }}][subuh][waktu_absen]" class="form-control form-control-sm mt-1" placeholder="Waktu" value="{{ $absensiSubuh && $absensiSubuh->waktu_absen ? date('H:i', strtotime($absensiSubuh->waktu_absen)) : '' }}">
-                            <input type="text" name="absensi[{{ $s->id }}][subuh][keterangan]" class="form-control form-control-sm mt-1" placeholder="Keterangan" value="{{ $absensiSubuh && $absensiSubuh->keterangan ? $absensiSubuh->keterangan : '' }}">
+                        <td>
+                            <span class="kelas-badge">
+                                <i class="fas fa-school"></i>
+                                {{ $s->kelas->nama ?? '-' }}
+                            </span>
                         </td>
-                        
-                        <!-- Dzuhur -->
-                        <td class="text-center">
-                            <select name="absensi[{{ $s->id }}][dzuhur][status]" class="form-select form-select-sm status-select status-dzuhur-{{ $s->id }}">
-                                <option value="">-- Pilih --</option>
-                                @foreach($statusList ?? [] as $key => $label)
-                                <option value="{{ $key }}" {{ ($absensiDzuhur && $absensiDzuhur->status == $key) ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="absensi[{{ $s->id }}][dzuhur][sholat]" value="dzuhur">
-                            <input type="time" name="absensi[{{ $s->id }}][dzuhur][waktu_absen]" class="form-control form-control-sm mt-1" placeholder="Waktu" value="{{ $absensiDzuhur && $absensiDzuhur->waktu_absen ? date('H:i', strtotime($absensiDzuhur->waktu_absen)) : '' }}">
-                            <input type="text" name="absensi[{{ $s->id }}][dzuhur][keterangan]" class="form-control form-control-sm mt-1" placeholder="Keterangan" value="{{ $absensiDzuhur && $absensiDzuhur->keterangan ? $absensiDzuhur->keterangan : '' }}">
+
+                        @foreach(['subuh' => $absensiSubuh, 'dzuhur' => $absensiDzuhur,
+                                  'ashar' => $absensiAshar, 'maghrib' => $absensiMaghrib,
+                                  'isya' => $absensiIsya] as $sholat => $ab)
+                        <td>
+                            <div class="sholat-cell">
+                                <select name="absensi[{{ $s->id }}][{{ $sholat }}][status]"
+                                        class="form-select form-select-sm status-select"
+                                        data-status="{{ $ab->status ?? '' }}"
+                                        onchange="updateCellColor(this)">
+                                    <option value="">--</option>
+                                    @foreach($statusList ?? [] as $key => $label)
+                                        <option value="{{ $key }}" {{ ($ab && $ab->status == $key) ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" name="absensi[{{ $s->id }}][{{ $sholat }}][sholat]" value="{{ $sholat }}">
+                                <input type="time" name="absensi[{{ $s->id }}][{{ $sholat }}][waktu_absen]"
+                                       class="input-mini"
+                                       value="{{ $ab && $ab->waktu_absen ? date('H:i', strtotime($ab->waktu_absen)) : '' }}">
+                                <input type="text" name="absensi[{{ $s->id }}][{{ $sholat }}][keterangan]"
+                                       class="input-mini" placeholder="Ket..."
+                                       value="{{ $ab && $ab->keterangan ? $ab->keterangan : '' }}">
+                            </div>
                         </td>
-                        
-                        <!-- Ashar -->
-                        <td class="text-center">
-                            <select name="absensi[{{ $s->id }}][ashar][status]" class="form-select form-select-sm status-select status-ashar-{{ $s->id }}">
-                                <option value="">-- Pilih --</option>
-                                @foreach($statusList ?? [] as $key => $label)
-                                <option value="{{ $key }}" {{ ($absensiAshar && $absensiAshar->status == $key) ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="absensi[{{ $s->id }}][ashar][sholat]" value="ashar">
-                            <input type="time" name="absensi[{{ $s->id }}][ashar][waktu_absen]" class="form-control form-control-sm mt-1" placeholder="Waktu" value="{{ $absensiAshar && $absensiAshar->waktu_absen ? date('H:i', strtotime($absensiAshar->waktu_absen)) : '' }}">
-                            <input type="text" name="absensi[{{ $s->id }}][ashar][keterangan]" class="form-control form-control-sm mt-1" placeholder="Keterangan" value="{{ $absensiAshar && $absensiAshar->keterangan ? $absensiAshar->keterangan : '' }}">
-                        </td>
-                        
-                        <!-- Maghrib -->
-                        <td class="text-center">
-                            <select name="absensi[{{ $s->id }}][maghrib][status]" class="form-select form-select-sm status-select status-maghrib-{{ $s->id }}">
-                                <option value="">-- Pilih --</option>
-                                @foreach($statusList ?? [] as $key => $label)
-                                <option value="{{ $key }}" {{ ($absensiMaghrib && $absensiMaghrib->status == $key) ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="absensi[{{ $s->id }}][maghrib][sholat]" value="maghrib">
-                            <input type="time" name="absensi[{{ $s->id }}][maghrib][waktu_absen]" class="form-control form-control-sm mt-1" placeholder="Waktu" value="{{ $absensiMaghrib && $absensiMaghrib->waktu_absen ? date('H:i', strtotime($absensiMaghrib->waktu_absen)) : '' }}">
-                            <input type="text" name="absensi[{{ $s->id }}][maghrib][keterangan]" class="form-control form-control-sm mt-1" placeholder="Keterangan" value="{{ $absensiMaghrib && $absensiMaghrib->keterangan ? $absensiMaghrib->keterangan : '' }}">
-                        </td>
-                        
-                        <!-- Isya -->
-                        <td class="text-center">
-                            <select name="absensi[{{ $s->id }}][isya][status]" class="form-select form-select-sm status-select status-isya-{{ $s->id }}">
-                                <option value="">-- Pilih --</option>
-                                @foreach($statusList ?? [] as $key => $label)
-                                <option value="{{ $key }}" {{ ($absensiIsya && $absensiIsya->status == $key) ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                                @endforeach
-                            </select>
-                            <input type="hidden" name="absensi[{{ $s->id }}][isya][sholat]" value="isya">
-                            <input type="time" name="absensi[{{ $s->id }}][isya][waktu_absen]" class="form-control form-control-sm mt-1" placeholder="Waktu" value="{{ $absensiIsya && $absensiIsya->waktu_absen ? date('H:i', strtotime($absensiIsya->waktu_absen)) : '' }}">
-                            <input type="text" name="absensi[{{ $s->id }}][isya][keterangan]" class="form-control form-control-sm mt-1" placeholder="Keterangan" value="{{ $absensiIsya && $absensiIsya->keterangan ? $absensiIsya->keterangan : '' }}">
-                        </td>
+                        @endforeach
                     </tr>
                     @empty
                     <tr id="emptyRow">
-                        <td colspan="9" class="text-center text-muted py-4">
-                            <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
-                            Tidak ada data siswa
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <h5 class="fw-bold mb-2">Belum ada data siswa</h5>
+                                <p class="text-muted mb-0">
+                                    Silakan pilih kelas lain atau ubah tanggal untuk menampilkan data
+                                </p>
+                            </div>
                         </td>
                     </tr>
                     @endforelse
@@ -248,120 +543,104 @@
             </table>
         </div>
     </div>
-    
+
     @if(($siswa->count() ?? 0) > 0)
-    <button type="submit" class="btn btn-primary btn-save-fixed" id="btnSubmit">
-        <i class="fas fa-save me-2"></i> Simpan Semua Absensi
+    <button type="submit" class="btn-save-floating" id="btnSubmit">
+        <i class="fas fa-save"></i>
+        <span>Simpan Semua Absensi</span>
     </button>
     @endif
 </form>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    $(document).ready(function() {
-        // Live Search functionality
-        $('#liveSearch').on('keyup', function() {
-            var searchTerm = $(this).val().toLowerCase();
-            var visibleCount = 0;
-            
-            $('#tableBody tr').each(function() {
-                var nis = $(this).find('.nis-cell').text().toLowerCase();
-                var nama = $(this).attr('data-nama') || '';
-                var row = $(this);
-                
-                if (searchTerm === '') {
-                    row.show();
-                    visibleCount++;
-                    row.removeClass('search-highlight');
-                } else if (nis.indexOf(searchTerm) !== -1 || nama.indexOf(searchTerm) !== -1) {
-                    row.show();
-                    visibleCount++;
-                    row.addClass('search-highlight');
-                } else {
-                    row.hide();
-                    row.removeClass('search-highlight');
-                }
-            });
-            
-            $('#searchResultCount').text(visibleCount);
+    // ============ LIVE SEARCH ============
+    $('#liveSearch').on('keyup', function() {
+        const searchTerm = $(this).val().toLowerCase().trim();
+        let visibleCount = 0;
+
+        $('#tableBody tr').each(function() {
+            if ($(this).attr('id') === 'emptyRow') return;
+
+            const nis  = $(this).find('.nis-badge').text().toLowerCase();
+            const nama = $(this).attr('data-nama') || '';
+            const row  = $(this);
+
+            if (searchTerm === '') {
+                row.show().removeClass('search-highlight');
+                visibleCount++;
+            } else if (nis.indexOf(searchTerm) !== -1 || nama.indexOf(searchTerm) !== -1) {
+                row.show().addClass('search-highlight');
+                visibleCount++;
+            } else {
+                row.hide().removeClass('search-highlight');
+            }
         });
+
+        $('#searchResultCount').text(visibleCount);
     });
-    
+
     function clearSearch() {
         $('#liveSearch').val('');
         $('#liveSearch').trigger('keyup');
-        $('#searchResultCount').text($('#tableBody tr:visible').length);
     }
-    
+
+    // ============ CELL COLOR ============
+    function updateCellColor(select) {
+        select.setAttribute('data-status', select.value);
+    }
+
+    // ============ SET ALL ============
     function setAllStatus(status) {
-        let statusText = '';
-        switch(status) {
-            case 'tepat_waktu': statusText = 'Tepat Waktu'; break;
-            case 'terlambat': statusText = 'Terlambat'; break;
-            case 'tidak_hadir': statusText = 'Tidak Hadir'; break;
-            case 'izin': statusText = 'Izin'; break;
-            default: return;
-        }
-        
+        const labels = {
+            'tepat_waktu': 'Tepat Waktu',
+            'terlambat':   'Terlambat',
+            'tidak_hadir':'Tidak Hadir',
+            'izin':        'Izin'
+        };
+
         Swal.fire({
             title: 'Konfirmasi',
-            text: `Apakah Anda yakin ingin mengatur SEMUA siswa dengan status "${statusText}"?`,
+            html: `Atur <strong>SEMUA</strong> siswa dengan status <strong>"${labels[status]}"</strong>?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Set Semua!',
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Set Semua',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
                 document.querySelectorAll('.status-select').forEach(select => {
                     select.value = status;
+                    updateCellColor(select);
                 });
-                Swal.fire('Berhasil!', 'Semua status telah diatur', 'success');
+                Swal.fire({ icon:'success', title:'Berhasil!', timer:1200, showConfirmButton:false });
             }
         });
     }
-    
-    function resetAllStatus() {
-        Swal.fire({
-            title: 'Konfirmasi Reset',
-            text: 'Apakah Anda yakin ingin mereset semua status ke kosong?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, Reset!',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.querySelectorAll('.status-select').forEach(select => {
-                    select.value = '';
-                });
-                Swal.fire('Berhasil!', 'Semua status telah direset', 'success');
-            }
-        });
-    }
-    
+
+    // ============ SUBMIT ============
     $('#absensiForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         let hasData = false;
         document.querySelectorAll('.status-select').forEach(select => {
             if (select.value !== '') hasData = true;
         });
-        
+
         if (!hasData) {
             Swal.fire('Peringatan!', 'Belum ada data absensi yang diisi', 'warning');
             return false;
         }
-        
+
         Swal.fire({
             title: 'Konfirmasi Simpan',
-            text: 'Apakah Anda yakin ingin menyimpan semua absensi?',
+            text: 'Yakin ingin menyimpan semua absensi?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: '#0ea5e9',
+            cancelButtonColor: '#64748b',
             confirmButtonText: 'Ya, Simpan!',
             cancelButtonText: 'Batal'
         }).then((result) => {
