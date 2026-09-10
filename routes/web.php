@@ -318,11 +318,14 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
 
-    // Galeri
+    // ============================================
+    // Galeri  ✅ (ROUTE SHOW DITAMBAHKAN)
+    // ============================================
     Route::prefix('galeri')->name('galeri.')->group(function () {
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
         Route::post('/', [GaleriController::class, 'store'])->name('store');
+        Route::get('/{id}', [GaleriController::class, 'show'])->name('show');       // ⬅️ DITAMBAH
         Route::get('/{id}/edit', [GaleriController::class, 'edit'])->name('edit');
         Route::put('/{id}', [GaleriController::class, 'update'])->name('update');
         Route::delete('/{id}', [GaleriController::class, 'destroy'])->name('destroy');
