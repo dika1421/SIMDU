@@ -66,6 +66,7 @@
                             @endif
                         </td>
                         <td>
+                            <!-- Tombol Set Aktif -->
                             @if(!$ta->is_aktif)
                             <form action="{{ route('kepala-sekolah.manajemen.tahun-ajaran.set-aktif', $ta->id) }}" method="POST" class="d-inline">
                                 @csrf
@@ -74,8 +75,73 @@
                                 </button>
                             </form>
                             @endif
+
+                            <!-- Tombol Edit -->
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editTahunAjaranModal{{ $ta->id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+
+                            <!-- Tombol Delete -->
+                            <form action="{{ route('kepala-sekolah.manajemen.tahun-ajaran.destroy', $ta->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tahun ajaran ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </form>
                         </td>
                     </tr>
+
+                    <!-- Modal Edit untuk setiap item -->
+                    <div class="modal fade" id="editTahunAjaranModal{{ $ta->id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ route('kepala-sekolah.manajemen.tahun-ajaran.update', $ta->id) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Tahun Ajaran</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tahun Ajaran</label>
+                                            <input type="text" name="nama" class="form-control" value="{{ $ta->nama }}" required>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Tanggal Mulai</label>
+                                                <input type="date" name="tanggal_mulai" class="form-control" value="{{ $ta->tanggal_mulai }}" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">Tanggal Selesai</label>
+                                                <input type="date" name="tanggal_selesai" class="form-control" value="{{ $ta->tanggal_selesai }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Semester</label>
+                                            <select name="semester" class="form-control" required>
+                                                <option value="ganjil" {{ $ta->semester == 'ganjil' ? 'selected' : '' }}>Ganjil</option>
+                                                <option value="genap" {{ $ta->semester == 'genap' ? 'selected' : '' }}>Genap</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="is_aktif" class="form-check-input" value="1" {{ $ta->is_aktif ? 'checked' : '' }}>
+                                                <label class="form-check-label">
+                                                    Jadikan Tahun Ajaran Aktif
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     @endforeach
                 </tbody>
             </table>
