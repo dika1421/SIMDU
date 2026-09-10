@@ -9,6 +9,6 @@ class PengaturanController extends Controller
 {
     public function index()
     {
-        return view('kepala-sekolah.pengaturan.index');
+        return view('kepala-sekolah.Pengaturan.index');
     }
 }
