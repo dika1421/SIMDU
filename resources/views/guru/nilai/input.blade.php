@@ -33,9 +33,13 @@
 
     /* ===== Table ===== */
     .table-input {
-        margin: 0;
-        border-collapse: separate;
-        border-spacing: 0;
+        margin: 0 !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        border: none !important;
+    }
+    .table-input thead tr:first-child th {
+        border-top: none !important;
     }
     .table-input th {
         font-size: 0.72rem;
@@ -44,7 +48,10 @@
         font-weight: 700;
         padding: 12px 8px;
         background: #f8fafc !important;
-        border-bottom: 2px solid #e2e8f0;
+        border-top: none !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+        border-left: none !important;
+        border-right: none !important;
         color: #64748b;
         position: sticky;
         top: 0;
@@ -54,7 +61,11 @@
     .table-input td {
         padding: 8px;
         vertical-align: middle;
-        border-bottom: 1px solid #f1f5f9;
+        border-top: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        border-left: none !important;
+        border-right: none !important;
+        background: #fff;
     }
     .table-input tbody tr:hover td {
         background-color: #f8faff;
@@ -71,17 +82,17 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 16px;
-        padding: 1.25rem 1.5rem;
+        padding: 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
     }
     .info-header .label {
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         opacity: 0.85;
-        font-weight: 600;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
     }
     .info-header .value {
         font-size: 1rem;
@@ -89,6 +100,42 @@
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header-input {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 1rem 0 1.5rem;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .page-title-input {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0 0 6px 0;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+    }
+    .page-subtitle-input {
+        color: #64748b;
+        font-size: .85rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .page-subtitle-input .sep {
+        color: #cbd5e1;
+    }
+    .page-subtitle-input strong {
+        color: #4f46e5;
+        font-weight: 700;
     }
 
     /* ===== Buttons ===== */
@@ -119,6 +166,7 @@
         overflow: hidden;
         border: 1px solid #e2e8f0;
         box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        background: #fff;
     }
 
     /* ===== Empty State ===== */
@@ -148,6 +196,7 @@
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
         overflow: hidden;
+        background: #fff;
     }
     .card-modern .card-body {
         padding: 1.75rem;
@@ -162,7 +211,7 @@
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 12px;
         font-size: 0.85rem;
         color: #1e40af;
         font-weight: 500;
@@ -170,33 +219,11 @@
     .alert-info-custom i {
         font-size: 1rem;
     }
-
-    /* ===== Page Header ===== */
-    .page-header-input {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 1rem 0 1.5rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #e9ecef;
-    }
-    .page-title-input {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #1e293b;
-        margin: 0;
-        line-height: 1.3;
-        letter-spacing: -0.5px;
-    }
-    .page-subtitle-input {
-        color: #94a3b8;
-        font-size: .85rem;
-        margin: 4px 0 0;
+    .alert-info-custom .ms-auto {
+        margin-left: auto;
     }
 
-    /* ===== Sticky Action Bar ===== */
+    /* ===== Action Bar ===== */
     .action-bar {
         display: flex;
         justify-content: space-between;
@@ -215,6 +242,8 @@
         .info-header .value { font-size: .85rem; }
         .action-bar { flex-direction: column; align-items: stretch; }
         .action-bar .btn { width: 100%; }
+        .alert-info-custom { font-size: .78rem; }
+        .alert-info-custom .ms-auto { margin-left: 0; }
     }
 </style>
 
@@ -225,11 +254,9 @@
     <div>
         <h1 class="page-title-input">Input Nilai</h1>
         <p class="page-subtitle-input">
-            <i class="fas fa-users me-1"></i>
-            {{ $kelas->nama_kelas ?? $kelas->nama ?? '-' }}
-            <span class="mx-2">|</span>
-            <i class="fas fa-book me-1"></i>
-            {{ $mataPelajaran->nama_mapel ?? '-' }}
+            <span><i class="fas fa-users me-1"></i> <strong>{{ $kelas->nama_kelas ?? $kelas->nama ?? '-' }}</strong></span>
+            <span class="sep">|</span>
+            <span><i class="fas fa-book me-1"></i> <strong>{{ $mataPelajaran->nama_mapel ?? '-' }}</strong></span>
         </p>
     </div>
     <div>
@@ -243,7 +270,8 @@
      ALERT ERRORS (Validation)
      ============================================================ -->
 @if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius:12px; border:none; border-left:4px solid #ef4444;">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert"
+         style="border-radius:12px; border:none; border-left:4px solid #ef4444;">
         <i class="fas fa-exclamation-circle me-2"></i>
         <strong>Validasi Gagal!</strong>
         <ul class="mb-0 mt-1">
@@ -256,7 +284,7 @@
 @endif
 
 <!-- ============================================================
-     INFO HEADER
+     INFO HEADER (Gradient)
      ============================================================ -->
 <div class="info-header">
     <div class="row align-items-center g-3">
@@ -308,21 +336,23 @@
             <input type="hidden" name="tahun_ajaran" value="{{ $tahunAjaran ?? date('Y') }}">
             <input type="hidden" name="semester" value="{{ $semester ?? 'Ganjil' }}">
 
-            {{-- Info --}}
+            {{-- Info Alert --}}
             <div class="alert-info-custom mb-3">
                 <i class="fas fa-info-circle"></i>
                 <span><strong>Total Siswa:</strong> {{ $siswa->count() }} siswa</span>
-                <span class="ms-auto"><i class="fas fa-edit me-1"></i>Klik pada kolom nilai untuk mengisi</span>
-                <span><span class="badge bg-success">Hijau</span> = sudah diisi</span>
+                <span class="ms-auto">
+                    <i class="fas fa-edit me-1"></i>Klik pada kolom nilai untuk mengisi
+                    <span class="badge bg-success ms-2">Hijau</span> = sudah diisi
+                </span>
             </div>
 
-            {{-- Tabel --}}
+            {{-- Table --}}
             <div class="table-wrapper">
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                    <table class="table table-hover table-input" id="nilaiTable">
+                    <table class="table table-input" id="nilaiTable">
                         <thead>
                             <tr class="text-center">
-                                <th style="min-width: 40px;">No</th>
+                                <th style="min-width: 45px;">No</th>
                                 <th style="min-width: 80px;">NIS</th>
                                 <th style="min-width: 150px; text-align: left;">Nama Siswa</th>
                                 <th style="min-width: 80px;">Harian 1</th>
@@ -339,7 +369,7 @@
                         <tbody>
                             @foreach($siswa as $index => $s)
                                 @php
-                                    // ✅ FIX: $s->nilai sudah berupa object Nilai (single) dari controller
+                                    // ✅ FIX: $s->nilai dari controller sudah berupa object Nilai (single)
                                     $nilaiSiswa = $s->nilai ?? null;
                                     $namaSiswa = $s->nama ?? $s->user->name ?? $s->nama_lengkap ?? '-';
                                 @endphp
@@ -446,7 +476,8 @@
                     </span>
                 </div>
                 <div class="d-flex gap-2">
-                    <button type="reset" class="btn btn-outline-secondary btn-action-secondary" onclick="return confirmReset()">
+                    <button type="reset" class="btn btn-outline-secondary btn-action-secondary"
+                            onclick="return confirmReset()">
                         <i class="fas fa-undo me-1"></i> Reset
                     </button>
                     <button type="submit" class="btn btn-primary btn-action" id="btnSimpan">
@@ -474,13 +505,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         const inputs = document.querySelectorAll('.nilai-input');
 
-        // Highlight jika sudah ada nilai
         inputs.forEach(function(input) {
             if (input.value && input.value !== '') {
                 input.classList.add('has-value');
             }
 
-            // Auto focus next on Enter
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -492,7 +521,6 @@
                 }
             });
 
-            // Highlight on change
             input.addEventListener('change', function() {
                 if (this.value && this.value !== '') {
                     this.classList.add('has-value');
@@ -544,7 +572,6 @@
         return true;
     });
 
-    // Scroll to input saat fokus
     document.querySelectorAll('.nilai-input').forEach(function(input) {
         input.addEventListener('focus', function() {
             setTimeout(function() {
@@ -554,4 +581,4 @@
     });
 </script>
 @endpush
-@endsections
+@endsection
