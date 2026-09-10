@@ -346,9 +346,6 @@
     /**
      * Mapping Mata Pelajaran dari Excel "JADWAL TERBARU SMK.xlsx"
      * Sheet: "Pembagian Tugas"
-     * Key: nama guru (lowercase, tanpa gelar) => value: mata pelajaran
-     * 
-     * Digunakan sebagai FALLBACK jika kolom `mata_pelajaran_utama` di DB kosong.
      */
     $mapelFromExcel = [
         'jubaedah' => 'Produk Kreatif dan Kewirausahaan',
@@ -383,9 +380,6 @@
         'larasati anindhita' => 'A. Desain Grafis',
     ];
 
-    /**
-     * Helper: ambil mapel dari mapping Excel berdasarkan nama guru.
-     */
     if (!function_exists('getMapelFromExcel')) {
         function getMapelFromExcel($namaGuru, $mapelFromExcel) {
             $namaLower = strtolower($namaGuru);
@@ -606,16 +600,10 @@
                                         @forelse($guru as $g)
                                             @php
                                                 $namaGuru = $g->user->name ?? $g->nama_lengkap;
-
-                                                // Prioritas 1: dari DB (kolom mata_pelajaran_utama)
                                                 $mapelGuru = $g->mata_pelajaran_utama ?? null;
-
-                                                // Prioritas 2: fallback dari Excel
                                                 if (empty($mapelGuru) || $mapelGuru === '-') {
                                                     $mapelGuru = getMapelFromExcel($namaGuru, $mapelFromExcel) ?? '-';
                                                 }
-
-                                                // Jabatan
                                                 $jabatanGuru = $g->jabatan->nama ?? ($g->jabatan ?? 'Guru');
                                             @endphp
                                             <div class="guru-option" 
@@ -729,15 +717,15 @@
                             </select>
                         </div>
 
-                        <!-- Atasan (Parent) -->
+                        <!-- Atasan (Parent) - Sudah diubah -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">
                                 <i class="fas fa-arrow-up me-1"></i>Atasan
                             </label>
                             <select name="parent_id" class="form-control" style="cursor: pointer;">
-                                <option value="">-- Tidak Ada (Root - Pimpinan Tertinggi) --</option>
+                                <option value="">-- Tidak Ada --</option>
                                 @if($struktur->whereNull('parent_id')->count() > 0)
-                                    <optgroup label="📌 Pimpinan (Root)">
+                                    <optgroup label="📌 Pimpinan">
                                         @foreach($struktur->whereNull('parent_id') as $st)
                                             <option value="{{ $st->id }}">
                                                 {{ $st->nama_jabatan ?? $st->nama }} 
@@ -876,13 +864,13 @@
                             </select>
                         </div>
 
-                        <!-- Atasan (Parent) -->
+                        <!-- Atasan (Parent) - Sudah diubah -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Atasan</label>
                             <select name="parent_id" class="form-control" style="cursor: pointer;">
-                                <option value="">-- Tidak Ada (Root - Pimpinan Tertinggi) --</option>
+                                <option value="">-- Tidak Ada --</option>
                                 @if($struktur->whereNull('parent_id')->where('id', '!=', $s->id)->count() > 0)
-                                    <optgroup label="📌 Pimpinan (Root)">
+                                    <optgroup label="📌 Pimpinan">
                                         @foreach($struktur->whereNull('parent_id')->where('id', '!=', $s->id) as $st)
                                             <option value="{{ $st->id }}" {{ $s->parent_id == $st->id ? 'selected' : '' }}>
                                                 {{ $st->nama_jabatan ?? $st->nama }}
@@ -978,7 +966,6 @@ $(document).ready(function() {
         }
     });
 
-    // Klik pilihan guru — ambil semua data termasuk mapel
     $(document).on('click', '.guru-option', function() {
         var id      = $(this).data('id');
         var nuptk   = $(this).data('nuptk');
@@ -996,7 +983,6 @@ $(document).ready(function() {
 
         $('#namaPejabat').val(nama);
 
-        // Set field Mata Pelajaran
         if (mapel && mapel !== '-') {
             $('#mataPelajaran').val(mapel);
         } else {
