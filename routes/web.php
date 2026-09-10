@@ -257,7 +257,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     });
 
     // ============================================
-    // KEUANGAN  ✅ (URUTAN DIPERBAIKI)
+    // KEUANGAN
     // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
@@ -270,7 +270,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/spp', [KeuanganController::class, 'sppIndex'])->name('spp');
         Route::get('/spp/create', [KeuanganController::class, 'sppCreate'])->name('spp.create');
         Route::post('/spp', [KeuanganController::class, 'sppStore'])->name('spp.store');
-        Route::get('/spp/laporan', [KeuanganController::class, 'sppLaporan'])->name('spp.laporan'); // ⬅️ PINDAH KE ATAS
+        Route::get('/spp/laporan', [KeuanganController::class, 'sppLaporan'])->name('spp.laporan');
 
         // Pembayaran Lain
         Route::get('/pembayaran-lain', [KeuanganController::class, 'pembayaranLainIndex'])->name('pembayaran-lain.index');
@@ -291,12 +291,18 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/pembayaran-lain/{id}', [KeuanganController::class, 'pembayaranLainDestroy'])->name('pembayaran-lain.destroy');
     });
 
+    // ============================================
     // Arsip
+    // Route statis HARUS di atas route dinamis
+    // ============================================
     Route::prefix('arsip')->name('arsip.')->group(function () {
+        // --- Route statis ---
         Route::get('/', [ArsipController::class, 'index'])->name('index');
         Route::get('/create', [ArsipController::class, 'create'])->name('create');
         Route::post('/', [ArsipController::class, 'store'])->name('store');
         Route::get('/trash', [ArsipController::class, 'trash'])->name('trash');
+
+        // --- Route dinamis ---
         Route::get('/{id}', [ArsipController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [ArsipController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ArsipController::class, 'update'])->name('update');
@@ -306,26 +312,36 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}/force-delete', [ArsipController::class, 'forceDelete'])->name('force-delete');
     });
 
-    // Komunikasi
+    // ============================================
+    // Komunikasi  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas route dinamis
+    // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
+        // --- Route statis (TANPA parameter) — TARUH DI ATAS ---
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
         Route::post('/', [AdministrasiKomunikasi::class, 'store'])->name('store');
+        Route::get('/broadcast', [AdministrasiKomunikasi::class, 'broadcastForm'])->name('broadcast');       // ⬅️ PINDAH KE ATAS
+        Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast'); // ⬅️ PINDAH KE ATAS
+        Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');  // ⬅️ PINDAH KE ATAS
+
+        // --- Route dinamis (DENGAN parameter) — TARUH DI BAWAH ---
         Route::get('/{id}', [AdministrasiKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [AdministrasiKomunikasi::class, 'destroy'])->name('destroy');
-        Route::get('/broadcast', [AdministrasiKomunikasi::class, 'broadcastForm'])->name('broadcast');
-        Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast');
-        Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
     });
 
     // ============================================
-    // Galeri  ✅ (ROUTE SHOW DITAMBAHKAN)
+    // Galeri
+    // Route statis HARUS di atas route dinamis
     // ============================================
     Route::prefix('galeri')->name('galeri.')->group(function () {
+        // --- Route statis ---
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
         Route::post('/', [GaleriController::class, 'store'])->name('store');
-        Route::get('/{id}', [GaleriController::class, 'show'])->name('show');       // ⬅️ DITAMBAH
+
+        // --- Route dinamis ---
+        Route::get('/{id}', [GaleriController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [GaleriController::class, 'edit'])->name('edit');
         Route::put('/{id}', [GaleriController::class, 'update'])->name('update');
         Route::delete('/{id}', [GaleriController::class, 'destroy'])->name('destroy');
@@ -404,15 +420,22 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::get('/get-mata-pelajaran', [AbsensiSiswaController::class, 'getMataPelajaranByKelas'])->name('get-mata-pelajaran');
     });
 
+    // ============================================
+    // Komunikasi Guru  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas route dinamis
+    // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
+        // --- Route statis ---
         Route::get('/', [GuruKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [GuruKomunikasi::class, 'create'])->name('create');
         Route::post('/', [GuruKomunikasi::class, 'store'])->name('store');
+        Route::get('/mark-all-read', [GuruKomunikasi::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::get('/unread-count', [GuruKomunikasi::class, 'getUnreadCount'])->name('unread-count');
+
+        // --- Route dinamis ---
         Route::get('/{id}', [GuruKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [GuruKomunikasi::class, 'destroy'])->name('destroy');
         Route::post('/{id}/mark-read', [GuruKomunikasi::class, 'markAsRead'])->name('mark-read');
-        Route::get('/mark-all-read', [GuruKomunikasi::class, 'markAllAsRead'])->name('mark-all-read');
-        Route::get('/unread-count', [GuruKomunikasi::class, 'getUnreadCount'])->name('unread-count');
         Route::post('/{id}/reply', [GuruKomunikasi::class, 'reply'])->name('reply');
     });
 
