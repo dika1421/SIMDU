@@ -130,7 +130,10 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/change-password', [KepalaSekolahProfil::class, 'changePassword'])->name('change-password');
     });
 
+    // ================== PENGATURAN ==================
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
+    Route::put('/pengaturan/profil', [KepalaSekolahPengaturan::class, 'updateProfil'])->name('pengaturan.update-profil');
+    Route::put('/pengaturan/keamanan', [KepalaSekolahPengaturan::class, 'updateKeamanan'])->name('pengaturan.update-keamanan');
 });
 
 // ================== ADMINISTRASI ==================

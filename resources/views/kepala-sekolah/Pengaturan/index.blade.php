@@ -34,50 +34,73 @@
                         <h5 class="mb-0">Profil Sekolah</h5>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form action="{{ route('kepala-sekolah.pengaturan.update-profil') }}"
+                              method="POST"
+                              enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Nama Sekolah</label>
-                                    <input type="text" class="form-control" value="SMA Negeri 1 Jakarta">
+                                    <input type="text" name="nama_sekolah" class="form-control"
+                                           value="{{ old('nama_sekolah', $pengaturan->nama_sekolah) }}" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">NUPTK</label>
-                                    <input type="text" class="form-control" value="20123456">
+                                    <input type="text" name="nuptk" class="form-control"
+                                           value="{{ old('nuptk', $pengaturan->nuptk) }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Akreditasi</label>
-                                    <select class="form-control">
-                                        <option>A</option>
-                                        <option>B</option>
-                                        <option>C</option>
+                                    <select name="akreditasi" class="form-control">
+                                        @foreach(['A', 'B', 'C'] as $akr)
+                                            <option value="{{ $akr }}"
+                                                {{ old('akreditasi', $pengaturan->akreditasi) == $akr ? 'selected' : '' }}>
+                                                {{ $akr }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Kepala Sekolah</label>
-                                    <input type="text" class="form-control" value="Dr. H. Ahmad Sudrajat, M.Pd">
+                                    <input type="text" name="kepala_sekolah" class="form-control"
+                                           value="{{ old('kepala_sekolah', $pengaturan->kepala_sekolah) }}">
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label">Alamat</label>
-                                    <textarea class="form-control" rows="3">Jl. Merdeka No. 1, Jakarta Pusat</textarea>
+                                    <textarea name="alamat" class="form-control" rows="3">{{ old('alamat', $pengaturan->alamat) }}</textarea>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Telepon</label>
-                                    <input type="text" class="form-control" value="(021) 1234567">
+                                    <input type="text" name="telepon" class="form-control"
+                                           value="{{ old('telepon', $pengaturan->telepon) }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" value="info@sman1jakarta.sch.id">
+                                    <input type="email" name="email" class="form-control"
+                                           value="{{ old('email', $pengaturan->email) }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Website</label>
-                                    <input type="text" class="form-control" value="www.sman1jakarta.sch.id">
+                                    <input type="text" name="website" class="form-control"
+                                           value="{{ old('website', $pengaturan->website) }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Logo Sekolah</label>
-                                    <input type="file" class="form-control">
+                                    <input type="file" name="logo" class="form-control" accept="image/*">
+                                    @if($pengaturan->logo)
+                                        <small class="text-muted d-block mt-2">
+                                            Logo saat ini:
+                                            <img src="{{ Storage::url($pengaturan->logo) }}"
+                                                 alt="Logo" style="height: 40px; margin-left: 6px; vertical-align: middle;">
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Simpan Perubahan
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -90,10 +113,15 @@
                         <h5 class="mb-0">Pengaturan Keamanan</h5>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form action="{{ route('kepala-sekolah.pengaturan.update-keamanan') }}"
+                              method="POST">
+                            @csrf
+                            @method('PUT')
+
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="twoFactor" checked>
+                                    <input class="form-check-input" type="checkbox" name="two_factor"
+                                           id="twoFactor" {{ $pengaturan->two_factor ? 'checked' : '' }}>
                                     <label class="form-check-label" for="twoFactor">
                                         Aktifkan Two-Factor Authentication
                                     </label>
@@ -101,7 +129,8 @@
                             </div>
                             <div class="mb-3">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="loginNotif" checked>
+                                    <input class="form-check-input" type="checkbox" name="notifikasi_login"
+                                           id="loginNotif" {{ $pengaturan->notifikasi_login ? 'checked' : '' }}>
                                     <label class="form-check-label" for="loginNotif">
                                         Notifikasi Login
                                     </label>
@@ -109,13 +138,17 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Masa Berlaku Password (hari)</label>
-                                <input type="number" class="form-control" value="90">
+                                <input type="number" name="masa_berlaku_password" class="form-control"
+                                       value="{{ old('masa_berlaku_password', $pengaturan->masa_berlaku_password) }}">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Batasan Percobaan Login</label>
-                                <input type="number" class="form-control" value="5">
+                                <input type="number" name="batas_percobaan_login" class="form-control"
+                                       value="{{ old('batas_percobaan_login', $pengaturan->batas_percobaan_login) }}">
                             </div>
-                            <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Simpan Pengaturan
+                            </button>
                         </form>
                     </div>
                 </div>
