@@ -41,7 +41,7 @@
                                     <input type="text" class="form-control" value="SMA Negeri 1 Jakarta">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">NPSN</label>
+                                    <label class="form-label">NUPTK</label>
                                     <input type="text" class="form-control" value="20123456">
                                 </div>
                                 <div class="col-md-6 mb-3">
