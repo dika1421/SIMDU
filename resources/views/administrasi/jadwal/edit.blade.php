@@ -4,469 +4,396 @@
 
 @section('content')
 <style>
-    .info-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .page-header-edit {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-radius: 18px;
+        padding: 22px 26px;
+        color: #fff;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header-edit::before {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    .page-header-edit .content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+    .page-header-edit h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; }
+    .page-header-edit p { margin: 0; font-size: 0.82rem; opacity: 0.95; }
+    .btn-glass {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
         border-radius: 10px;
-        padding: 15px;
-        color: white;
-        margin-top: 10px;
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all 0.25s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
-    .auto-fill-badge {
-        background: #e8f5e9;
-        color: #2e7d32;
-        font-size: 11px;
-        padding: 3px 8px;
-        border-radius: 12px;
-        margin-left: 8px;
+    .btn-glass:hover {
+        background: rgba(255,255,255,0.35);
+        color: #fff;
+        transform: translateY(-2px);
     }
+
+    .form-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+    }
+    .form-card-header {
+        padding: 16px 22px;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-card-header i { color: #d97706; font-size: 1.05rem; }
+    .form-card-header h5 { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0; }
+    .form-card-body { padding: 24px; }
 
     .form-section-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #92400e;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-bottom: 10px;
+        margin-bottom: 18px;
+        border-bottom: 2px solid #fef3c7;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i { color: #f59e0b; }
+
+    .form-label-modern {
+        font-size: 0.72rem;
         font-weight: 600;
-        color: #2c3e50;
-        border-bottom: 2px solid #667eea;
-        padding-bottom: 8px;
-        margin-bottom: 20px;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+    .form-label-modern i { color: #f59e0b; }
+    .form-label-modern .required { color: #ef4444; }
 
-    .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    .form-control-modern,
+    .form-select-modern {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        transition: all 0.2s;
+        width: 100%;
     }
-
-    .card {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-    .card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 12px 12px 0 0 !important;
-        padding: 16px 24px;
-    }
-
-    .card-header i {
-        color: white;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 10px 30px;
-        border-radius: 8px;
-    }
-
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #5a6fd6 0%, #6a4292 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-secondary {
-        border-radius: 8px;
-        padding: 10px 30px;
-    }
-
-    .alert-warning {
-        background-color: #fff3cd;
-        border-left: 4px solid #ffc107;
-        border-radius: 8px;
+    .form-control-modern:focus,
+    .form-select-modern:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+        outline: none;
     }
 
     .info-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        padding: 15px 20px;
-        color: white;
-        margin-top: 5px;
-    }
-
-    .info-card small {
-        opacity: 0.85;
-        font-size: 11px;
-    }
-
-    .info-card strong {
-        font-size: 14px;
-    }
-
-    .badge-auto {
-        background: rgba(255,255,255,0.2);
-        color: #fff;
-        font-size: 10px;
-        padding: 2px 10px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         border-radius: 12px;
-        margin-left: 8px;
+        padding: 15px 18px;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        margin-top: 6px;
     }
+    .info-card .row > div { padding: 4px 8px; }
+    .info-card small { opacity: 0.9; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    .info-card strong { font-size: 0.88rem; display: block; margin-top: 2px; }
 
-    .form-label {
-        font-weight: 500;
-        color: #34495e;
-        font-size: 13px;
+    .input-group-text-style {
+        background: #fffbeb;
+        border: 1.5px solid #e2e8f0;
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        color: #d97706;
+        font-weight: 600;
     }
+    .input-with-icon { border-radius: 0 10px 10px 0 !important; }
 
-    .form-label .text-danger {
+    .btn-submit-modern {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 28px;
         font-weight: 700;
+        font-size: 0.88rem;
+        transition: all 0.25s;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
-
-    .select-wrapper {
-        position: relative;
+    .btn-submit-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        color: #fff;
     }
-
-    .select-wrapper select {
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 35px;
-        cursor: pointer;
+    .btn-reset-modern {
+        background: #f1f5f9;
+        border: 1.5px solid #e2e8f0;
+        color: #475569;
+        border-radius: 12px;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        transition: all 0.25s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
-
-    .select-wrapper select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .card-header h5 {
-            font-size: 16px;
-        }
-        .app-content {
-            padding: 10px !important;
-        }
-        .info-card {
-            padding: 10px 15px;
-        }
-    }
+    .btn-reset-modern:hover { background: #e2e8f0; color: #1e293b; }
 </style>
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-edit me-2 text-primary"></i>
-        Edit Jadwal Pelajaran
-    </h1>
-    <div class="btn-toolbar">
-        <a href="{{ route('administrasi.jadwal.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="fas fa-arrow-left me-1"></i> Kembali
+<div class="page-header-edit">
+    <div class="content">
+        <div>
+            <h1>
+                <i class="fas fa-edit me-2"></i>
+                Edit Jadwal Pelajaran
+            </h1>
+            <p>
+                <i class="fas fa-info-circle me-1"></i>
+                Perbarui data jadwal pelajaran
+            </p>
+        </div>
+        <a href="{{ route('administrasi.jadwal.index') }}" class="btn-glass">
+            <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
 </div>
 
 @if($errors->any())
-<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <div class="d-flex align-items-center">
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3">
         <i class="fas fa-exclamation-triangle me-2"></i>
-        <div>
-            <strong>Terjadi Kesalahan!</strong>
-            <ul class="mb-0 mt-1">
-                @foreach($errors->all() as $error)
+        <strong>Terjadi kesalahan:</strong>
+        <ul class="mb-0 mt-2">
+            @foreach($errors->all() as $error)
                 <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
 @endif
 
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">
-            <i class="fas fa-edit me-2"></i>
-            Form Edit Jadwal Pelajaran
-        </h5>
+<div class="form-card">
+    <div class="form-card-header">
+        <i class="fas fa-edit"></i>
+        <h5>Form Edit Jadwal Pelajaran</h5>
     </div>
-    <div class="card-body">
+    <div class="form-card-body">
         <form action="{{ route('administrasi.jadwal.update', $jadwal->id) }}" method="POST" id="jadwalForm">
             @csrf
             @method('PUT')
-            
-            <div class="row">
-                <!-- ========== BAGIAN 1: KELAS & INFORMASI ========== -->
-                <div class="col-12 mb-3">
-                    <h6 class="form-section-title">
-                        <i class="fas fa-school me-2 text-primary"></i>
-                        Informasi Kelas & Pengajar
-                    </h6>
-                </div>
 
-                <!-- Pilih Kelas -->
+            <div class="form-section-title">
+                <i class="fas fa-school"></i> Informasi Kelas & Pengajar
+            </div>
+
+            <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-school me-1"></i> Kelas
-                        <span class="text-danger">*</span>
-                        <span class="badge bg-success text-white ms-1" style="font-size: 10px;">
-                            <i class="fas fa-magic"></i> Auto-fill
-                        </span>
+                    <label class="form-label-modern">
+                        <i class="fas fa-school"></i> Kelas <span class="required">*</span>
                     </label>
-                    <div class="select-wrapper">
-                        <select name="kelas_id" id="kelas_id" class="form-control @error('kelas_id') is-invalid @enderror" required>
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($kelas as $k)
-                            <option value="{{ $k->id }}" 
+                    <select name="kelas_id" id="kelas_id" class="form-select-modern" required>
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach($kelas as $k)
+                            <option value="{{ $k->id }}"
                                     data-kode="{{ $k->kode_kelas ?? $k->kode ?? '' }}"
                                     data-nama="{{ $k->nama ?? $k->nama_kelas ?? '' }}"
                                     data-tingkat="{{ $k->tingkat ?? '' }}"
                                     data-jurusan="{{ $k->jurusan->nama ?? '' }}"
                                     {{ old('kelas_id', $jadwal->kelas_id) == $k->id ? 'selected' : '' }}>
-                                {{ $k->nama ?? $k->nama_kelas ?? $k->kelas }} 
+                                {{ $k->nama ?? $k->nama_kelas ?? $k->kelas }}
                                 ({{ $k->kode_kelas ?? $k->kode ?? 'Kode tidak tersedia' }})
                             </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('kelas_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                        @endforeach
+                    </select>
                 </div>
 
-                <!-- Preview Informasi Kelas -->
                 <div class="col-md-6 mb-3" id="kelasPreview" style="display: {{ old('kelas_id', $jadwal->kelas_id) ? 'block' : 'none' }};">
-                    <label class="form-label">
-                        <i class="fas fa-info-circle me-1"></i> Informasi Kelas
+                    <label class="form-label-modern">
+                        <i class="fas fa-info-circle"></i> Informasi Kelas
                     </label>
                     <div class="info-card">
                         <div class="row">
                             <div class="col-4">
-                                <small><i class="fas fa-tag"></i> Kode Kelas</small><br>
+                                <small><i class="fas fa-tag"></i> Kode</small>
                                 <strong id="previewKode">-</strong>
                             </div>
                             <div class="col-4">
-                                <small><i class="fas fa-layer-group"></i> Tingkat</small><br>
+                                <small><i class="fas fa-layer-group"></i> Tingkat</small>
                                 <strong id="previewTingkat">-</strong>
                             </div>
                             <div class="col-4">
-                                <small><i class="fas fa-graduation-cap"></i> Jurusan</small><br>
+                                <small><i class="fas fa-graduation-cap"></i> Jurusan</small>
                                 <strong id="previewJurusan">-</strong>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Mata Pelajaran -->
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-book me-1"></i> Mata Pelajaran
-                        <span class="text-danger">*</span>
+                    <label class="form-label-modern">
+                        <i class="fas fa-book"></i> Mata Pelajaran <span class="required">*</span>
                     </label>
-                    <div class="select-wrapper">
-                        <select name="mapel_id" id="mapel_id" class="form-control @error('mapel_id') is-invalid @enderror" required>
-                            <option value="">-- Pilih Mata Pelajaran --</option>
-                            @if(isset($mapel) && (is_object($mapel) ? $mapel->count() > 0 : count($mapel) > 0))
-                                @foreach($mapel as $m)
+                    <select name="mapel_id" id="mapel_id" class="form-select-modern" required>
+                        <option value="">-- Pilih Mata Pelajaran --</option>
+                        @if(isset($mapel) && (is_object($mapel) ? $mapel->count() > 0 : count($mapel) > 0))
+                            @foreach($mapel as $m)
                                 <option value="{{ $m->id }}" {{ old('mapel_id', $jadwal->mapel_id) == $m->id ? 'selected' : '' }}>
                                     {{ $m->nama }}
                                 </option>
-                                @endforeach
-                            @else
-                                <option value="" disabled class="text-danger">⚠️ Belum ada data mata pelajaran</option>
-                            @endif
-                        </select>
-                    </div>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle"></i> Jika tidak ada pilihan, tambahkan data mata pelajaran terlebih dahulu
-                    </small>
-                    @error('mapel_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Guru Pengajar -->
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-chalkboard-user me-1"></i> Guru Pengajar
-                        <span class="text-danger">*</span>
-                    </label>
-                    <div class="select-wrapper">
-                        <select name="guru_id" id="guru_id" class="form-control @error('guru_id') is-invalid @enderror" required>
-                            <option value="">-- Pilih Guru --</option>
-                            @foreach($guru as $g)
-                            <option value="{{ $g->id }}" {{ old('guru_id', $jadwal->guru_id) == $g->id ? 'selected' : '' }}>
-                                {{ $g->user->name ?? $g->nama_lengkap ?? $g->nama ?? 'Guru' }}
-                            </option>
                             @endforeach
-                        </select>
-                    </div>
-                    @error('guru_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                        @endif
+                    </select>
                 </div>
 
-                <!-- ========== BAGIAN 2: JADWAL ========== -->
-                <div class="col-12 mt-3 mb-3">
-                    <h6 class="form-section-title">
-                        <i class="fas fa-clock me-2 text-primary"></i>
-                        Waktu & Ruangan
-                    </h6>
-                </div>
-
-                <!-- Hari -->
-                <div class="col-md-3 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-calendar-day me-1"></i> Hari
-                        <span class="text-danger">*</span>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-modern">
+                        <i class="fas fa-chalkboard-user"></i> Guru Pengajar <span class="required">*</span>
                     </label>
-                    <div class="select-wrapper">
-                        <select name="hari" id="hari" class="form-control @error('hari') is-invalid @enderror" required>
-                            <option value="">-- Pilih Hari --</option>
-                            <option value="senin" {{ old('hari', $jadwal->hari) == 'senin' ? 'selected' : '' }}>Senin</option>
-                            <option value="selasa" {{ old('hari', $jadwal->hari) == 'selasa' ? 'selected' : '' }}>Selasa</option>
-                            <option value="rabu" {{ old('hari', $jadwal->hari) == 'rabu' ? 'selected' : '' }}>Rabu</option>
-                            <option value="kamis" {{ old('hari', $jadwal->hari) == 'kamis' ? 'selected' : '' }}>Kamis</option>
-                            <option value="jumat" {{ old('hari', $jadwal->hari) == 'jumat' ? 'selected' : '' }}>Jumat</option>
-                            <option value="sabtu" {{ old('hari', $jadwal->hari) == 'sabtu' ? 'selected' : '' }}>Sabtu</option>
-                        </select>
-                    </div>
-                    @error('hari')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <select name="guru_id" id="guru_id" class="form-select-modern" required>
+                        <option value="">-- Pilih Guru --</option>
+                        @foreach($guru as $g)
+                            <option value="{{ $g->id }}" {{ old('guru_id', $jadwal->guru_id) == $g->id ? 'selected' : '' }}>
+                                {{ $g->user->name ?? $g->nama_lengkap ?? 'Guru' }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
+            </div>
 
-                <!-- Jam Mulai -->
+            <div class="form-section-title mt-4">
+                <i class="fas fa-clock"></i> Waktu & Ruangan
+            </div>
+
+            <div class="row">
                 <div class="col-md-3 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-play-circle me-1"></i> Jam Mulai
-                        <span class="text-danger">*</span>
+                    <label class="form-label-modern">
+                        <i class="fas fa-calendar-day"></i> Hari <span class="required">*</span>
                     </label>
-                    <input type="time" name="jam_mulai" id="jam_mulai" 
-                           class="form-control @error('jam_mulai') is-invalid @enderror" 
-                           value="{{ old('jam_mulai', \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i')) }}"
-                           required>
-                    @error('jam_mulai')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <select name="hari" id="hari" class="form-select-modern" required>
+                        <option value="">-- Pilih Hari --</option>
+                        @foreach(['senin','selasa','rabu','kamis','jumat','sabtu'] as $h)
+                            <option value="{{ $h }}" {{ old('hari', $jadwal->hari) == $h ? 'selected' : '' }}>{{ ucfirst($h) }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <!-- Jam Selesai -->
                 <div class="col-md-3 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-stop-circle me-1"></i> Jam Selesai
-                        <span class="text-danger">*</span>
+                    <label class="form-label-modern">
+                        <i class="fas fa-play-circle"></i> Jam Mulai <span class="required">*</span>
                     </label>
-                    <input type="time" name="jam_selesai" id="jam_selesai" 
-                           class="form-control @error('jam_selesai') is-invalid @enderror" 
-                           value="{{ old('jam_selesai', \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i')) }}"
-                           required>
-                    @error('jam_selesai')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <input type="time" name="jam_mulai" id="jam_mulai" class="form-control-modern"
+                           value="{{ old('jam_mulai', \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i')) }}" required>
                 </div>
 
-                <!-- Ruangan -->
                 <div class="col-md-3 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-door-open me-1"></i> Ruangan
-                        <span class="text-danger">*</span>
-                        <span class="badge bg-info text-white ms-1" style="font-size: 10px;">
-                            <i class="fas fa-sync-alt"></i> Auto
-                        </span>
+                    <label class="form-label-modern">
+                        <i class="fas fa-stop-circle"></i> Jam Selesai <span class="required">*</span>
+                    </label>
+                    <input type="time" name="jam_selesai" id="jam_selesai" class="form-control-modern"
+                           value="{{ old('jam_selesai', \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i')) }}" required>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label class="form-label-modern">
+                        <i class="fas fa-door-open"></i> Ruangan <span class="required">*</span>
                     </label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light">
-                            <i class="fas fa-door-open text-primary"></i>
-                        </span>
-                        <input type="text" name="ruang" id="ruang" 
-                               class="form-control @error('ruang') is-invalid @enderror" 
-                               value="{{ old('ruang', $jadwal->ruangan) }}"
-                               placeholder="Akan terisi otomatis" 
-                               readonly style="background-color: {{ old('ruang', $jadwal->ruangan) ? '#e8f5e9' : '#f8f9fa' }}; font-weight: 600; color: #2c3e50;">
+                        <span class="input-group-text input-group-text-style"><i class="fas fa-door-open"></i></span>
+                        <input type="text" name="ruang" id="ruang" class="form-control form-control-modern input-with-icon"
+                               value="{{ old('ruang', $jadwal->ruangan) }}" readonly
+                               style="background:#fffbeb;font-weight:700;color:#92400e;">
                     </div>
-                    <small class="text-muted" id="ruangHint">
-                        <i class="fas fa-info-circle"></i> Ruangan akan terisi otomatis dari kode kelas
-                    </small>
-                    @error('ruang')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
                 </div>
+            </div>
 
-                <!-- ========== BAGIAN 3: TAHUN AJARAN & SEMESTER ========== -->
-                <div class="col-12 mt-3 mb-3">
-                    <h6 class="form-section-title">
-                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
-                        Tahun Ajaran & Semester
-                    </h6>
-                </div>
+            <div class="form-section-title mt-4">
+                <i class="fas fa-calendar-alt"></i> Tahun Ajaran & Semester
+            </div>
 
-                <!-- Tahun Ajaran -->
+            <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-calendar-alt me-1"></i> Tahun Ajaran
+                    <label class="form-label-modern">
+                        <i class="fas fa-calendar-alt"></i> Tahun Ajaran
                     </label>
-                    <div class="select-wrapper">
-                        <select name="tahun_ajaran" id="tahun_ajaran" class="form-control @error('tahun_ajaran') is-invalid @enderror">
-                            <option value="">-- Pilih Tahun Ajaran --</option>
-                            @if(isset($tahunAjaranList) && $tahunAjaranList->count() > 0)
-                                @foreach($tahunAjaranList as $ta)
-                                    @php
-                                        $namaTa = is_object($ta) ? $ta->nama_tahun : $ta['nama_tahun'];
-                                        $isAktif = is_object($ta) ? $ta->is_aktif : $ta['is_aktif'];
-                                    @endphp
-                                    <option value="{{ $namaTa }}" 
-                                        {{ old('tahun_ajaran', $jadwal->tahun_ajaran) == $namaTa ? 'selected' : '' }}>
-                                        {{ $namaTa }}
-                                        @if($isAktif)
-                                            (Aktif)
-                                        @endif
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="{{ date('Y') . '/' . (date('Y') + 1) }}" selected>
-                                    {{ date('Y') . '/' . (date('Y') + 1) }}
+                    <select name="tahun_ajaran" id="tahun_ajaran" class="form-select-modern">
+                        <option value="">-- Pilih Tahun Ajaran --</option>
+                        @if(isset($tahunAjaranList) && $tahunAjaranList->count() > 0)
+                            @foreach($tahunAjaranList as $ta)
+                                <option value="{{ $ta->nama_tahun }}"
+                                    {{ old('tahun_ajaran', $jadwal->tahun_ajaran) == $ta->nama_tahun ? 'selected' : '' }}>
+                                    {{ $ta->nama_tahun }} @if($ta->is_aktif) (Aktif) @endif
                                 </option>
-                            @endif
-                        </select>
-                    </div>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle"></i> Pilih tahun ajaran
-                    </small>
-                    @error('tahun_ajaran')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                            @endforeach
+                        @else
+                            <option value="{{ date('Y') . '/' . (date('Y') + 1) }}" selected>
+                                {{ date('Y') . '/' . (date('Y') + 1) }}
+                            </option>
+                        @endif
+                    </select>
                 </div>
 
-                <!-- Semester -->
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">
-                        <i class="fas fa-calendar-week me-1"></i> Semester
+                    <label class="form-label-modern">
+                        <i class="fas fa-calendar-week"></i> Semester
                     </label>
-                    <div class="select-wrapper">
-                        <select name="semester" class="form-control @error('semester') is-invalid @enderror">
-                            <option value="">-- Pilih Semester --</option>
-                            <option value="ganjil" {{ old('semester', $jadwal->semester) == 'ganjil' ? 'selected' : '' }}>Ganjil</option>
-                            <option value="genap" {{ old('semester', $jadwal->semester) == 'genap' ? 'selected' : '' }}>Genap</option>
-                        </select>
-                    </div>
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle"></i> Pilih semester
-                    </small>
-                    @error('semester')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <select name="semester" class="form-select-modern">
+                        <option value="">-- Pilih Semester --</option>
+                        <option value="ganjil" {{ old('semester', $jadwal->semester) == 'ganjil' ? 'selected' : '' }}>Ganjil</option>
+                        <option value="genap" {{ old('semester', $jadwal->semester) == 'genap' ? 'selected' : '' }}>Genap</option>
+                    </select>
                 </div>
+            </div>
 
-                <!-- ========== NOTIFIKASI ========== -->
-                <div class="col-12 mt-3">
-                    <div class="alert alert-warning d-flex align-items-center" style="border-radius: 10px;">
-                        <i class="fas fa-exclamation-triangle me-3" style="font-size: 18px;"></i>
-                        <div>
-                            <strong>Perhatikan!</strong>
-                            <small class="d-block">Pastikan tidak ada jadwal yang bentrok untuk kelas, guru, dan ruangan yang sama.</small>
-                        </div>
-                    </div>
+            <div class="alert alert-warning rounded-3 d-flex align-items-center mt-3">
+                <i class="fas fa-exclamation-triangle me-3" style="font-size:18px;"></i>
+                <div>
+                    <strong>Perhatikan!</strong>
+                    <small class="d-block">Pastikan tidak ada jadwal yang bentrok untuk kelas, guru, dan ruangan yang sama.</small>
                 </div>
             </div>
 
             <hr class="my-4">
 
             <div class="d-flex justify-content-end gap-2">
-                <button type="reset" class="btn btn-secondary" id="resetBtn">
-                    <i class="fas fa-undo me-1"></i> Reset
+                <button type="reset" class="btn-reset-modern" id="resetBtn">
+                    <i class="fas fa-undo-alt"></i> Reset
                 </button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <i class="fas fa-save me-1"></i> Update Jadwal
+                <button type="submit" class="btn-submit-modern" id="submitBtn">
+                    <i class="fas fa-save"></i> Update Jadwal
                 </button>
             </div>
         </form>
@@ -476,110 +403,50 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // ========== AUTO-FILL RUANGAN DARI KELAS ==========
+    // ========== AUTO-FILL RUANGAN ==========
     $('#kelas_id').on('change', function() {
-        var selectedOption = $(this).find('option:selected');
-        var kodeKelas = selectedOption.data('kode');
-        var namaKelas = selectedOption.data('nama');
-        var tingkatKelas = selectedOption.data('tingkat');
-        var jurusanKelas = selectedOption.data('jurusan');
-        
+        var opt = $(this).find('option:selected');
+        var kodeKelas = opt.data('kode');
+        var namaKelas = opt.data('nama');
+        var tingkatKelas = opt.data('tingkat');
+        var jurusanKelas = opt.data('jurusan');
+
         var ruangan = kodeKelas || (namaKelas ? namaKelas.substring(0, 5).toUpperCase().replace(/\s/g, '') : '');
-        
+
         if ($(this).val() !== '') {
             $('#kelasPreview').fadeIn(300);
             $('#previewKode').text(kodeKelas || '-');
             $('#previewTingkat').text(tingkatKelas || '-');
             $('#previewJurusan').text(jurusanKelas || '-');
-            $('#ruangHint').html('<i class="fas fa-check-circle text-success"></i> Ruangan terisi otomatis: <strong>' + ruangan + '</strong>');
-            $('#ruang').css('background-color', '#e8f5e9');
-            $(this).css('border-color', '#28a745');
         } else {
             $('#kelasPreview').fadeOut(300);
-            $('#ruangHint').html('<i class="fas fa-info-circle"></i> Ruangan akan terisi otomatis setelah memilih kelas');
-            $('#ruang').css('background-color', '#f8f9fa');
-            $(this).css('border-color', '#ddd');
         }
         $('#ruang').val(ruangan);
-        $('#ruang').removeClass('is-invalid');
     });
-    
+
     if ($('#kelas_id').val()) {
         $('#kelas_id').trigger('change');
     }
-    
-    // ========== VALIDASI JAM ==========
+
     function validateTime() {
-        var jamMulai = $('#jam_mulai').val();
-        var jamSelesai = $('#jam_selesai').val();
-        if (jamMulai && jamSelesai && jamMulai >= jamSelesai) {
+        var m = $('#jam_mulai').val();
+        var s = $('#jam_selesai').val();
+        if (m && s && m >= s) {
             $('#jam_selesai').addClass('is-invalid');
-            if ($('#jam_selesai').next('.invalid-feedback').length === 0) {
-                $('#jam_selesai').after('<div class="invalid-feedback">Jam selesai harus lebih besar dari jam mulai</div>');
-            }
             return false;
-        } else {
-            $('#jam_selesai').removeClass('is-invalid');
-            $('#jam_selesai').next('.invalid-feedback').remove();
-            return true;
         }
+        $('#jam_selesai').removeClass('is-invalid');
         return true;
     }
-    
     $('#jam_mulai, #jam_selesai').on('change', validateTime);
-    
-    // ========== RESET FORM ==========
-    $('#resetBtn').on('click', function(e) {
-        e.preventDefault();
-        $('#jadwalForm')[0].reset();
-        $('#kelasPreview').hide();
-        $('#ruang').val('');
-        $('#ruang').css('background-color', '#f8f9fa');
-        $('#ruangHint').html('<i class="fas fa-info-circle"></i> Ruangan akan terisi otomatis setelah memilih kelas');
-        $('#kelas_id').css('border-color', '#ddd');
-        
-        @if(isset($tahunAjaranAktif) && $tahunAjaranAktif)
-        $('#tahun_ajaran').val('{{ $tahunAjaranAktif->nama_tahun }}');
-        @else
-        $('#tahun_ajaran').val('');
-        @endif
-        
-        $('.is-invalid').removeClass('is-invalid');
-        $('.invalid-feedback').remove();
-        
-        $('#submitBtn').html('<i class="fas fa-save me-1"></i> Update Jadwal');
-        $('#submitBtn').prop('disabled', false);
-    });
-    
-    // ========== VALIDASI FORM ==========
+
     $('#jadwalForm').on('submit', function(e) {
-        var isValid = true;
-        $('.is-invalid').removeClass('is-invalid');
-        $('.invalid-feedback').remove();
-        
-        if (!$('#kelas_id').val()) { $('#kelas_id').addClass('is-invalid'); isValid = false; }
-        if (!$('#mapel_id').val()) { $('#mapel_id').addClass('is-invalid'); isValid = false; }
-        if (!$('#guru_id').val()) { $('#guru_id').addClass('is-invalid'); isValid = false; }
-        if (!$('#hari').val()) { $('#hari').addClass('is-invalid'); isValid = false; }
-        if (!$('#jam_mulai').val()) { $('#jam_mulai').addClass('is-invalid'); isValid = false; }
-        if (!$('#jam_selesai').val()) { $('#jam_selesai').addClass('is-invalid'); isValid = false; }
-        if (!$('#ruang').val()) { $('#ruang').addClass('is-invalid'); isValid = false; }
-        
-        if (!isValid) {
-            e.preventDefault();
-            alert('Silakan lengkapi semua field yang wajib diisi');
-            return false;
-        }
         if (!validateTime()) {
             e.preventDefault();
-            alert('Periksa kembali jam mulai dan jam selesai');
+            Swal.fire('Periksa Jam!', 'Jam selesai harus lebih besar dari jam mulai.', 'warning');
             return false;
         }
-        
-        // Loading state
-        $('#submitBtn').html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...');
-        $('#submitBtn').prop('disabled', true);
-        
+        $('#submitBtn').html('<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...').prop('disabled', true);
         return true;
     });
 });
