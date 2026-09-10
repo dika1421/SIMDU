@@ -15,7 +15,6 @@ class ArsipDokumen extends Model
         'nomor_dokumen',
         'nama_dokumen',
         'kategori',
-        'jenis_dokumen',
         'tanggal_dokumen',
         'file_path',
         'keterangan',
@@ -95,21 +94,14 @@ class ArsipDokumen extends Model
 
     public function getStatusBadgeAttribute()
     {
-        // Karena tabel tidak punya kolom status, selalu "Aktif"
         return '<span class="badge bg-success">Aktif</span>';
     }
 
-    /**
-     * Nama file asli dari path (untuk ditampilkan).
-     */
     public function getNamaFileAttribute()
     {
         return $this->file_path ? basename($this->file_path) : '-';
     }
 
-    /**
-     * Ukuran file (jika kolom tidak ada, return null).
-     */
     public function getUkuranFileFormattedAttribute()
     {
         $path = $this->file_path;

@@ -13,9 +13,6 @@ use Carbon\Carbon;
 
 class ArsipController extends Controller
 {
-    /**
-     * Daftar kategori yang tersedia.
-     */
     private function kategoriList(): array
     {
         return [
@@ -30,9 +27,6 @@ class ArsipController extends Controller
         ];
     }
 
-    /**
-     * Menampilkan daftar arsip.
-     */
     public function index(Request $request)
     {
         try {
@@ -74,25 +68,18 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Form tambah arsip.
-     */
     public function create()
     {
         $kategoriList = $this->kategoriList();
         return view('administrasi.arsip.create', compact('kategoriList'));
     }
 
-    /**
-     * Simpan arsip baru.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'nama_dokumen'    => 'required|string|max:200',
             'nomor_dokumen'   => 'nullable|string|max:100',
             'kategori'        => 'required|string|max:100',
-            'jenis_dokumen'   => 'nullable|string|max:255',
             'tanggal_dokumen' => 'nullable|date',
             'keterangan'      => 'nullable|string',
             'file'            => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
@@ -101,13 +88,11 @@ class ArsipController extends Controller
         try {
             DB::beginTransaction();
 
-            // Upload file
             $file      = $request->file('file');
             $extension = $file->getClientOriginalExtension();
             $fileName  = time() . '_' . Str::random(10) . '.' . $extension;
             $path      = $file->storeAs('arsip', $fileName, 'public');
 
-            // Generate nomor_dokumen jika kosong
             $nomorDokumen = $request->nomor_dokumen;
             if (empty($nomorDokumen)) {
                 $nomorDokumen = 'ARS/' . date('Y') . '/' . strtoupper(Str::random(6));
@@ -117,7 +102,6 @@ class ArsipController extends Controller
                 'nomor_dokumen'   => $nomorDokumen,
                 'nama_dokumen'    => $request->nama_dokumen,
                 'kategori'        => $request->kategori,
-                'jenis_dokumen'   => $request->jenis_dokumen ?? $request->kategori,
                 'tanggal_dokumen' => $request->tanggal_dokumen,
                 'file_path'       => $path,
                 'keterangan'      => $request->keterangan,
@@ -139,9 +123,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Detail arsip.
-     */
     public function show($id)
     {
         try {
@@ -153,9 +134,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Form edit arsip.
-     */
     public function edit($id)
     {
         try {
@@ -177,9 +155,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Update arsip.
-     */
     public function update(Request $request, $id)
     {
         try {
@@ -189,7 +164,6 @@ class ArsipController extends Controller
                 'nama_dokumen'    => 'required|string|max:200',
                 'nomor_dokumen'   => 'nullable|string|max:100',
                 'kategori'        => 'required|string|max:100',
-                'jenis_dokumen'   => 'nullable|string|max:255',
                 'tanggal_dokumen' => 'nullable|date',
                 'keterangan'      => 'nullable|string',
                 'file'            => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
@@ -201,7 +175,6 @@ class ArsipController extends Controller
                 'nomor_dokumen'   => $request->nomor_dokumen ?: $arsip->nomor_dokumen,
                 'nama_dokumen'    => $request->nama_dokumen,
                 'kategori'        => $request->kategori,
-                'jenis_dokumen'   => $request->jenis_dokumen ?? $request->kategori,
                 'tanggal_dokumen' => $request->tanggal_dokumen,
                 'keterangan'      => $request->keterangan,
                 'tahun'           => $request->tanggal_dokumen
@@ -209,9 +182,7 @@ class ArsipController extends Controller
                                         : Carbon::now()->year,
             ];
 
-            // Jika upload file baru
             if ($request->hasFile('file')) {
-                // Hapus file lama
                 if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
                     Storage::disk('public')->delete($arsip->file_path);
                 }
@@ -242,16 +213,13 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Soft delete arsip.
-     */
     public function destroy($id)
     {
         try {
             DB::beginTransaction();
 
             $arsip = ArsipDokumen::findOrFail($id);
-            $arsip->delete();   // soft delete
+            $arsip->delete();
 
             DB::commit();
 
@@ -264,9 +232,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Download file arsip.
-     */
     public function download($id)
     {
         try {
@@ -292,9 +257,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Restore soft deleted.
-     */
     public function restore($id)
     {
         try {
@@ -320,9 +282,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Force delete (permanent).
-     */
     public function forceDelete($id)
     {
         try {
@@ -347,9 +306,6 @@ class ArsipController extends Controller
         }
     }
 
-    /**
-     * Daftar arsip yang sudah dihapus (trash).
-     */
     public function trash(Request $request)
     {
         try {

@@ -66,7 +66,7 @@
                     <i class="fas fa-info-circle me-2"></i> Informasi Dokumen
                 </h5>
                 <div class="row">
-                    {{-- NOMOR DOKUMEN (dari kode_arsip) --}}
+                    {{-- NOMOR DOKUMEN --}}
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nomor Dokumen</label>
                         <input type="text" name="nomor_dokumen" 
@@ -95,7 +95,7 @@
                         @enderror
                     </div>
                     
-                    {{-- NAMA DOKUMEN (dari judul) --}}
+                    {{-- NAMA DOKUMEN --}}
                     <div class="col-md-12 mb-3">
                         <label class="form-label required-field">Nama Dokumen</label>
                         <input type="text" name="nama_dokumen" 
@@ -107,20 +107,8 @@
                         @enderror
                     </div>
                     
-                    {{-- JENIS DOKUMEN (optional) --}}
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Jenis Dokumen</label>
-                        <input type="text" name="jenis_dokumen" 
-                               class="form-control @error('jenis_dokumen') is-invalid @enderror" 
-                               placeholder="Contoh: Dokumen Guru"
-                               value="{{ old('jenis_dokumen') }}">
-                        @error('jenis_dokumen')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
                     {{-- TANGGAL DOKUMEN --}}
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-12 mb-3">
                         <label class="form-label required-field">Tanggal Dokumen</label>
                         <input type="date" name="tanggal_dokumen" 
                                class="form-control @error('tanggal_dokumen') is-invalid @enderror" 
@@ -156,7 +144,7 @@
                     <i class="fas fa-align-left me-2"></i> Informasi Tambahan
                 </h5>
                 <div class="row">
-                    {{-- KETERANGAN (dari deskripsi) --}}
+                    {{-- KETERANGAN --}}
                     <div class="col-md-12 mb-3">
                         <label class="form-label">Keterangan</label>
                         <textarea name="keterangan" 
@@ -217,12 +205,10 @@
                 return false;
             }
             
-            // Show progress bar
             progressDiv.classList.remove('d-none');
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengupload...';
             
-            // Simulate progress
             var progress = 0;
             var interval = setInterval(function() {
                 progress += 10;
