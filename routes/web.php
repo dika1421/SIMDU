@@ -147,7 +147,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::resource('jurusan', JurusanController::class);
 
     // ============================================
-    // Manajemen Kelas  ✅ (URUTAN DIPERBAIKI)
+    // Manajemen Kelas
     // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
@@ -155,11 +155,10 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/kelas/export', [KelasController::class, 'export'])->name('kelas.export');
     Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])->name('kelas.get-list');
 
-    // Resource ditaruh paling bawah
     Route::resource('kelas', KelasController::class);
 
     // ============================================
-    // Manajemen Mata Pelajaran  ✅ (URUTAN DIPERBAIKI)
+    // Manajemen Mata Pelajaran
     // Route statis HARUS di atas Route::resource
     // ============================================
     Route::get('/mapel/get-mapel-list', [MapelController::class, 'getMapelList'])->name('mapel.get-list');
@@ -167,11 +166,10 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/mapel/download-template', [MapelController::class, 'downloadTemplate'])->name('mapel.download-template');
     Route::get('/mapel/export', [MapelController::class, 'export'])->name('mapel.export');
 
-    // Resource ditaruh paling bawah
     Route::resource('mapel', MapelController::class);
 
     // ============================================
-    // Manajemen Siswa  ✅ (URUTAN DIPERBAIKI)
+    // Manajemen Siswa
     // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
@@ -180,17 +178,15 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
     Route::get('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
     Route::post('/siswa/{siswa}/mutasi', [SiswaController::class, 'mutasi'])->name('siswa.mutasi');
 
-    // Resource ditaruh paling bawah agar tidak "memakan" route statis
     Route::resource('siswa', SiswaController::class);
 
     // ============================================
-    // Manajemen Guru  ✅ (URUTAN DIPERBAIKI)
+    // Manajemen Guru
     // Route statis HARUS di atas Route::resource
     // ============================================
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
 
-    // Resource ditaruh paling bawah
     Route::resource('guru', AdministrasiGuruController::class);
 
     // =============================================
@@ -260,25 +256,39 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/card-info', [RfidController::class, 'getCardInfo'])->name('card-info');
     });
 
-    // Keuangan
+    // ============================================
+    // KEUANGAN  ✅ (URUTAN DIPERBAIKI)
+    // Route statis HARUS di atas route dinamis
+    // ============================================
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
+
+        // --- Route statis (tanpa parameter) ---
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])->name('get-siswa-by-kelas');
         Route::get('/cari-siswa', [KeuanganController::class, 'cariSiswa'])->name('cari-siswa');
+
+        // SPP
         Route::get('/spp', [KeuanganController::class, 'sppIndex'])->name('spp');
         Route::get('/spp/create', [KeuanganController::class, 'sppCreate'])->name('spp.create');
         Route::post('/spp', [KeuanganController::class, 'sppStore'])->name('spp.store');
-        Route::get('/spp/{id}/edit', [KeuanganController::class, 'sppEdit'])->name('spp.edit');
-        Route::put('/spp/{id}', [KeuanganController::class, 'sppUpdate'])->name('spp.update');
-        Route::delete('/spp/{id}', [KeuanganController::class, 'sppDestroy'])->name('spp.destroy');
-        Route::get('/spp/laporan', [KeuanganController::class, 'sppLaporan'])->name('spp.laporan');
+        Route::get('/spp/laporan', [KeuanganController::class, 'sppLaporan'])->name('spp.laporan'); // ⬅️ PINDAH KE ATAS
+
+        // Pembayaran Lain
         Route::get('/pembayaran-lain', [KeuanganController::class, 'pembayaranLainIndex'])->name('pembayaran-lain.index');
         Route::get('/pembayaran-lain/create', [KeuanganController::class, 'pembayaranLainCreate'])->name('pembayaran-lain.create');
         Route::post('/pembayaran-lain', [KeuanganController::class, 'pembayaranLainStore'])->name('pembayaran-lain.store');
+
+        // Laporan
+        Route::get('/laporan', [KeuanganController::class, 'laporanKeuangan'])->name('laporan');
+        Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
+
+        // --- Route dinamis (dengan parameter) — TARUH PALING BAWAH ---
+        Route::get('/spp/{id}/edit', [KeuanganController::class, 'sppEdit'])->name('spp.edit');
+        Route::put('/spp/{id}', [KeuanganController::class, 'sppUpdate'])->name('spp.update');
+        Route::delete('/spp/{id}', [KeuanganController::class, 'sppDestroy'])->name('spp.destroy');
+
         Route::get('/pembayaran-lain/{id}/edit', [KeuanganController::class, 'pembayaranLainEdit'])->name('pembayaran-lain.edit');
         Route::put('/pembayaran-lain/{id}', [KeuanganController::class, 'pembayaranLainUpdate'])->name('pembayaran-lain.update');
         Route::delete('/pembayaran-lain/{id}', [KeuanganController::class, 'pembayaranLainDestroy'])->name('pembayaran-lain.destroy');
-        Route::get('/laporan', [KeuanganController::class, 'laporanKeuangan'])->name('laporan');
-        Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
     });
 
     // Arsip
