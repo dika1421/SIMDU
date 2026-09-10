@@ -695,7 +695,7 @@
                             <i class="fas fa-user-shield"></i> Role & Permission
                             <i class="fas fa-chevron-down chevron float-end mt-1"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('administrasi.roles.*') || request()->routeIs('administrasi.permissions.*') ? 'show' : '' }}" id="rolesMenu">
+                        <div class="collapse {{ request()->routeIs('administrasi.roles.*') || request()->routeIs('administrasi.permissions.*') || request()->routeIs('administrasi.user-permission.*') ? 'show' : '' }}" id="rolesMenu">
                             <ul class="nav flex-column">
                                 <li>
                                     <a href="{{ route('administrasi.roles.index') }}"
@@ -707,6 +707,13 @@
                                     <a href="{{ route('administrasi.permissions.index') }}"
                                        class="menu-item {{ request()->routeIs('administrasi.permissions.*') ? 'active' : '' }}">
                                         <i class="fas fa-key"></i> Data Permission
+                                    </a>
+                                </li>
+                                {{-- ✅ MENU BARU: HAK AKSES PER USER --}}
+                                <li>
+                                    <a href="{{ route('administrasi.user-permission.index') }}"
+                                       class="menu-item {{ request()->routeIs('administrasi.user-permission.*') ? 'active' : '' }}">
+                                        <i class="fas fa-users-cog"></i> Hak Akses per User
                                     </a>
                                 </li>
                             </ul>
