@@ -40,16 +40,8 @@
         flex-wrap: wrap;
         gap: 14px;
     }
-    .page-header-jadwal h1 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-    }
-    .page-header-jadwal p {
-        margin: 0;
-        font-size: 0.82rem;
-        opacity: 0.95;
-    }
+    .page-header-jadwal h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; }
+    .page-header-jadwal p { margin: 0; font-size: 0.82rem; opacity: 0.95; }
     .btn-glass {
         background: rgba(255,255,255,0.2);
         border: 1px solid rgba(255,255,255,0.3);
@@ -193,10 +185,7 @@
     .main-card-header h5 i { color: #0284c7; }
 
     /* ========== TABLE ========== */
-    .table-jadwal {
-        margin: 0;
-        font-size: 0.83rem;
-    }
+    .table-jadwal { margin: 0; font-size: 0.83rem; }
     .table-jadwal thead th {
         background: #f8fafc;
         color: #475569;
@@ -303,10 +292,7 @@
         color: #fff;
     }
 
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
+    .empty-state { padding: 60px 20px; text-align: center; }
     .empty-state-icon {
         width: 100px; height: 100px;
         margin: 0 auto 20px;
@@ -347,7 +333,6 @@
         color: #dc2626;
     }
 
-    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
         .page-header-jadwal { padding: 18px; }
         .page-header-jadwal h1 { font-size: 1.15rem; }
@@ -535,6 +520,9 @@
                         }
                     }
 
+                    // Ambil ruangan dari berbagai kemungkinan field
+                    $namaRuangan = $j->ruangan ?? $j->ruang ?? '-';
+
                     $hariClass = strtolower($j->hari);
                     $initialGuru = strtoupper(substr($namaGuru, 0, 1));
                 @endphp
@@ -577,7 +565,7 @@
                     <td>
                         <span class="ruang-badge">
                             <i class="fas fa-door-open me-1"></i>
-                            {{ $j->ruangan ?? '-' }}
+                            {{ $namaRuangan }}
                         </span>
                     </td>
                     <td>

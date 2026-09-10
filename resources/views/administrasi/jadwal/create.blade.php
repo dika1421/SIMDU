@@ -31,16 +31,8 @@
         flex-wrap: wrap;
         gap: 14px;
     }
-    .page-header-create h1 {
-        font-size: 1.4rem;
-        font-weight: 700;
-        margin: 0 0 4px 0;
-    }
-    .page-header-create p {
-        margin: 0;
-        font-size: 0.82rem;
-        opacity: 0.95;
-    }
+    .page-header-create h1 { font-size: 1.4rem; font-weight: 700; margin: 0 0 4px 0; }
+    .page-header-create p { margin: 0; font-size: 0.82rem; opacity: 0.95; }
     .btn-glass {
         background: rgba(255,255,255,0.2);
         border: 1px solid rgba(255,255,255,0.3);
@@ -62,7 +54,6 @@
         transform: translateY(-2px);
     }
 
-    /* FORM CARD */
     .form-card {
         background: #fff;
         border-radius: 16px;
@@ -79,12 +70,7 @@
         gap: 8px;
     }
     .form-card-header i { color: #059669; font-size: 1.05rem; }
-    .form-card-header h5 {
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0;
-    }
+    .form-card-header h5 { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0; }
     .form-card-body { padding: 24px; }
 
     .form-section-title {
@@ -132,7 +118,6 @@
         outline: none;
     }
 
-    /* INFO CARD */
     .info-card {
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         border-radius: 12px;
@@ -141,20 +126,9 @@
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         margin-top: 6px;
     }
-    .info-card .row > div {
-        padding: 4px 8px;
-    }
-    .info-card small {
-        opacity: 0.9;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-    }
-    .info-card strong {
-        font-size: 0.88rem;
-        display: block;
-        margin-top: 2px;
-    }
+    .info-card .row > div { padding: 4px 8px; }
+    .info-card small { opacity: 0.9; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.4px; }
+    .info-card strong { font-size: 0.88rem; display: block; margin-top: 2px; }
 
     .input-group-text-style {
         background: #f0fdf4;
@@ -164,9 +138,7 @@
         color: #059669;
         font-weight: 600;
     }
-    .input-with-icon {
-        border-radius: 0 10px 10px 0 !important;
-    }
+    .input-with-icon { border-radius: 0 10px 10px 0 !important; }
 
     .btn-submit-modern {
         background: linear-gradient(135deg, #10b981, #059669);
@@ -375,8 +347,9 @@
                     </label>
                     <div class="input-group">
                         <span class="input-group-text input-group-text-style"><i class="fas fa-door-open"></i></span>
-                        <input type="text" name="ruang" id="ruang" class="form-control form-control-modern input-with-icon"
-                               value="{{ old('ruang') }}" placeholder="Akan terisi otomatis" readonly
+                        {{-- ✅ name="ruangan" bukan "ruang" agar cocok dengan model --}}
+                        <input type="text" name="ruangan" id="ruangan" class="form-control form-control-modern input-with-icon"
+                               value="{{ old('ruangan') }}" placeholder="Akan terisi otomatis" readonly
                                style="background:#f0fdf4;font-weight:700;color:#065f46;">
                     </div>
                     <small class="text-muted" id="ruangHint" style="font-size:0.72rem;">
@@ -452,6 +425,7 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
     // ========== AUTO-FILL RUANGAN ==========
@@ -481,7 +455,7 @@ $(document).ready(function() {
             $('#kelasPreview').fadeOut(300);
             $('#ruangHint').html('<i class="fas fa-info-circle"></i> Terisi otomatis dari kode kelas');
         }
-        $('#ruang').val(ruangan);
+        $('#ruangan').val(ruangan);
     });
 
     if ($('#kelas_id').val()) {
@@ -517,7 +491,7 @@ $(document).ready(function() {
         e.preventDefault();
         $('#jadwalForm')[0].reset();
         $('#kelasPreview').hide();
-        $('#ruang').val('');
+        $('#ruangan').val('');
         $('#ruangHint').html('<i class="fas fa-info-circle"></i> Terisi otomatis dari kode kelas');
         @if(isset($tahunAjaranAktif) && $tahunAjaranAktif)
         $('#tahun_ajaran').val('{{ $tahunAjaranAktif->nama_tahun }}');

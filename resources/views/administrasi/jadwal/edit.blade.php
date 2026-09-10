@@ -228,14 +228,19 @@
                     <select name="kelas_id" id="kelas_id" class="form-select-modern" required>
                         <option value="">-- Pilih Kelas --</option>
                         @foreach($kelas as $k)
+                            @php
+                                $kodeKelas = $k->kode_kelas ?? $k->kode ?? '';
+                                $namaKelas = $k->nama ?? $k->nama_kelas ?? $k->kelas ?? '-';
+                                $tingkat   = $k->tingkat ?? '-';
+                                $jurusan   = $k->jurusan->nama ?? '-';
+                            @endphp
                             <option value="{{ $k->id }}"
-                                    data-kode="{{ $k->kode_kelas ?? $k->kode ?? '' }}"
-                                    data-nama="{{ $k->nama ?? $k->nama_kelas ?? '' }}"
-                                    data-tingkat="{{ $k->tingkat ?? '' }}"
-                                    data-jurusan="{{ $k->jurusan->nama ?? '' }}"
+                                    data-kode="{{ $kodeKelas }}"
+                                    data-nama="{{ $namaKelas }}"
+                                    data-tingkat="{{ $tingkat }}"
+                                    data-jurusan="{{ $jurusan }}"
                                     {{ old('kelas_id', $jadwal->kelas_id) == $k->id ? 'selected' : '' }}>
-                                {{ $k->nama ?? $k->nama_kelas ?? $k->kelas }}
-                                ({{ $k->kode_kelas ?? $k->kode ?? 'Kode tidak tersedia' }})
+                                {{ $namaKelas }} ({{ $kodeKelas ?: 'Kode tidak tersedia' }})
                             </option>
                         @endforeach
                     </select>
@@ -269,12 +274,18 @@
                     </label>
                     <select name="mapel_id" id="mapel_id" class="form-select-modern" required>
                         <option value="">-- Pilih Mata Pelajaran --</option>
-                        @if(isset($mapel) && (is_object($mapel) ? $mapel->count() > 0 : count($mapel) > 0))
+                        @if(!empty($mapel) && ((is_object($mapel) && $mapel->count() > 0) || (is_array($mapel) && count($mapel) > 0)))
                             @foreach($mapel as $m)
-                                <option value="{{ $m->id }}" {{ old('mapel_id', $jadwal->mapel_id) == $m->id ? 'selected' : '' }}>
-                                    {{ $m->nama }}
+                                @php
+                                    $id = is_object($m) ? $m->id : $m['id'];
+                                    $nama = is_object($m) ? ($m->nama ?? '-') : ($m['nama'] ?? '-');
+                                @endphp
+                                <option value="{{ $id }}" {{ old('mapel_id', $jadwal->mapel_id) == $id ? 'selected' : '' }}>
+                                    {{ $nama }}
                                 </option>
                             @endforeach
+                        @else
+                            <option value="" disabled>⚠️ Belum ada data mata pelajaran</option>
                         @endif
                     </select>
                 </div>
@@ -285,11 +296,19 @@
                     </label>
                     <select name="guru_id" id="guru_id" class="form-select-modern" required>
                         <option value="">-- Pilih Guru --</option>
-                        @foreach($guru as $g)
-                            <option value="{{ $g->id }}" {{ old('guru_id', $jadwal->guru_id) == $g->id ? 'selected' : '' }}>
-                                {{ $g->user->name ?? $g->nama_lengkap ?? 'Guru' }}
-                            </option>
-                        @endforeach
+                        @if(isset($guru) && ((is_object($guru) && $guru->count() > 0) || (is_array($guru) && count($guru) > 0)))
+                            @foreach($guru as $g)
+                                @php
+                                    $id = is_object($g) ? $g->id : $g['id'];
+                                    $nama = is_object($g) ? ($g->user->name ?? $g->nama_lengkap ?? 'Guru') : ($g['nama'] ?? 'Guru');
+                                @endphp
+                                <option value="{{ $id }}" {{ old('guru_id', $jadwal->guru_id) == $id ? 'selected' : '' }}>
+                                    {{ $nama }}
+                                </option>
+                            @endforeach
+                        @else
+                            <option value="" disabled>⚠️ Belum ada data guru</option>
+                        @endif
                     </select>
                 </div>
             </div>
@@ -333,8 +352,9 @@
                     </label>
                     <div class="input-group">
                         <span class="input-group-text input-group-text-style"><i class="fas fa-door-open"></i></span>
-                        <input type="text" name="ruang" id="ruang" class="form-control form-control-modern input-with-icon"
-                               value="{{ old('ruang', $jadwal->ruangan) }}" readonly
+                        {{-- ✅ name="ruangan" bukan "ruang" --}}
+                        <input type="text" name="ruangan" id="ruangan" class="form-control form-control-modern input-with-icon"
+                               value="{{ old('ruangan', $jadwal->ruangan ?? $jadwal->ruang ?? '') }}" readonly
                                style="background:#fffbeb;font-weight:700;color:#92400e;">
                     </div>
                 </div>
@@ -401,6 +421,7 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
     // ========== AUTO-FILL RUANGAN ==========
@@ -411,7 +432,9 @@ $(document).ready(function() {
         var tingkatKelas = opt.data('tingkat');
         var jurusanKelas = opt.data('jurusan');
 
-        var ruangan = kodeKelas || (namaKelas ? namaKelas.substring(0, 5).toUpperCase().replace(/\s/g, '') : '');
+        var ruangan = kodeKelas
+            ? kodeKelas
+            : (namaKelas ? namaKelas.substring(0, 5).toUpperCase().replace(/\s/g, '') : '');
 
         if ($(this).val() !== '') {
             $('#kelasPreview').fadeIn(300);
@@ -421,7 +444,7 @@ $(document).ready(function() {
         } else {
             $('#kelasPreview').fadeOut(300);
         }
-        $('#ruang').val(ruangan);
+        $('#ruangan').val(ruangan);
     });
 
     if ($('#kelas_id').val()) {

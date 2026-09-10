@@ -7,143 +7,140 @@ use App\Models\ArsipDokumen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class ArsipController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Daftar kategori yang tersedia.
+     */
+    private function kategoriList(): array
+    {
+        return [
+            'surat_keputusan' => 'Surat Keputusan',
+            'laporan_bulanan' => 'Laporan Bulanan',
+            'sertifikat'      => 'Sertifikat',
+            'dokumen_siswa'   => 'Dokumen Siswa',
+            'dokumen_guru'    => 'Dokumen Guru',
+            'akreditasi'      => 'Akreditasi',
+            'kurikulum'       => 'Kurikulum',
+            'keuangan'        => 'Keuangan',
+        ];
+    }
+
+    /**
+     * Menampilkan daftar arsip.
      */
     public function index(Request $request)
     {
         try {
             $query = ArsipDokumen::with('uploader');
 
-            // Filter kategori
             if ($request->filled('kategori')) {
                 $query->where('kategori', $request->kategori);
             }
 
-            // Filter tahun (use year of tanggal_dokumen if `tahun` column not present)
             if ($request->filled('tahun')) {
-                $query->whereYear('tanggal_dokumen', $request->tahun);
+                $query->where('tahun', $request->tahun);
             }
 
-            // Pencarian
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('judul', 'like', "%{$search}%")
-                      ->orWhere('kode_arsip', 'like', "%{$search}%")
-                      ->orWhere('deskripsi', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_dokumen', 'like', "%{$search}%")
+                      ->orWhere('nomor_dokumen', 'like', "%{$search}%")
+                      ->orWhere('keterangan', 'like', "%{$search}%");
                 });
             }
 
-            // Pagination
             $perPage = $request->get('per_page', 10);
-            $arsip = $query->orderBy('created_at', 'desc')->paginate($perPage);
-            
-            // Data untuk filter dropdown
-            $kategoriList = [
-                'surat_keputusan' => 'Surat Keputusan',
-                'laporan_bulanan' => 'Laporan Bulanan',
-                'sertifikat' => 'Sertifikat',
-                'dokumen_siswa' => 'Dokumen Siswa',
-                'dokumen_guru' => 'Dokumen Guru',
-                'akreditasi' => 'Akreditasi',
-                'kurikulum' => 'Kurikulum',
-                'keuangan' => 'Keuangan'
-            ];
+            $arsip   = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-            $tahunList = ArsipDokumen::selectRaw("EXTRACT(YEAR FROM tanggal_dokumen) AS tahun")
-                ->whereNotNull('tanggal_dokumen')
+            $kategoriList = $this->kategoriList();
+
+            $tahunList = ArsipDokumen::query()
+                ->whereNotNull('tahun')
                 ->distinct()
                 ->orderBy('tahun', 'desc')
                 ->pluck('tahun');
 
             return view('administrasi.arsip.index', compact('arsip', 'kategoriList', 'tahunList'));
+
         } catch (\Exception $e) {
+            Log::error('Error arsip index: ' . $e->getMessage());
             return back()->with('error', 'Gagal memuat data: ' . $e->getMessage());
         }
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Form tambah arsip.
      */
     public function create()
     {
-        $kategoriList = [
-            'surat_keputusan' => 'Surat Keputusan',
-            'laporan_bulanan' => 'Laporan Bulanan',
-            'sertifikat' => 'Sertifikat',
-            'dokumen_siswa' => 'Dokumen Siswa',
-            'dokumen_guru' => 'Dokumen Guru',
-            'akreditasi' => 'Akreditasi',
-            'kurikulum' => 'Kurikulum',
-            'keuangan' => 'Keuangan'
-        ];
+        $kategoriList = $this->kategoriList();
         return view('administrasi.arsip.create', compact('kategoriList'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan arsip baru.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
-            'kode_arsip' => 'nullable|string|max:100',
-            'kategori' => 'required|string|max:100',
+            'nama_dokumen'    => 'required|string|max:200',
+            'nomor_dokumen'   => 'nullable|string|max:100',
+            'kategori'        => 'required|string|max:100',
+            'jenis_dokumen'   => 'nullable|string|max:255',
             'tanggal_dokumen' => 'nullable|date',
-            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:10240',
-            'deskripsi' => 'nullable|string',
+            'keterangan'      => 'nullable|string',
+            'file'            => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
         ]);
 
         try {
             DB::beginTransaction();
 
             // Upload file
-            $file = $request->file('file');
+            $file      = $request->file('file');
             $extension = $file->getClientOriginalExtension();
-            $fileName = time() . '_' . Str::random(10) . '.' . $extension;
-            $path = $file->storeAs('arsip', $fileName, 'public');
+            $fileName  = time() . '_' . Str::random(10) . '.' . $extension;
+            $path      = $file->storeAs('arsip', $fileName, 'public');
 
-            // Generate kode_arsip jika kosong
-            $kodeArsip = $request->kode_arsip;
-            if (empty($kodeArsip)) {
-                $kodeArsip = 'ARS/' . date('Y') . '/' . Str::upper(Str::random(6));
+            // Generate nomor_dokumen jika kosong
+            $nomorDokumen = $request->nomor_dokumen;
+            if (empty($nomorDokumen)) {
+                $nomorDokumen = 'ARS/' . date('Y') . '/' . strtoupper(Str::random(6));
             }
 
-            $arsip = ArsipDokumen::create([
-                'kode_arsip' => $kodeArsip,
-                'judul' => $request->judul,
-                'jenis_dokumen' => $request->kategori,
-                'deskripsi' => $request->deskripsi,
-                'nama_file' => $file->getClientOriginalName(),
-                'path_file' => $path,
-                'tipe_file' => $file->getClientMimeType(),
-                'ukuran_file' => $file->getSize(),
-                'kategori' => $request->kategori,
+            ArsipDokumen::create([
+                'nomor_dokumen'   => $nomorDokumen,
+                'nama_dokumen'    => $request->nama_dokumen,
+                'kategori'        => $request->kategori,
+                'jenis_dokumen'   => $request->jenis_dokumen ?? $request->kategori,
                 'tanggal_dokumen' => $request->tanggal_dokumen,
-                'tahun' => $request->tanggal_dokumen ? Carbon::parse($request->tanggal_dokumen)->year : Carbon::now()->year,
-                'uploaded_by' => auth()->id(),
-                'status' => 'aktif'
+                'file_path'       => $path,
+                'keterangan'      => $request->keterangan,
+                'uploaded_by'     => auth()->id(),
+                'tahun'           => $request->tanggal_dokumen
+                                        ? Carbon::parse($request->tanggal_dokumen)->year
+                                        : Carbon::now()->year,
             ]);
 
             DB::commit();
 
             return redirect()->route('administrasi.arsip.index')
-                ->with('success', 'Dokumen berhasil diarsipkan');
-                
+                ->with('success', 'Dokumen berhasil diarsipkan.');
+
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal mengarsipkan dokumen: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengarsipkan dokumen: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
-     * Display the specified resource.
+     * Detail arsip.
      */
     public function show($id)
     {
@@ -157,46 +154,31 @@ class ArsipController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Form edit arsip.
      */
     public function edit($id)
     {
         try {
-            // Cari data arsip
-            $arsip = ArsipDokumen::findOrFail($id);
-            
-            // Siapkan kategori list
-            $kategoriList = [
-                'surat_keputusan' => 'Surat Keputusan',
-                'laporan_bulanan' => 'Laporan Bulanan',
-                'sertifikat' => 'Sertifikat',
-                'dokumen_siswa' => 'Dokumen Siswa',
-                'dokumen_guru' => 'Dokumen Guru',
-                'akreditasi' => 'Akreditasi',
-                'kurikulum' => 'Kurikulum',
-                'keuangan' => 'Keuangan'
-            ];
-            
-            // Cek apakah file fisik ada
-            $fileExists = false;
-            if ($arsip->path_file && Storage::disk('public')->exists($arsip->path_file)) {
-                $fileExists = true;
-            }
-            
+            $arsip        = ArsipDokumen::findOrFail($id);
+            $kategoriList = $this->kategoriList();
+
+            $fileExists = $arsip->file_path
+                && Storage::disk('public')->exists($arsip->file_path);
+
             return view('administrasi.arsip.edit', compact('arsip', 'kategoriList', 'fileExists'));
-            
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('administrasi.arsip.index')
                 ->with('error', 'Data dokumen tidak ditemukan');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error in Arsip edit: ' . $e->getMessage());
+            Log::error('Error in Arsip edit: ' . $e->getMessage());
             return redirect()->route('administrasi.arsip.index')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update arsip.
      */
     public function update(Request $request, $id)
     {
@@ -204,44 +186,42 @@ class ArsipController extends Controller
             $arsip = ArsipDokumen::findOrFail($id);
 
             $request->validate([
-                'judul' => 'required|string|max:255',
-                'kode_arsip' => 'nullable|string|max:100',
-                'kategori' => 'required|string|max:100',
+                'nama_dokumen'    => 'required|string|max:200',
+                'nomor_dokumen'   => 'nullable|string|max:100',
+                'kategori'        => 'required|string|max:100',
+                'jenis_dokumen'   => 'nullable|string|max:255',
                 'tanggal_dokumen' => 'nullable|date',
-                'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:10240',
-                'deskripsi' => 'nullable|string',
+                'keterangan'      => 'nullable|string',
+                'file'            => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
             ]);
 
             DB::beginTransaction();
 
-            // Prepare update data
             $data = [
-                'kode_arsip' => $request->kode_arsip ?: ('ARS/' . date('Y') . '/' . Str::upper(Str::random(6))),
-                'judul' => $request->judul,
-                'jenis_dokumen' => $request->kategori,
-                'deskripsi' => $request->deskripsi,
-                'kategori' => $request->kategori,
+                'nomor_dokumen'   => $request->nomor_dokumen ?: $arsip->nomor_dokumen,
+                'nama_dokumen'    => $request->nama_dokumen,
+                'kategori'        => $request->kategori,
+                'jenis_dokumen'   => $request->jenis_dokumen ?? $request->kategori,
                 'tanggal_dokumen' => $request->tanggal_dokumen,
-                'tahun' => $request->tanggal_dokumen ? Carbon::parse($request->tanggal_dokumen)->year : Carbon::now()->year,
+                'keterangan'      => $request->keterangan,
+                'tahun'           => $request->tanggal_dokumen
+                                        ? Carbon::parse($request->tanggal_dokumen)->year
+                                        : Carbon::now()->year,
             ];
 
             // Jika upload file baru
             if ($request->hasFile('file')) {
-                // Hapus file lama jika ada
-                if ($arsip->path_file && Storage::disk('public')->exists($arsip->path_file)) {
-                    Storage::disk('public')->delete($arsip->path_file);
+                // Hapus file lama
+                if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
+                    Storage::disk('public')->delete($arsip->file_path);
                 }
-                
-                // Upload file baru
-                $file = $request->file('file');
+
+                $file      = $request->file('file');
                 $extension = $file->getClientOriginalExtension();
-                $fileName = time() . '_' . Str::random(10) . '.' . $extension;
-                $path = $file->storeAs('arsip', $fileName, 'public');
-                
-                $data['nama_file'] = $file->getClientOriginalName();
-                $data['path_file'] = $path;
-                $data['tipe_file'] = $file->getClientMimeType();
-                $data['ukuran_file'] = $file->getSize();
+                $fileName  = time() . '_' . Str::random(10) . '.' . $extension;
+                $path      = $file->storeAs('arsip', $fileName, 'public');
+
+                $data['file_path'] = $path;
             }
 
             $arsip->update($data);
@@ -250,19 +230,20 @@ class ArsipController extends Controller
 
             return redirect()->route('administrasi.arsip.index')
                 ->with('success', 'Dokumen berhasil diupdate');
-                
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
             return redirect()->route('administrasi.arsip.index')
                 ->with('error', 'Data dokumen tidak ditemukan');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal update dokumen: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengupdate dokumen: ' . $e->getMessage())->withInput();
         }
     }
 
     /**
-     * Remove the specified resource from storage (Soft Delete).
+     * Soft delete arsip.
      */
     public function destroy($id)
     {
@@ -270,9 +251,7 @@ class ArsipController extends Controller
             DB::beginTransaction();
 
             $arsip = ArsipDokumen::findOrFail($id);
-            
-            // Soft delete - file tidak dihapus dulu, hanya record
-            $arsip->delete();
+            $arsip->delete();   // soft delete
 
             DB::commit();
 
@@ -280,6 +259,7 @@ class ArsipController extends Controller
                 ->with('success', 'Dokumen berhasil dipindahkan ke tempat sampah');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal hapus dokumen: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus dokumen: ' . $e->getMessage());
         }
     }
@@ -291,57 +271,57 @@ class ArsipController extends Controller
     {
         try {
             $arsip = ArsipDokumen::findOrFail($id);
-            
-            // Cek apakah file ada
-            if (!$arsip->path_file) {
+
+            if (!$arsip->file_path) {
                 return back()->with('error', 'Path file tidak ditemukan di database');
             }
-            
-            if (!Storage::disk('public')->exists($arsip->path_file)) {
+
+            if (!Storage::disk('public')->exists($arsip->file_path)) {
                 return back()->with('error', 'File fisik tidak ditemukan di server');
             }
 
-            // Bersihkan nama file untuk download
-            $cleanJudul = preg_replace('/[^a-zA-Z0-9]/', '_', $arsip->judul);
-            $extension = pathinfo($arsip->path_file, PATHINFO_EXTENSION);
-            $fileName = $cleanJudul . '_' . date('Y-m-d') . '.' . $extension;
-            
-            return Storage::disk('public')->download($arsip->path_file, $fileName);
+            $cleanNama = preg_replace('/[^a-zA-Z0-9]/', '_', $arsip->nama_dokumen ?? 'dokumen');
+            $extension = pathinfo($arsip->file_path, PATHINFO_EXTENSION);
+            $fileName  = $cleanNama . '_' . date('Y-m-d') . '.' . $extension;
+
+            return Storage::disk('public')->download($arsip->file_path, $fileName);
+
         } catch (\Exception $e) {
+            Log::error('Gagal download file: ' . $e->getMessage());
             return back()->with('error', 'Gagal download file: ' . $e->getMessage());
         }
     }
 
     /**
-     * Restore soft deleted record.
+     * Restore soft deleted.
      */
     public function restore($id)
     {
         try {
             DB::beginTransaction();
-            
+
             $arsip = ArsipDokumen::withTrashed()->findOrFail($id);
-            
-            // Cek apakah file masih ada
-            if ($arsip->path_file && !Storage::disk('public')->exists($arsip->path_file)) {
+
+            if ($arsip->file_path && !Storage::disk('public')->exists($arsip->file_path)) {
                 DB::rollBack();
                 return back()->with('error', 'File fisik tidak ditemukan, tidak dapat direstore');
             }
-            
+
             $arsip->restore();
-            
+
             DB::commit();
 
             return redirect()->route('administrasi.arsip.index')
                 ->with('success', 'Dokumen berhasil direstore');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal restore dokumen: ' . $e->getMessage());
             return back()->with('error', 'Gagal restore dokumen: ' . $e->getMessage());
         }
     }
 
     /**
-     * Force delete (permanent delete with file).
+     * Force delete (permanent).
      */
     public function forceDelete($id)
     {
@@ -349,13 +329,11 @@ class ArsipController extends Controller
             DB::beginTransaction();
 
             $arsip = ArsipDokumen::withTrashed()->findOrFail($id);
-            
-            // Hapus file dari storage
-            if ($arsip->path_file && Storage::disk('public')->exists($arsip->path_file)) {
-                Storage::disk('public')->delete($arsip->path_file);
+
+            if ($arsip->file_path && Storage::disk('public')->exists($arsip->file_path)) {
+                Storage::disk('public')->delete($arsip->file_path);
             }
-            
-            // Hapus permanent dari database
+
             $arsip->forceDelete();
 
             DB::commit();
@@ -364,31 +342,32 @@ class ArsipController extends Controller
                 ->with('success', 'Dokumen berhasil dihapus permanen');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Gagal hapus permanen dokumen: ' . $e->getMessage());
             return back()->with('error', 'Gagal hapus permanen dokumen: ' . $e->getMessage());
         }
     }
 
     /**
-     * Display trashed (deleted) records.
+     * Daftar arsip yang sudah dihapus (trash).
      */
     public function trash(Request $request)
     {
         try {
             $query = ArsipDokumen::onlyTrashed()->with('uploader');
 
-            // Filter pencarian di trash
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('judul', 'like', "%{$search}%")
-                      ->orWhere('kode_arsip', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_dokumen', 'like', "%{$search}%")
+                      ->orWhere('nomor_dokumen', 'like', "%{$search}%");
                 });
             }
 
             $arsip = $query->orderBy('deleted_at', 'desc')->paginate(10);
-            
+
             return view('administrasi.arsip.trash', compact('arsip'));
         } catch (\Exception $e) {
+            Log::error('Gagal memuat trash: ' . $e->getMessage());
             return back()->with('error', 'Gagal memuat data sampah: ' . $e->getMessage());
         }
     }
