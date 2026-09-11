@@ -4,113 +4,204 @@
 
 @section('content')
 <style>
+    /* ===== Card Modern ===== */
     .card-modern {
         border: none;
         border-radius: 16px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
         transition: all 0.3s ease;
     }
     .card-modern:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
     }
+    .card-modern .card-header {
+        background: transparent;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+    }
+    .card-modern .card-body {
+        padding: 1.75rem;
+    }
+
+    /* ===== Form Select Modern ===== */
     .form-select-modern {
         border-radius: 10px;
-        border: 2px solid #e9ecef;
+        border: 1.5px solid #e2e8f0;
         padding: 10px 16px;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         background-color: white;
+        font-size: .9rem;
+        color: #1e293b;
     }
     .form-select-modern:focus {
         border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        outline: none;
     }
     .form-label-modern {
-        font-weight: 600;
-        color: #2c3e50;
+        font-weight: 700;
+        color: #475569;
         margin-bottom: 6px;
-        font-size: 0.9rem;
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+    .form-label-modern i {
+        color: #667eea;
+    }
+
+    /* ===== Buttons ===== */
     .btn-modern {
         border-radius: 10px;
-        padding: 10px 30px;
+        padding: 10px 24px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
+        border: none;
     }
     .btn-modern:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
+
+    /* ===== Info Box ===== */
     .info-box {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe;
         border-radius: 12px;
-        padding: 15px 20px;
-        margin-bottom: 20px;
+        padding: 14px 18px;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #1e40af;
+        font-size: .875rem;
     }
     .info-box .icon {
-        font-size: 1.5rem;
-        color: #667eea;
-        margin-right: 10px;
+        font-size: 1.25rem;
+        color: #3b82f6;
+        flex-shrink: 0;
     }
+
+    /* ===== Stat Badge ===== */
     .stat-badge {
-        padding: 8px 16px;
-        border-radius: 20px;
+        padding: 12px 18px;
+        border-radius: 12px;
         background: white;
-        border: 1px solid #e9ecef;
+        border: 1px solid #e2e8f0;
         font-weight: 500;
         font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.03);
+        transition: all .25s;
+    }
+    .stat-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, .1);
+        border-color: #c7d2fe;
     }
     .stat-badge i {
-        margin-right: 6px;
         color: #667eea;
+        font-size: 1.1rem;
     }
+    .stat-badge strong {
+        color: #1e293b;
+        margin-left: auto;
+    }
+
+    /* ===== Siswa Info (Live Preview) ===== */
     .siswa-info {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 10px 15px;
-        margin-top: 5px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-top: 1rem;
         font-size: 0.9rem;
+        animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     .siswa-info .label {
-        color: #6c757d;
-        font-weight: 500;
+        color: #065f46;
+        font-weight: 600;
+        margin-right: 6px;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .3px;
     }
-    .alert-info-custom {
-        background: #e8f4fd;
-        border: 1px solid #b8d4e3;
-        border-radius: 12px;
-        padding: 15px 20px;
-        color: #0c5460;
+    .siswa-info strong {
+        color: #064e3b;
     }
-    .alert-info-custom i {
-        font-size: 1.2rem;
-        margin-right: 10px;
+
+    /* ===== Page Header ===== */
+    .page-header-cetak {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 1rem 0 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
     }
-    @media print {
-        .no-print {
-            display: none !important;
-        }
+    .page-title-cetak {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
+    .page-subtitle-cetak {
+        color: #94a3b8;
+        font-size: .85rem;
+        margin: 4px 0 0;
+    }
+
+    /* ===== Section Title ===== */
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 1.25rem 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-title i {
+        color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+        .page-title-cetak { font-size: 1.25rem; }
+        .stat-badge { padding: 10px 14px; font-size: .8rem; }
     }
 </style>
 
 <div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+
+    <!-- ============================================================
+         PAGE HEADER
+         ============================================================ -->
+    <div class="page-header-cetak">
         <div>
-            <h1 class="h2 mb-0">
+            <h1 class="page-title-cetak">
                 <i class="fas fa-print me-2 text-primary"></i>
                 Cetak Raport Siswa
             </h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('guru.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('guru.nilai.index') }}">Nilai</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('guru.nilai.raport') }}">Raport</a></li>
-                    <li class="breadcrumb-item active">Pilih Siswa</li>
-                </ol>
-            </nav>
+            <p class="page-subtitle-cetak">
+                Pilih siswa dan periode untuk mencetak raport
+            </p>
         </div>
-        <div class="btn-toolbar">
-            <a href="{{ route('guru.nilai.raport') }}" class="btn btn-outline-secondary btn-modern me-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('guru.nilai.raport') }}" class="btn btn-outline-secondary btn-modern">
                 <i class="fas fa-arrow-left me-1"></i> Kembali ke Raport
             </a>
             <a href="{{ route('guru.nilai.index') }}" class="btn btn-secondary btn-modern">
@@ -119,124 +210,143 @@
         </div>
     </div>
 
-    <!-- Alert Error -->
+    <!-- ============================================================
+         ALERTS
+         ============================================================ -->
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert"
+             style="border-radius:12px; border:none; border-left:4px solid #ef4444;">
             <i class="fas fa-exclamation-circle me-2"></i>
             {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert"
+             style="border-radius:12px; border:none; border-left:4px solid #10b981;">
             <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <!-- Info Box -->
-    <div class="info-box no-print">
-        <div class="d-flex align-items-center">
-            <div class="icon">
-                <i class="fas fa-info-circle"></i>
-            </div>
-            <div>
-                <strong>Petunjuk:</strong> 
-                Pilih siswa yang ingin dicetak raportnya, kemudian pilih tahun ajaran dan semester.
-                Raport akan ditampilkan dalam format yang siap dicetak.
-            </div>
+    <!-- ============================================================
+         INFO BOX
+         ============================================================ -->
+    <div class="info-box">
+        <div class="icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div>
+            <strong>Petunjuk:</strong>
+            Pilih <strong>kelas</strong>, <strong>siswa</strong>, <strong>tahun ajaran</strong>, dan <strong>semester</strong>.
+            Raport akan otomatis terbuka di tab baru dalam format siap cetak.
         </div>
     </div>
 
-    <!-- Statistik -->
-    <div class="row mb-4 no-print">
-        <div class="col-md-3">
+    <!-- ============================================================
+         STATISTIK
+         ============================================================ -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
             <div class="stat-badge">
                 <i class="fas fa-user-graduate"></i>
-                Total Siswa: <strong>{{ $siswaList->count() ?? 0 }}</strong>
+                <span>Total Siswa</span>
+                <strong>{{ $siswaList->count() ?? 0 }}</strong>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-6">
             <div class="stat-badge">
                 <i class="fas fa-calendar-alt"></i>
-                Tahun Ajaran: <strong>{{ count($tahunAjaranList) }}</strong>
+                <span>Tahun Ajaran</span>
+                <strong>{{ count($tahunAjaranList ?? []) }}</strong>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-6">
             <div class="stat-badge">
-                <i class="fas fa-book"></i>
-                Semester: <strong>{{ count($semesterList) }}</strong>
+                <i class="fas fa-clock"></i>
+                <span>Semester</span>
+                <strong>{{ count($semesterList ?? []) }}</strong>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3 col-6">
             <div class="stat-badge">
                 <i class="fas fa-school"></i>
-                Kelas: <strong>{{ $kelasDiAjar->count() ?? 0 }}</strong>
+                <span>Kelas</span>
+                <strong>{{ $kelasDiAjar->count() ?? 0 }}</strong>
             </div>
         </div>
     </div>
 
-    <!-- Form Pilihan -->
-    <div class="card card-modern no-print">
-        <div class="card-header bg-white border-0 pt-4">
-            <h5 class="mb-0 fw-bold">
-                <i class="fas fa-filter me-2 text-primary"></i>
-                Pilih Siswa dan Periode
+    <!-- ============================================================
+         FORM PILIH SISWA
+         ============================================================ -->
+    <div class="card card-modern">
+        <div class="card-header">
+            <h5 class="section-title mb-0">
+                <i class="fas fa-filter"></i>
+                Pilih Siswa & Periode
             </h5>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('guru.nilai.raport.cetak', ['siswaId' => '__siswa_id__']) }}" id="formCetakRaport">
-                @csrf
+            <form method="GET"
+                  action="{{ route('guru.nilai.raport.cetak', ['siswaId' => '__siswa_id__']) }}"
+                  id="formCetakRaport"
+                  target="_blank">
+
                 <div class="row g-4">
                     <!-- Pilih Kelas -->
                     <div class="col-md-4">
                         <label class="form-label-modern">
-                            <i class="fas fa-users me-1 text-primary"></i>
+                            <i class="fas fa-users"></i>
                             Kelas <span class="text-danger">*</span>
                         </label>
                         <select name="kelas_id" id="kelasSelect" class="form-select form-select-modern" required>
                             <option value="">-- Pilih Kelas --</option>
                             @foreach($kelasDiAjar as $k)
-                                <option value="{{ $k->id }}" 
+                                <option value="{{ $k->id }}"
                                     {{ old('kelas_id', request('kelas_id')) == $k->id ? 'selected' : '' }}>
-                                    {{ $k->nama_kelas ?? $k->nama }} 
-                                    ({{ $k->jurusan->nama ?? 'Tanpa Jurusan' }})
+                                    {{ $k->nama_kelas ?? $k->nama }}
+                                    @if($k->jurusan)
+                                        — {{ $k->jurusan->nama }}
+                                    @endif
                                 </option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Kelas yang Anda ajar</small>
+                        <small class="text-muted d-block mt-1">Kelas yang Anda ajar</small>
                     </div>
 
                     <!-- Pilih Siswa -->
                     <div class="col-md-4">
                         <label class="form-label-modern">
-                            <i class="fas fa-user-graduate me-1 text-primary"></i>
+                            <i class="fas fa-user-graduate"></i>
                             Siswa <span class="text-danger">*</span>
                         </label>
                         <select name="siswa_id" id="siswaSelect" class="form-select form-select-modern" required>
                             <option value="">-- Pilih Siswa --</option>
                             @foreach($siswaList as $s)
-                                <option value="{{ $s->id }}" 
+                                <option value="{{ $s->id }}"
                                     data-kelas="{{ $s->kelas_id }}"
+                                    data-nama="{{ $s->user->name ?? $s->nama_lengkap ?? '-' }}"
+                                    data-nis="{{ $s->nis ?? '-' }}"
                                     {{ old('siswa_id', request('siswa_id')) == $s->id ? 'selected' : '' }}>
                                     {{ $s->nis ?? '' }} - {{ $s->user->name ?? $s->nama_lengkap ?? '-' }}
                                 </option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Pilih siswa yang akan dicetak raportnya</small>
+                        <small class="text-muted d-block mt-1">Pilih siswa untuk dicetak raportnya</small>
                     </div>
 
                     <!-- Tahun Ajaran -->
                     <div class="col-md-2">
                         <label class="form-label-modern">
-                            <i class="fas fa-calendar-alt me-1 text-primary"></i>
+                            <i class="fas fa-calendar-alt"></i>
                             Tahun Ajaran <span class="text-danger">*</span>
                         </label>
                         <select name="tahun_ajaran" id="tahunAjaran" class="form-select form-select-modern" required>
                             @foreach($tahunAjaranList as $ta)
-                                <option value="{{ $ta }}" 
+                                <option value="{{ $ta }}"
                                     {{ old('tahun_ajaran', request('tahun_ajaran', date('Y') . '/' . (date('Y') + 1))) == $ta ? 'selected' : '' }}>
                                     {{ $ta }}
                                 </option>
@@ -247,12 +357,12 @@
                     <!-- Semester -->
                     <div class="col-md-2">
                         <label class="form-label-modern">
-                            <i class="fas fa-clock me-1 text-primary"></i>
+                            <i class="fas fa-clock"></i>
                             Semester <span class="text-danger">*</span>
                         </label>
                         <select name="semester" id="semesterSelect" class="form-select form-select-modern" required>
                             @foreach($semesterList as $sem)
-                                <option value="{{ $sem }}" 
+                                <option value="{{ $sem }}"
                                     {{ old('semester', request('semester', 'ganjil')) == $sem ? 'selected' : '' }}>
                                     {{ ucfirst($sem) }}
                                 </option>
@@ -260,14 +370,14 @@
                         </select>
                     </div>
 
-                    <!-- Tombol Aksi -->
+                    <!-- Tombol -->
                     <div class="col-12">
                         <hr>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             <button type="submit" class="btn btn-primary btn-modern" id="btnCetak">
                                 <i class="fas fa-print me-2"></i> Cetak Raport
                             </button>
-                            <button type="reset" class="btn btn-outline-secondary btn-modern">
+                            <button type="reset" class="btn btn-outline-secondary btn-modern" id="btnReset">
                                 <i class="fas fa-undo me-1"></i> Reset
                             </button>
                             <a href="{{ route('guru.nilai.raport') }}" class="btn btn-outline-info btn-modern">
@@ -278,291 +388,160 @@
                 </div>
             </form>
 
-            <!-- Informasi Siswa yang Dipilih -->
-            <div class="row mt-4" id="siswaInfoContainer" style="display: none;">
-                <div class="col-12">
-                    <div class="siswa-info">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <span class="label">Siswa Terpilih:</span>
-                                <strong id="siswaNama">-</strong>
-                            </div>
-                            <div class="col-md-3">
-                                <span class="label">NIS:</span>
-                                <span id="siswaNis">-</span>
-                            </div>
-                            <div class="col-md-3">
-                                <span class="label">Kelas:</span>
-                                <span id="siswaKelas">-</span>
-                            </div>
+            <!-- Live Info Siswa Terpilih -->
+            <div id="siswaInfoContainer" style="display: none;">
+                <div class="siswa-info">
+                    <div class="row align-items-center g-2">
+                        <div class="col-md-6">
+                            <span class="label">Siswa Terpilih:</span>
+                            <strong id="siswaNama">-</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="label">NIS:</span>
+                            <strong id="siswaNis">-</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <span class="label">Kelas:</span>
+                            <strong id="siswaKelas">-</strong>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Preview Raport (Jika ada data) -->
-    @if(isset($siswa) && isset($nilaiSiswa))
-    <div class="card card-modern mt-4" id="previewRaport">
-        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4">
-            <h5 class="mb-0 fw-bold">
-                <i class="fas fa-file-alt me-2 text-primary"></i>
-                Preview Raport
-            </h5>
-            <div>
-                <span class="badge bg-success rounded-pill px-3 py-2">
-                    <i class="fas fa-check me-1"></i> Siap Cetak
-                </span>
-            </div>
-        </div>
-        <div class="card-body">
-            <!-- Informasi Siswa -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <td width="120"><strong>Nama Siswa</strong></td>
-                            <td>: {{ $siswa->user->name ?? $siswa->nama_lengkap ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>NIS</strong></td>
-                            <td>: {{ $siswa->nis ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Kelas</strong></td>
-                            <td>: {{ $siswa->kelas->nama_kelas ?? $siswa->kelas->nama ?? '-' }}</td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <td width="120"><strong>Tahun Ajaran</strong></td>
-                            <td>: {{ $tahunAjaran ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Semester</strong></td>
-                            <td>: {{ ucfirst($semester ?? '-') }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Rata-rata</strong></td>
-                            <td>: 
-                                <span class="badge bg-{{ ($rataRata ?? 0) >= 75 ? 'success' : 'danger' }} rounded-pill px-3">
-                                    {{ number_format($rataRata ?? 0, 2) }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tabel Nilai -->
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width: 5%;">No</th>
-                            <th style="width: 35%;">Mata Pelajaran</th>
-                            <th style="width: 15%;">Tugas</th>
-                            <th style="width: 15%;">UTS</th>
-                            <th style="width: 15%;">UAS</th>
-                            <th style="width: 15%;">Nilai Akhir</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($nilaiSiswa as $index => $n)
-                        <tr>
-                            <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $n->mapel->nama_mapel ?? $n->mapel->nama ?? '-' }}</td>
-                            <td class="text-center">{{ number_format($n->nilai_tugas_1 ?? 0, 1) }}</td>
-                            <td class="text-center">{{ number_format($n->nilai_uts ?? 0, 1) }}</td>
-                            <td class="text-center">{{ number_format($n->nilai_uas ?? 0, 1) }}</td>
-                            <td class="text-center fw-bold 
-                                {{ ($n->nilai_akhir ?? 0) >= 85 ? 'text-success' : 
-                                   (($n->nilai_akhir ?? 0) >= 70 ? 'text-warning' : 'text-danger') }}">
-                                {{ number_format($n->nilai_akhir ?? 0, 2) }}
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Belum ada data nilai untuk siswa ini.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    <tfoot>
-                        <tr class="table-info fw-bold">
-                            <td colspan="5" class="text-end">Rata-rata</td>
-                            <td class="text-center">
-                                {{ number_format($rataRata ?? 0, 2) }}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-
-            <!-- Tombol Cetak -->
-            <div class="text-center mt-4">
-                <button onclick="window.print()" class="btn btn-success btn-lg btn-modern">
-                    <i class="fas fa-print me-2"></i> Cetak / Download PDF
-                </button>
-                <a href="{{ route('guru.nilai.raport') }}" class="btn btn-outline-secondary btn-lg btn-modern">
-                    <i class="fas fa-arrow-left me-1"></i> Kembali
-                </a>
-            </div>
-        </div>
-    </div>
-    @endif
 </div>
 
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Filter siswa berdasarkan kelas
+        // Data siswa dalam JSON untuk filter
+        var siswaData = @json($siswaList);
+
+        // === Filter siswa berdasarkan kelas ===
         $('#kelasSelect').on('change', function() {
             var kelasId = $(this).val();
             var siswaSelect = $('#siswaSelect');
-            
-            // Reset siswa select
+
             siswaSelect.html('<option value="">-- Pilih Siswa --</option>');
-            
+
             if (kelasId) {
-                // Tampilkan siswa berdasarkan kelas
-                @foreach($siswaList as $s)
-                    if ({{ $s->kelas_id }} == kelasId) {
+                siswaData.forEach(function(s) {
+                    if (s.kelas_id == kelasId) {
+                        var nama = s.user ? s.user.name : (s.nama_lengkap || '-');
+                        var nis = s.nis || '-';
                         siswaSelect.append(
-                            '<option value="{{ $s->id }}" data-kelas="{{ $s->kelas_id }}">' +
-                            '{{ $s->nis ?? '' }} - {{ $s->user->name ?? $s->nama_lengkap ?? '-' }}' +
-                            '</option>'
+                            $('<option>', {
+                                value: s.id,
+                                'data-kelas': s.kelas_id,
+                                'data-nama': nama,
+                                'data-nis': nis,
+                                text: nis + ' - ' + nama
+                            })
                         );
                     }
-                @endforeach
-                
-                // Jika hanya ada 1 siswa, auto select
-                if (siswaSelect.find('option').length === 2) {
-                    siswaSelect.val(siswaSelect.find('option:last').val());
-                    siswaSelect.trigger('change');
-                }
+                });
             }
+
+            // Reset info siswa
+            $('#siswaInfoContainer').hide();
         });
 
-        // Tampilkan info siswa yang dipilih
+        // === Tampilkan info siswa terpilih ===
         $('#siswaSelect').on('change', function() {
-            var selectedOption = $(this).find('option:selected');
-            var siswaId = $(this).val();
-            
-            if (siswaId) {
-                // Ambil data siswa dari option
-                var nama = selectedOption.text().split(' - ')[1] || selectedOption.text();
-                var nis = selectedOption.text().split(' - ')[0] || '-';
-                var kelas = '';
-                
-                // Cari nama kelas dari data
-                @foreach($siswaList as $s)
-                    if ({{ $s->id }} == siswaId) {
-                        kelas = '{{ $s->kelas->nama_kelas ?? $s->kelas->nama ?? '-' }}';
+            var opt = $(this).find('option:selected');
+            var id = $(this).val();
+
+            if (id) {
+                var nama = opt.data('nama') || opt.text().split(' - ')[1] || '-';
+                var nis = opt.data('nis') || '-';
+                var kelasNama = '-';
+
+                // Cari nama kelas dari data siswa
+                siswaData.forEach(function(s) {
+                    if (s.id == id && s.kelas) {
+                        kelasNama = s.kelas.nama_kelas || s.kelas.nama || '-';
                     }
-                @endforeach
-                
+                });
+
                 $('#siswaNama').text(nama);
                 $('#siswaNis').text(nis);
-                $('#siswaKelas').text(kelas);
+                $('#siswaKelas').text(kelasNama);
                 $('#siswaInfoContainer').show();
             } else {
                 $('#siswaInfoContainer').hide();
             }
         });
 
-        // Trigger change untuk menampilkan info siswa jika sudah ada pilihan
-        if ($('#siswaSelect').val()) {
-            $('#siswaSelect').trigger('change');
-        }
+        // Trigger perubahan kalau ada nilai awal
+        if ($('#kelasSelect').val()) $('#kelasSelect').trigger('change');
+        if ($('#siswaSelect').val()) $('#siswaSelect').trigger('change');
 
-        // Trigger change untuk filter kelas jika sudah ada pilihan
-        if ($('#kelasSelect').val()) {
-            $('#kelasSelect').trigger('change');
-        }
-
-        // Form submit - update action URL dengan siswa_id
+        // === Submit form: build URL dengan siswa_id ===
         $('#formCetakRaport').on('submit', function(e) {
             e.preventDefault();
-            
+
             var siswaId = $('#siswaSelect').val();
             var kelasId = $('#kelasSelect').val();
             var tahunAjaran = $('#tahunAjaran').val();
             var semester = $('#semesterSelect').val();
-            
-            if (!siswaId) {
-                alert('Silakan pilih siswa terlebih dahulu!');
-                $('#siswaSelect').focus();
-                return false;
-            }
-            
+
             if (!kelasId) {
-                alert('Silakan pilih kelas terlebih dahulu!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih kelas terlebih dahulu!',
+                    confirmButtonColor: '#667eea'
+                });
                 $('#kelasSelect').focus();
                 return false;
             }
-            
-            // Build URL
+
+            if (!siswaId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih siswa terlebih dahulu!',
+                    confirmButtonColor: '#667eea'
+                });
+                $('#siswaSelect').focus();
+                return false;
+            }
+
+            // Build URL — replace placeholder dengan siswa_id
             var url = '{{ route("guru.nilai.raport.cetak", ["siswaId" => "__siswa_id__"]) }}';
             url = url.replace('__siswa_id__', siswaId);
             url += '?tahun_ajaran=' + encodeURIComponent(tahunAjaran);
             url += '&semester=' + encodeURIComponent(semester);
-            
-            // Redirect ke URL cetak
+
+            // Buka di tab baru
             window.open(url, '_blank');
         });
 
-        // Tombol reset
-        $('button[type="reset"]').on('click', function(e) {
+        // === Tombol Reset ===
+        $('#btnReset').on('click', function(e) {
             e.preventDefault();
             $('#kelasSelect').val('');
             $('#siswaSelect').html('<option value="">-- Pilih Siswa --</option>');
             $('#tahunAjaran').val('{{ date("Y") . "/" . (date("Y") + 1) }}');
             $('#semesterSelect').val('ganjil');
             $('#siswaInfoContainer').hide();
-            
-            // Reset filter kelas
-            @foreach($siswaList as $s)
+
+            // Kembalikan semua siswa ke dropdown
+            siswaData.forEach(function(s) {
+                var nama = s.user ? s.user.name : (s.nama_lengkap || '-');
+                var nis = s.nis || '-';
                 $('#siswaSelect').append(
-                    '<option value="{{ $s->id }}" data-kelas="{{ $s->kelas_id }}">' +
-                    '{{ $s->nis ?? '' }} - {{ $s->user->name ?? $s->nama_lengkap ?? '-' }}' +
-                    '</option>'
+                    $('<option>', {
+                        value: s.id,
+                        'data-kelas': s.kelas_id,
+                        'data-nama': nama,
+                        'data-nis': nis,
+                        text: nis + ' - ' + nama
+                    })
                 );
-            @endforeach
+            });
         });
     });
 </script>
-@endpush
-
-@push('styles')
-<style>
-    /* Style untuk print */
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-        #previewRaport {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-        }
-        .card-modern {
-            box-shadow: none !important;
-        }
-        body {
-            background: white !important;
-        }
-        .container-fluid {
-            padding: 0 !important;
-        }
-        .table-hover tbody tr:hover {
-            background-color: transparent !important;
-        }
-    }
-</style>
 @endpush
 @endsection
