@@ -145,7 +145,7 @@
     .detail-raport-modal .modal-content {
         border-radius: 16px;
     }
-    
+
     /* Perbaikan untuk tabel agar rata kanan */
     .table-raport {
         table-layout: fixed;
@@ -187,13 +187,13 @@
         width: 80px;
         min-width: 80px;
     }
-    
+
     .table-raport td,
     .table-raport th {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
+
     /* Perbaikan DataTables Pagination */
     .dataTables_wrapper .dataTables_paginate {
         padding-top: 10px;
@@ -254,7 +254,7 @@
         padding: 10px;
         border-radius: 6px;
     }
-    
+
     /* Responsive untuk tabel */
     @media (max-width: 768px) {
         .table-raport .col-nama {
@@ -274,17 +274,16 @@
     }
 </style>
 
+<!-- ============================================================
+     PAGE HEADER (TANPA TOMBOL CETAK)
+     ============================================================ -->
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-2 pb-3">
     <div>
         <h1 class="h2 fw-bold mb-0">
             <i class="fas fa-file-alt me-2 text-primary"></i>
             Raport Siswa
         </h1>
-    </div>
-    <div>
-        <button type="button" class="btn btn-success btn-action" onclick="window.print()">
-            <i class="fas fa-print me-1"></i> Cetak
-        </button>
+        <p class="text-muted small mb-0 mt-1">Lihat daftar nilai seluruh siswa</p>
     </div>
 </div>
 
@@ -460,7 +459,8 @@
                                 @endif
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-info btn-detail" 
+                                {{-- ✅ HANYA tombol Detail (lihat) - tombol Cetak dihapus --}}
+                                <button class="btn btn-sm btn-info btn-detail"
                                         data-siswa="{{ $s->id }}"
                                         data-nama="{{ $namaSiswa }}"
                                         data-tahun="{{ $tahunAjaran }}"
@@ -468,12 +468,6 @@
                                         title="Lihat Detail Raport">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <a href="{{ route('guru.nilai.raport.cetak', $s->id) }}?tahun_ajaran={{ $tahunAjaran }}&semester={{ $semester }}" 
-                                   class="btn btn-sm btn-success" 
-                                   title="Cetak Raport" 
-                                   target="_blank">
-                                    <i class="fas fa-print"></i>
-                                </a>
                             </td>
                         </tr>
                         @endforeach
@@ -481,7 +475,7 @@
                 </table>
             </div>
         </div>
-        
+
         <!-- Legenda -->
         <div class="mt-3 pt-3 border-top">
             <div class="row g-2">
@@ -506,7 +500,9 @@
     </div>
 </div>
 
-<!-- Modal Detail Raport -->
+<!-- ============================================================
+     MODAL DETAIL RAPORT (TANPA TOMBOL CETAK)
+     ============================================================ -->
 <div class="modal fade detail-raport-modal" id="detailRaportModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -526,10 +522,8 @@
                 </div>
             </div>
             <div class="modal-footer">
+                {{-- ✅ Hanya tombol Tutup - tombol Cetak dihapus --}}
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                <button type="button" class="btn btn-success" id="modalCetakBtn">
-                    <i class="fas fa-print me-1"></i> Cetak
-                </button>
             </div>
         </div>
     </div>
@@ -540,7 +534,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
-        // Inisialisasi DataTable dengan konfigurasi yang lebih baik
         var table = $('#raportTable').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
@@ -575,21 +568,19 @@
             processing: true,
             stateSave: true,
             responsive: false,
-            // Tambahan konfigurasi untuk pagination
             drawCallback: function() {
-                // Memastikan pagination bekerja dengan baik
                 $('.dataTables_paginate .paginate_button').on('click', function(e) {
                     e.preventDefault();
                 });
             }
         });
-        
+
         // Filter button
         $('#filterBtn').on('click', function() {
             var kelasId = $('#kelasSelector').val();
             var tahunAjaran = $('#tahunAjaran').val();
             var semester = $('#semester').val();
-            
+
             if (!kelasId) {
                 Swal.fire({
                     icon: 'warning',
@@ -599,22 +590,22 @@
                 });
                 return;
             }
-            
-            var url = '{{ route("guru.nilai.raport") }}' + 
-                     '?kelas_id=' + encodeURIComponent(kelasId) + 
-                     '&tahun_ajaran=' + encodeURIComponent(tahunAjaran) + 
+
+            var url = '{{ route("guru.nilai.raport") }}' +
+                     '?kelas_id=' + encodeURIComponent(kelasId) +
+                     '&tahun_ajaran=' + encodeURIComponent(tahunAjaran) +
                      '&semester=' + encodeURIComponent(semester);
-            
+
             window.location.href = url;
         });
-        
+
         // Detail Raport
         $('.btn-detail').on('click', function() {
             var siswaId = $(this).data('siswa');
             var siswaNama = $(this).data('nama') || 'Siswa';
             var tahunAjaran = $(this).data('tahun') || $('#tahunAjaran').val() || '{{ date("Y") . "/" . (date("Y") + 1) }}';
             var semester = $(this).data('semester') || $('#semester').val() || 'ganjil';
-            
+
             $('#modalSiswaNama').text(siswaNama);
             $('#modalBody').html(`
                 <div class="text-center py-5">
@@ -625,12 +616,10 @@
                 </div>
             `);
             $('#detailRaportModal').modal('show');
-            
-            // Build URL dengan parameter yang benar
+
             var url = '{{ route("guru.nilai.raport.detail", ["siswaId" => ":siswaId"]) }}';
             url = url.replace(':siswaId', siswaId);
-            
-            // Fetch data via AJAX
+
             $.ajax({
                 url: url,
                 data: {
@@ -640,13 +629,6 @@
                 success: function(response) {
                     var html = generateDetailHtml(response);
                     $('#modalBody').html(html);
-                    
-                    // Update tombol cetak
-                    var cetakUrl = '{{ route("guru.nilai.raport.cetak", ["siswaId" => ":siswaId"]) }}';
-                    cetakUrl = cetakUrl.replace(':siswaId', siswaId);
-                    cetakUrl += '?tahun_ajaran=' + encodeURIComponent(tahunAjaran) + '&semester=' + encodeURIComponent(semester);
-                    
-                    $('#modalCetakBtn').attr('onclick', "window.open('" + cetakUrl + "', '_blank')");
                 },
                 error: function(xhr) {
                     var errorMsg = 'Terjadi kesalahan';
@@ -663,9 +645,8 @@
             });
         });
     });
-    
+
     function generateDetailHtml(data) {
-        // Default values untuk menghindari undefined
         var siswa = data.siswa || {};
         var nilai = data.nilai || [];
         var rataRata = data.rataRata || 0;
@@ -674,11 +655,11 @@
         var predikatKeseluruhan = data.predikatKeseluruhan || '-';
         var tahunAjaran = data.tahunAjaran || '-';
         var semester = data.semester || '-';
-        
+
         var namaSiswa = siswa.nama_lengkap || (siswa.user ? siswa.user.name : '-');
         var nisSiswa = siswa.nis || '-';
         var namaKelas = siswa.kelas ? siswa.kelas.nama : '-';
-        
+
         var html = `
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -723,13 +704,13 @@
                         </tr>
                     </thead>
                     <tbody>`;
-        
+
         if (nilai && nilai.length > 0) {
             nilai.forEach(function(n, i) {
                 var mapel = n.mapel || {};
                 var grade = n.grade || { warna: 'secondary', grade: '-' };
                 var predikat = n.predikat_label || '-';
-                
+
                 html += `
                     <tr>
                         <td>${i + 1}</td>
@@ -752,7 +733,7 @@
                 </tr>
             `;
         }
-        
+
         html += `
                     </tbody>
                     <tfoot>
@@ -775,7 +756,7 @@
                 </div>
             </div>
         `;
-        
+
         return html;
     }
 </script>
