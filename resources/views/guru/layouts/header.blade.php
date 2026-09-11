@@ -5,49 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard Guru') - SIM Sekolah</title>
-    
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    
+
     <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-    
+
     <!-- Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         html, body {
             height: 100%;
             width: 100%;
             overflow: hidden;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8f9fa;
         }
-        
-        .app-wrapper {
-            display: flex;
-            height: 100vh;
-            width: 100%;
-        }
-        
+
+        .app-wrapper { display: flex; height: 100vh; width: 100%; }
+
         /* SIDEBAR */
         .app-sidebar {
             width: 280px;
@@ -60,58 +52,27 @@
             position: sticky;
             top: 0;
         }
-        
         .sidebar-header {
             padding: 30px 20px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        
-        .sidebar-header i {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        
-        .sidebar-header h5 {
-            margin: 10px 0 5px;
-            color: white;
-            font-weight: 700;
-        }
-        
-        .sidebar-header small {
-            color: #bdc3c7;
-        }
-        
+        .sidebar-header i { font-size: 3rem; margin-bottom: 10px; color: #fff; }
+        .sidebar-header h5 { margin: 10px 0 5px; color: white; font-weight: 700; }
+        .sidebar-header small { color: #bdc3c7; }
+
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
         }
-        
-        .sidebar-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .sidebar-content::-webkit-scrollbar-track {
-            background: #34495e;
-        }
-        
-        .sidebar-content::-webkit-scrollbar-thumb {
-            background: #7f8c8d;
-            border-radius: 3px;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 2px;
-        }
-        
+        .sidebar-content::-webkit-scrollbar { width: 6px; }
+        .sidebar-content::-webkit-scrollbar-track { background: #34495e; }
+        .sidebar-content::-webkit-scrollbar-thumb { background: #7f8c8d; border-radius: 3px; }
+
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 2px; }
+
         .sidebar-menu .menu-section {
             color: #bdc3c7;
             font-size: 0.7rem;
@@ -120,7 +81,7 @@
             padding: 20px 10px 8px 10px;
             letter-spacing: 0.5px;
         }
-        
+
         .sidebar-menu .menu-item {
             display: flex;
             align-items: center;
@@ -132,29 +93,19 @@
             font-size: 0.9rem;
             position: relative;
         }
-        
-        .sidebar-menu .menu-item i {
-            width: 24px;
-            margin-right: 12px;
-            font-size: 1rem;
-        }
-        
+        .sidebar-menu .menu-item i { width: 24px; margin-right: 12px; font-size: 1rem; }
         .sidebar-menu .menu-item:hover {
             background-color: rgba(255,255,255,0.1);
             transform: translateX(5px);
             color: white;
         }
-        
         .sidebar-menu .menu-item.active {
             background: linear-gradient(90deg, #3498db, #2980b9);
             color: white;
             box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
         }
-        
-        .sidebar-menu .menu-item.active i {
-            color: white;
-        }
-        
+        .sidebar-menu .menu-item.active i { color: white; }
+
         .sidebar-menu .badge-notif {
             background-color: #e74c3c;
             color: white;
@@ -164,7 +115,7 @@
             margin-left: auto;
             font-weight: 600;
         }
-        
+
         .menu-item.logout {
             margin-top: 10px;
             color: #ff6b6b;
@@ -172,18 +123,10 @@
             padding-top: 15px;
             cursor: pointer;
         }
-        
-        .menu-item.logout:hover {
-            background-color: #c0392b;
-            color: white;
-        }
-        
-        hr {
-            border-color: rgba(255,255,255,0.1);
-            margin: 10px 0;
-        }
-        
-        /* Badge untuk menu baru */
+        .menu-item.logout:hover { background-color: #c0392b; color: white; }
+
+        hr { border-color: rgba(255,255,255,0.1); margin: 10px 0; }
+
         .menu-new-badge {
             background-color: #e74c3c;
             color: white;
@@ -194,13 +137,12 @@
             animation: pulse 1.5s infinite;
             font-weight: 600;
         }
-
         @keyframes pulse {
             0% { opacity: 0.6; transform: scale(0.95); }
             50% { opacity: 1; transform: scale(1); }
             100% { opacity: 0.6; transform: scale(0.95); }
         }
-        
+
         /* MAIN CONTENT */
         .app-main {
             flex: 1;
@@ -209,7 +151,7 @@
             overflow: hidden;
             background-color: #f8f9fa;
         }
-        
+
         .app-navbar {
             padding: 12px 25px;
             background-color: white;
@@ -220,23 +162,11 @@
             flex-shrink: 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        
-        .app-navbar .brand-text {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .app-navbar .brand-text small {
-            font-weight: 400;
-            color: #7f8c8d;
-        }
-        
-        .navbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
+        .app-navbar .brand-text { font-weight: 600; color: #2c3e50; }
+        .app-navbar .brand-text small { font-weight: 400; color: #7f8c8d; }
+
+        .navbar-actions { display: flex; align-items: center; gap: 15px; }
+
         .user-dropdown {
             display: flex;
             align-items: center;
@@ -247,31 +177,15 @@
             transition: all 0.3s;
             border: 1px solid transparent;
         }
-        
-        .user-dropdown:hover {
-            background-color: #f8f9fa;
-            border-color: #e9ecef;
-        }
-        
+        .user-dropdown:hover { background-color: #f8f9fa; border-color: #e9ecef; }
         .user-dropdown .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 36px; height: 36px; border-radius: 50%;
             background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; font-size: 0.9rem;
         }
-        
-        .user-dropdown .user-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-            color: #2c3e50;
-        }
-        
+        .user-dropdown .user-name { font-weight: 500; font-size: 0.9rem; color: #2c3e50; }
+
         /* Dropdown Menu Styling */
         .dropdown-menu {
             border-radius: 12px;
@@ -280,14 +194,12 @@
             padding: 8px 0;
             min-width: 220px;
         }
-        
         .dropdown-menu .dropdown-header {
             padding: 10px 16px 5px;
             font-weight: 600;
             color: #2c3e50;
             font-size: 0.85rem;
         }
-        
         .dropdown-menu .dropdown-item {
             padding: 10px 16px;
             font-size: 0.9rem;
@@ -297,48 +209,21 @@
             gap: 10px;
             cursor: pointer;
         }
-        
-        .dropdown-menu .dropdown-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 0.95rem;
-        }
-        
-        .dropdown-menu .dropdown-item:hover {
-            background-color: #f0f7ff;
-        }
-        
-        .dropdown-menu .dropdown-item.text-danger:hover {
-            background-color: #fde8e8;
-        }
-        
-        .dropdown-menu .dropdown-divider {
-            margin: 6px 0;
-        }
-        
+        .dropdown-menu .dropdown-item i { width: 20px; text-align: center; font-size: 0.95rem; }
+        .dropdown-menu .dropdown-item:hover { background-color: #f0f7ff; }
+        .dropdown-menu .dropdown-item.text-danger:hover { background-color: #fde8e8; }
+        .dropdown-menu .dropdown-divider { margin: 6px 0; }
+
         .app-content {
             flex: 1;
             overflow-y: auto;
             padding: 25px;
         }
-        
-        .app-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .app-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        .app-content::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-        
-        .app-content::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
+        .app-content::-webkit-scrollbar { width: 6px; }
+        .app-content::-webkit-scrollbar-track { background: #f1f1f1; }
+        .app-content::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+        .app-content::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
         /* Alert Styles */
         .alert {
             padding: 15px 20px;
@@ -346,35 +231,12 @@
             margin-bottom: 20px;
             border: none;
         }
-        
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-        
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border-left: 4px solid #17a2b8;
-        }
-        
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .alert .btn-close {
-            padding: 10px;
-        }
-        
+        .alert-success { background-color: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .alert .btn-close { padding: 10px; }
+
         /* Card Styles */
         .card {
             border: none;
@@ -383,11 +245,7 @@
             margin-bottom: 20px;
             transition: all 0.3s;
         }
-        
-        .card:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        
+        .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .card-header {
             background-color: white;
             border-bottom: 1px solid #e9ecef;
@@ -395,18 +253,14 @@
             font-weight: 600;
             border-radius: 12px 12px 0 0;
         }
-        
-        .card-body {
-            padding: 20px;
-        }
-        
+        .card-body { padding: 20px; }
         .card-footer {
             background-color: white;
             border-top: 1px solid #e9ecef;
             padding: 15px 20px;
             border-radius: 0 0 12px 12px;
         }
-        
+
         /* Table Styles */
         .table thead th {
             border-top: none;
@@ -417,22 +271,16 @@
             letter-spacing: 0.3px;
             color: #495057;
         }
-        
-        .table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-        
+        .table tbody tr:hover { background-color: #f8f9fa; }
+
         /* Button Styles */
         .btn-action {
             padding: 5px 10px;
             margin: 0 2px;
             border-radius: 6px;
         }
-        
-        .btn-action i {
-            font-size: 0.9rem;
-        }
-        
+        .btn-action i { font-size: 0.9rem; }
+
         /* Stat Card */
         .stat-card {
             border-radius: 12px;
@@ -442,12 +290,7 @@
             position: relative;
             overflow: hidden;
         }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
         .stat-card .stat-icon {
             position: absolute;
             right: 20px;
@@ -456,117 +299,50 @@
             font-size: 3rem;
             opacity: 0.3;
         }
-        
-        .stat-card h2 {
-            font-size: 2rem;
-            margin: 10px 0 5px;
-            font-weight: 700;
-        }
-        
-        .stat-card .stat-label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-        }
-        
-        .stat-card.bg-primary-gradient {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-        
-        .stat-card.bg-success-gradient {
-            background: linear-gradient(135deg, #84fab0, #8fd3f4);
-        }
-        
-        .stat-card.bg-warning-gradient {
-            background: linear-gradient(135deg, #f6d365, #fda085);
-        }
-        
-        .stat-card.bg-danger-gradient {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-        }
-        
+        .stat-card h2 { font-size: 2rem; margin: 10px 0 5px; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.85rem; opacity: 0.9; }
+        .stat-card.bg-primary-gradient { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .stat-card.bg-success-gradient { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+        .stat-card.bg-warning-gradient { background: linear-gradient(135deg, #f6d365, #fda085); }
+        .stat-card.bg-danger-gradient { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+
         /* Modal Styles */
         .modal-content {
             border-radius: 16px;
             border: none;
         }
-        
         .modal-header {
             border-radius: 16px 16px 0 0;
         }
-        
         .modal-footer {
             border-radius: 0 0 16px 16px;
         }
-        
+
         /* Responsive */
-        @media (max-width: 992px) {
-            .app-sidebar {
-                width: 240px;
-            }
-        }
-        
+        @media (max-width: 992px) { .app-sidebar { width: 240px; } }
+
         @media (max-width: 768px) {
-            .app-wrapper {
-                flex-direction: column;
-            }
-            
-            .app-sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 300px;
-                position: relative;
-            }
-            
-            .sidebar-content {
-                max-height: 200px;
-            }
-            
-            .app-navbar {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .app-content {
-                padding: 15px;
-            }
-            
-            .stat-card h2 {
-                font-size: 1.5rem;
-            }
+            .app-wrapper { flex-direction: column; }
+            .app-sidebar { width: 100%; height: auto; max-height: 300px; position: relative; }
+            .sidebar-content { max-height: 200px; }
+            .app-navbar { flex-wrap: wrap; gap: 10px; }
+            .app-content { padding: 15px; }
+            .stat-card h2 { font-size: 1.5rem; }
         }
-        
+
         @media (max-width: 576px) {
-            .app-navbar {
-                padding: 10px 15px;
-            }
-            
-            .user-dropdown .user-name {
-                display: none;
-            }
-            
-            .app-content {
-                padding: 10px;
-            }
+            .app-navbar { padding: 10px 15px; }
+            .user-dropdown .user-name { display: none; }
+            .app-content { padding: 10px; }
         }
-        
-        /* Print Styles */
+
         @media print {
-            .app-sidebar,
-            .app-navbar,
-            .no-print {
-                display: none !important;
-            }
-            
-            .app-main {
-                overflow: visible !important;
-            }
-            
-            .app-content {
-                padding: 0 !important;
-            }
+            .app-sidebar, .app-navbar, .no-print { display: none !important; }
+            .app-main { overflow: visible !important; }
+            .app-content { padding: 0 !important; }
         }
     </style>
-    
+
     @stack('styles')
 </head>
 <body>
@@ -578,68 +354,64 @@
                 <h5>SIM Sekolah</h5>
                 <small>Panel Guru</small>
             </div>
-            
+
             <div class="sidebar-content">
                 <ul class="sidebar-menu">
-                    <!-- Dashboard -->
                     <li>
-                        <a href="{{ route('guru.dashboard') }}" 
+                        <a href="{{ route('guru.dashboard') }}"
                            class="menu-item {{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
-                    
-                    <!-- NILAI & RAPORT -->
+
                     <li class="menu-section">NILAI & RAPORT</li>
                     <li>
-                        <a href="{{ route('guru.nilai.index') }}" 
+                        <a href="{{ route('guru.nilai.index') }}"
                            class="menu-item {{ request()->routeIs('guru.nilai.index') || request()->routeIs('guru.nilai.input') ? 'active' : '' }}">
                             <i class="fas fa-book-open"></i> Input Nilai
                         </a>
                     </li>
-                    
+
                     <li>
-                        <a href="{{ route('guru.nilai.raport') }}" 
+                        <a href="{{ route('guru.nilai.raport') }}"
                            class="menu-item {{ request()->routeIs('guru.nilai.raport') || request()->routeIs('guru.nilai.raport.*') ? 'active' : '' }}">
                             <i class="fas fa-file-alt"></i> Raport Siswa
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="#" class="menu-item" id="menuCetakRaport">
                             <i class="fas fa-print"></i> Cetak Raport
                             <span class="menu-new-badge">Baru</span>
                         </a>
                     </li>
-                    
-                    <!-- ABSENSI SISWA -->
+
                     <li class="menu-section">ABSENSI SISWA</li>
                     <li>
-                        <a href="{{ route('guru.absensi.index') }}" 
+                        <a href="{{ route('guru.absensi.index') }}"
                            class="menu-item {{ request()->routeIs('guru.absensi.index') ? 'active' : '' }}">
                             <i class="fas fa-calendar-check"></i> Input Absensi
                         </a>
                     </li>
-                    
+
                     <li>
-                        <a href="{{ route('guru.absensi.scan') }}" 
+                        <a href="{{ route('guru.absensi.scan') }}"
                            class="menu-item {{ request()->routeIs('guru.absensi.scan') ? 'active' : '' }}">
                             <i class="fas fa-rss"></i> Scan RFID
                             <span class="menu-new-badge">NEW</span>
                         </a>
                     </li>
-                    
+
                     <li>
-                        <a href="{{ route('guru.absensi.riwayat') }}" 
+                        <a href="{{ route('guru.absensi.riwayat') }}"
                            class="menu-item {{ request()->routeIs('guru.absensi.riwayat') ? 'active' : '' }}">
                             <i class="fas fa-history"></i> Riwayat Absensi
                         </a>
                     </li>
-                    
-                    <!-- KOMUNIKASI -->
+
                     <li class="menu-section">KOMUNIKASI</li>
                     <li>
-                        <a href="{{ route('guru.komunikasi.index') }}" 
+                        <a href="{{ route('guru.komunikasi.index') }}"
                            class="menu-item {{ request()->routeIs('guru.komunikasi.*') ? 'active' : '' }}">
                             <i class="fas fa-comments"></i> Pesan
                             @php
@@ -656,36 +428,29 @@
                             @endif
                         </a>
                     </li>
-                    
-                    <!-- KALENDER -->
+
                     <li class="menu-section">KALENDER</li>
                     <li>
                         @php
                             $kalenderRoute = '';
-                            try {
-                                $kalenderRoute = route('guru.kalender');
-                            } catch(\Exception $e) {
-                                $kalenderRoute = '#';
-                            }
+                            try { $kalenderRoute = route('guru.kalender'); } catch(\Exception $e) { $kalenderRoute = '#'; }
                         @endphp
-                        <a href="{{ $kalenderRoute }}" 
+                        <a href="{{ $kalenderRoute }}"
                            class="menu-item {{ request()->routeIs('guru.kalender') || request()->routeIs('guru.kalender.*') ? 'active' : '' }}">
                             <i class="fas fa-calendar-alt"></i> Kalender Akademik
                         </a>
                     </li>
-                    
-                    <!-- KINERJA -->
+
                     <li class="menu-section">KINERJA</li>
                     <li>
-                        <a href="{{ route('guru.kinerja.index') }}" 
+                        <a href="{{ route('guru.kinerja.index') }}"
                            class="menu-item {{ request()->routeIs('guru.kinerja.*') ? 'active' : '' }}">
                             <i class="fas fa-chart-line"></i> Profil Kinerja
                         </a>
                     </li>
-                    
+
                     <li><hr></li>
-                    
-                    <!-- LOGOUT DI SIDEBAR - PERBAIKAN -->
+
                     <li>
                         <a href="#" class="menu-item logout" id="sidebarLogoutBtn">
                             <i class="fas fa-sign-out-alt"></i> Logout
@@ -697,7 +462,7 @@
                 </ul>
             </div>
         </aside>
-        
+
         <!-- MAIN CONTENT -->
         <main class="app-main">
             <nav class="app-navbar">
@@ -708,9 +473,8 @@
                         <small>| Guru</small>
                     </span>
                 </div>
-                
+
                 <div class="navbar-actions">
-                    <!-- Notifikasi -->
                     <div class="dropdown">
                         <button class="btn btn-light btn-sm position-relative" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bell"></i>
@@ -729,8 +493,7 @@
                             </li>
                         </ul>
                     </div>
-                    
-                    <!-- User Dropdown - PERBAIKAN LOGOUT -->
+
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="avatar">
@@ -740,7 +503,6 @@
                             <i class="fas fa-chevron-down text-muted" style="font-size: 0.7rem;"></i>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <!-- Header dengan nama lengkap dan role -->
                             <li class="dropdown-header">
                                 <div class="d-flex flex-column">
                                     <span class="fw-bold">{{ Auth::user()->name ?? 'User' }}</span>
@@ -751,26 +513,23 @@
                                 </div>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            
-                            <!-- Profil -->
+
                             <li>
                                 <a class="dropdown-item" href="{{ route('guru.profil.index') }}">
                                     <i class="fas fa-user-circle text-primary"></i>
                                     Profil
                                 </a>
                             </li>
-                            
-                            <!-- Pengaturan -->
+
                             <li>
                                 <a class="dropdown-item" href="#" onclick="alert('Fitur pengaturan sedang dalam pengembangan');">
                                     <i class="fas fa-cog text-warning"></i>
                                     Pengaturan
                                 </a>
                             </li>
-                            
+
                             <li><hr class="dropdown-divider"></li>
-                            
-                            <!-- Logout - PERBAIKAN -->
+
                             <li>
                                 <a class="dropdown-item text-danger" href="#" id="dropdownLogoutBtn">
                                     <i class="fas fa-sign-out-alt"></i>
@@ -781,9 +540,8 @@
                     </div>
                 </div>
             </nav>
-            
+
             <div class="app-content">
-                <!-- Alert Messages -->
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="fas fa-check-circle me-2"></i>
@@ -816,158 +574,159 @@
                     </div>
                 @endif
 
-                <!-- Content -->
                 @yield('content')
             </div>
         </main>
     </div>
 
-    <!-- Modal Pilih Siswa untuk Cetak Raport -->
+    <!-- ============================================================
+         MODAL CETAK RAPORT - DIPERBAIKI
+         ============================================================ -->
     <div class="modal fade" id="pilihSiswaRaportModal" tabindex="-1" aria-labelledby="pilihSiswaRaportModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="pilihSiswaRaportModalLabel">
-                        <i class="fas fa-print me-2"></i>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+
+                {{-- Header Gradient --}}
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; border-bottom:none; padding:1.25rem 1.5rem;">
+                    <h5 class="modal-title" id="pilihSiswaRaportModalLabel" style="font-weight:700; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-print"></i>
                         Cetak Raport Siswa
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="GET" action="{{ route('guru.nilai.raport') }}" id="formCetakRaportModal">
-                    <div class="modal-body">
-                        <!-- Pilih Kelas - Hanya kelas yang diajar guru -->
+
+                {{-- Form --}}
+                <form method="GET" action="{{ route('guru.nilai.raport.cetak', ['siswaId' => '__siswa_id__']) }}" id="formCetakRaportModal" target="_blank">
+                    @csrf
+
+                    @php
+                        // ✅ Ambil data guru + kelas + siswa langsung di layout
+                        $modalGuru = \App\Models\Guru::where('user_id', auth()->id())->first();
+
+                        // Kelas yang diajar guru
+                        $modalKelas = collect();
+                        if ($modalGuru) {
+                            $modalKelas = \App\Models\Kelas::whereHas('jadwal', function($q) use ($modalGuru) {
+                                $q->where('guru_id', $modalGuru->id);
+                            })->withCount('siswa')->orderBy('nama_kelas')->get();
+
+                            // Fallback: semua kelas
+                            if ($modalKelas->isEmpty()) {
+                                $modalKelas = \App\Models\Kelas::withCount('siswa')->orderBy('nama_kelas')->get();
+                            }
+                        }
+
+                        // Ambil semua siswa aktif dengan relasi kelas & user
+                        $modalSiswa = \App\Models\Siswa::with(['kelas', 'user'])
+                            ->where('status', 'aktif')
+                            ->orderBy('nama_lengkap')
+                            ->get();
+
+                        // Tahun ajaran list
+                        $modalTahun = [];
+                        for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++) {
+                            $modalTahun[] = $i . '/' . ($i + 1);
+                        }
+                        $modalTahunNow = date('Y') . '/' . (date('Y') + 1);
+                    @endphp
+
+                    <div class="modal-body" style="padding:1.75rem;">
+
+                        {{-- Pilih Kelas --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label" style="font-weight:700; font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:#475569;">
                                 <i class="fas fa-users text-primary me-1"></i>
                                 Pilih Kelas <span class="text-danger">*</span>
                             </label>
-                            <select name="kelas_id" id="modalKelasSelect" class="form-select" required>
-                                <option value="">-- Pilih Kelas --</option>
-                                @php
-                                    use App\Models\Kelas;
-                                    use App\Models\Guru;
-                                    use App\Models\Jadwal;
-                                    
-                                    $user = auth()->user();
-                                    $guru = Guru::where('user_id', $user->id)->first();
-                                    
-                                    if ($guru) {
-                                        // Ambil kelas yang diajar oleh guru ini
-                                        $kelasDiAjar = Kelas::whereHas('jadwal', function($query) use ($guru) {
-                                            $query->where('guru_id', $guru->id);
-                                        })->withCount('siswa')->get();
-                                    } else {
-                                        $kelasDiAjar = collect();
-                                    }
-                                @endphp
-                                @forelse($kelasDiAjar as $k)
-                                    <option value="{{ $k->id }}" 
-                                        {{ isset($selectedKelasId) && $selectedKelasId == $k->id ? 'selected' : '' }}>
-                                        {{ $k->nama_kelas ?? $k->nama }} 
-                                        @if($k->jurusan)
-                                            - {{ $k->jurusan->nama }}
-                                        @endif
-                                        <span class="text-muted">({{ $k->siswa_count ?? 0 }} siswa)</span>
+                            <select name="kelas_id" id="modalKelasSelect" class="form-select" required
+                                    style="border-radius:10px; border:1.5px solid #e2e8f0; padding:10px 14px; font-size:.875rem;">
+                                <option value="">— Pilih Kelas —</option>
+                                @forelse($modalKelas as $k)
+                                    <option value="{{ $k->id }}">
+                                        {{ $k->nama_kelas ?? $k->nama }}
+                                        @if($k->jurusan) — {{ $k->jurusan->nama }} @endif
+                                        ({{ $k->siswa_count ?? 0 }} siswa)
                                     </option>
                                 @empty
                                     <option value="" disabled>Anda belum mengajar kelas manapun</option>
                                 @endforelse
                             </select>
-                            <small class="text-muted">
+                            <small class="text-muted d-block mt-1" style="font-size:.78rem;">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Menampilkan kelas yang Anda ajar
+                                Hanya menampilkan kelas yang Anda ajar
                             </small>
                         </div>
-                        
-                        <!-- Pilih Siswa - Filter berdasarkan kelas yang dipilih -->
+
+                        {{-- Pilih Siswa --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold">
+                            <label class="form-label" style="font-weight:700; font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:#475569;">
                                 <i class="fas fa-user-graduate text-primary me-1"></i>
                                 Pilih Siswa <span class="text-danger">*</span>
                             </label>
-                            <select name="siswa_id" id="modalSiswaSelect" class="form-select" required>
-                                <option value="">-- Pilih Siswa --</option>
-                                @php
-                                    // Ambil semua siswa aktif
-                                    $allSiswa = App\Models\Siswa::with(['kelas', 'user'])
-                                        ->where('status', 'aktif')
-                                        ->orderBy('nama_lengkap')
-                                        ->get();
-                                @endphp
-                                @foreach($allSiswa as $s)
-                                    <option value="{{ $s->id }}" 
-                                            data-kelas="{{ $s->kelas_id }}"
-                                            data-nama="{{ $s->nama_lengkap ?? $s->user->name ?? '-' }}"
-                                            data-nis="{{ $s->nis ?? '-' }}">
-                                        {{ $s->nis ?? '' }} - {{ $s->nama_lengkap ?? $s->user->name ?? '-' }} 
-                                        ({{ $s->kelas->nama_kelas ?? '-' }})
-                                    </option>
-                                @endforeach
+                            <select name="siswa_id" id="modalSiswaSelect" class="form-select" required
+                                    style="border-radius:10px; border:1.5px solid #e2e8f0; padding:10px 14px; font-size:.875rem;"
+                                    disabled>
+                                <option value="">— Pilih Kelas Terlebih Dahulu —</option>
                             </select>
-                            <small class="text-muted">
+                            <small class="text-muted d-block mt-1" style="font-size:.78rem;">
                                 <i class="fas fa-sync-alt me-1"></i>
-                                Siswa akan otomatis terfilter berdasarkan kelas yang dipilih
+                                Siswa otomatis terfilter berdasarkan kelas yang dipilih
                             </small>
                         </div>
-                        
-                        <!-- Tahun Ajaran -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-calendar-alt text-primary me-1"></i>
-                                Tahun Ajaran <span class="text-danger">*</span>
-                            </label>
-                            <select name="tahun_ajaran" class="form-select" required>
-                                @php
-                                    $tahunAjaranList = [];
-                                    for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++) {
-                                        $tahunAjaranList[] = $i . '/' . ($i + 1);
-                                    }
-                                    $tahunSekarang = date('Y') . '/' . (date('Y') + 1);
-                                @endphp
-                                @foreach($tahunAjaranList as $ta)
-                                    <option value="{{ $ta }}" {{ $ta == $tahunSekarang ? 'selected' : '' }}>
-                                        {{ $ta }}
-                                    </option>
-                                @endforeach
-                            </select>
+
+                        {{-- Tahun Ajaran & Semester --}}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-weight:700; font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:#475569;">
+                                    <i class="fas fa-calendar-alt text-primary me-1"></i>
+                                    Tahun Ajaran <span class="text-danger">*</span>
+                                </label>
+                                <select name="tahun_ajaran" class="form-select" required
+                                        style="border-radius:10px; border:1.5px solid #e2e8f0; padding:10px 14px; font-size:.875rem;">
+                                    @foreach($modalTahun as $ta)
+                                        <option value="{{ $ta }}" {{ $ta == $modalTahunNow ? 'selected' : '' }}>
+                                            {{ $ta }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" style="font-weight:700; font-size:.8rem; text-transform:uppercase; letter-spacing:.5px; color:#475569;">
+                                    <i class="fas fa-clock text-primary me-1"></i>
+                                    Semester <span class="text-danger">*</span>
+                                </label>
+                                <select name="semester" class="form-select" required
+                                        style="border-radius:10px; border:1.5px solid #e2e8f0; padding:10px 14px; font-size:.875rem;">
+                                    <option value="ganjil">Semester Ganjil</option>
+                                    <option value="genap">Semester Genap</option>
+                                </select>
+                            </div>
                         </div>
-                        
-                        <!-- Semester -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">
-                                <i class="fas fa-clock text-primary me-1"></i>
-                                Semester <span class="text-danger">*</span>
-                            </label>
-                            <select name="semester" class="form-select" required>
-                                <option value="ganjil" {{ request('semester', 'ganjil') == 'ganjil' ? 'selected' : '' }}>
-                                    Semester Ganjil
-                                </option>
-                                <option value="genap" {{ request('semester', 'ganjil') == 'genap' ? 'selected' : '' }}>
-                                    Semester Genap
-                                </option>
-                            </select>
-                        </div>
-                        
-                        <!-- Informasi Tambahan -->
-                        <div class="alert alert-info mb-0">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-info-circle fa-2x me-3"></i>
+
+                        {{-- Info Box --}}
+                        <div class="alert alert-info mt-3 mb-0" style="border-radius:10px; border:none; background:#eff6ff; color:#1e40af; font-size:.85rem;">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="fas fa-info-circle mt-1"></i>
                                 <div>
                                     <strong>Informasi:</strong>
-                                    <ul class="mb-0 mt-1">
-                                        <li>Raport akan ditampilkan dalam format baru dan siap dicetak</li>
-                                        <li>Pastikan data nilai siswa sudah lengkap dan dipublish</li>
+                                    <ul class="mb-0 mt-1 ps-3">
+                                        <li>Raport akan terbuka di <strong>tab baru</strong> siap cetak</li>
+                                        <li>Pastikan data nilai sudah lengkap dan <strong>dipublish</strong></li>
                                         <li>Hanya menampilkan siswa di kelas yang Anda ajar</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+
+                    {{-- Footer --}}
+                    <div class="modal-footer" style="border-top:1px solid #e2e8f0; padding:1rem 1.5rem;">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"
+                                style="border-radius:10px; padding:8px 20px; font-weight:600;">
                             <i class="fas fa-times me-1"></i> Batal
                         </button>
-                        <button type="submit" class="btn btn-primary" id="btnCetakRaportModal">
+                        <button type="submit" class="btn btn-primary" id="btnCetakRaportModal"
+                                style="border-radius:10px; padding:8px 20px; font-weight:600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border:none;">
                             <i class="fas fa-print me-1"></i> Cetak Raport
                         </button>
                     </div>
@@ -976,154 +735,168 @@
         </div>
     </div>
 
+    {{-- Data Siswa untuk JS (JSON) --}}
+    <script id="siswaDataScript" type="application/json">
+        {!! json_encode($modalSiswa->map(function($s) {
+            return [
+                'id' => $s->id,
+                'nis' => $s->nis ?? '-',
+                'nama' => $s->nama_lengkap ?? ($s->user->name ?? '-'),
+                'kelas_id' => $s->kelas_id,
+                'kelas_nama' => $s->kelas->nama_kelas ?? ($s->kelas->nama ?? '-'),
+            ];
+        })->values()) !!}
+    </script>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    
+
     <script>
         $(document).ready(function() {
-            // Initialize DataTables
-            $('.datatable').DataTable({
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
-                },
-                pageLength: 10,
-                responsive: true
-            });
-            
+            // Initialize DataTables (kalau ada)
+            if ($('.datatable').length && !$.fn.DataTable.isDataTable('.datatable')) {
+                $('.datatable').DataTable({
+                    language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
+                    pageLength: 10,
+                    responsive: true
+                });
+            }
+
             // Initialize Select2
-            $('.select2').select2({
-                width: '100%',
-                theme: 'bootstrap-5'
-            });
-            
-            // ============================================================
-            // FILTER SISWA BERDASARKAN KELAS DI MODAL
-            // ============================================================
-            
-            // Data siswa dari server
-            var siswaData = @json($allSiswa ?? []);
-            
-            // Fungsi untuk filter siswa
-            function filterSiswaByKelas(kelasId) {
-                var siswaSelect = $('#modalSiswaSelect');
-                
-                // Reset siswa select
-                siswaSelect.html('<option value="">-- Pilih Siswa --</option>');
-                
-                if (kelasId) {
-                    // Filter siswa berdasarkan kelas
-                    siswaData.forEach(function(siswa) {
-                        if (siswa.kelas_id == kelasId) {
-                            var optionText = (siswa.nis || '') + ' - ' + 
-                                           (siswa.nama_lengkap || (siswa.user ? siswa.user.name : '-')) + 
-                                           ' (' + (siswa.kelas ? siswa.kelas.nama_kelas : '-') + ')';
-                            
-                            siswaSelect.append(
-                                '<option value="' + siswa.id + '" ' +
-                                'data-kelas="' + siswa.kelas_id + '" ' +
-                                'data-nama="' + (siswa.nama_lengkap || (siswa.user ? siswa.user.name : '-')) + '" ' +
-                                'data-nis="' + (siswa.nis || '-') + '">' +
-                                optionText +
-                                '</option>'
-                            );
-                        }
-                    });
-                } else {
-                    // Tampilkan semua siswa jika tidak ada kelas yang dipilih
-                    siswaData.forEach(function(siswa) {
-                        var optionText = (siswa.nis || '') + ' - ' + 
-                                       (siswa.nama_lengkap || (siswa.user ? siswa.user.name : '-')) + 
-                                       ' (' + (siswa.kelas ? siswa.kelas.nama_kelas : '-') + ')';
-                        
-                        siswaSelect.append(
-                            '<option value="' + siswa.id + '" ' +
-                            'data-kelas="' + siswa.kelas_id + '" ' +
-                            'data-nama="' + (siswa.nama_lengkap || (siswa.user ? siswa.user.name : '-')) + '" ' +
-                            'data-nis="' + (siswa.nis || '-') + '">' +
-                            optionText +
-                            '</option>'
-                        );
-                    });
+            if ($('.select2').length) {
+                $('.select2').select2({ width: '100%', theme: 'bootstrap-5' });
+            }
+
+            // ============================================
+            // ✅ FIX: Ambil data siswa dari JSON script
+            // ============================================
+            var siswaData = [];
+            try {
+                var raw = document.getElementById('siswaDataScript');
+                if (raw) {
+                    siswaData = JSON.parse(raw.textContent);
                 }
+            } catch (e) {
+                console.error('Gagal parse siswaData:', e);
             }
-            
-            // Event change pada select kelas
-            $('#modalKelasSelect').on('change', function() {
+
+            console.log('Total siswa loaded:', siswaData.length);
+
+            // ============================================
+            // ✅ FILTER SISWA BERDASARKAN KELAS
+            // ============================================
+            var $kelasSelect = $('#modalKelasSelect');
+            var $siswaSelect = $('#modalSiswaSelect');
+
+            $kelasSelect.on('change', function() {
                 var kelasId = $(this).val();
-                filterSiswaByKelas(kelasId);
+
+                // Reset siswa dropdown
+                $siswaSelect.html('<option value="">— Pilih Siswa —</option>');
+
+                if (!kelasId) {
+                    $siswaSelect.prop('disabled', true);
+                    $siswaSelect.html('<option value="">— Pilih Kelas Terlebih Dahulu —</option>');
+                    return;
+                }
+
+                // Filter siswa berdasarkan kelas_id (perbandingan string vs string)
+                var filtered = siswaData.filter(function(s) {
+                    return String(s.kelas_id) === String(kelasId);
+                });
+
+                console.log('Kelas dipilih:', kelasId, '| Siswa ditemukan:', filtered.length);
+
+                if (filtered.length === 0) {
+                    $siswaSelect.html('<option value="">— Tidak ada siswa di kelas ini —</option>');
+                    $siswaSelect.prop('disabled', true);
+                    return;
+                }
+
+                // Populate siswa
+                filtered.forEach(function(s) {
+                    var label = s.nis + ' — ' + s.nama + ' (' + s.kelas_nama + ')';
+                    $siswaSelect.append(
+                        $('<option>', {
+                            value: s.id,
+                            text: label
+                        })
+                    );
+                });
+
+                $siswaSelect.prop('disabled', false);
             });
-            
-            // Trigger change untuk menampilkan siswa awal jika kelas sudah dipilih
-            if ($('#modalKelasSelect').val()) {
-                $('#modalKelasSelect').trigger('change');
-            }
-            
-            // ============================================================
+
+            // ============================================
+            // BUKA MODAL CETAK RAPORT
+            // ============================================
+            $('#menuCetakRaport').on('click', function(e) {
+                e.preventDefault();
+
+                // Reset form setiap kali modal dibuka
+                $kelasSelect.val('');
+                $siswaSelect.html('<option value="">— Pilih Kelas Terlebih Dahulu —</option>').prop('disabled', true);
+
+                var modal = new bootstrap.Modal(document.getElementById('pilihSiswaRaportModal'));
+                modal.show();
+            });
+
+            // ============================================
             // VALIDASI FORM SEBELUM SUBMIT
-            // ============================================================
-            
+            // ============================================
             $('#formCetakRaportModal').on('submit', function(e) {
-                var kelasId = $('#modalKelasSelect').val();
-                var siswaId = $('#modalSiswaSelect').val();
-                
+                var kelasId = $kelasSelect.val();
+                var siswaId = $siswaSelect.val();
+
                 if (!kelasId) {
                     e.preventDefault();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Peringatan',
                         text: 'Silakan pilih kelas terlebih dahulu!',
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#667eea'
                     });
-                    $('#modalKelasSelect').focus();
                     return false;
                 }
-                
+
                 if (!siswaId) {
                     e.preventDefault();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Peringatan',
                         text: 'Silakan pilih siswa terlebih dahulu!',
-                        confirmButtonColor: '#3085d6'
+                        confirmButtonColor: '#667eea'
                     });
-                    $('#modalSiswaSelect').focus();
                     return false;
                 }
+
+                // Build URL dengan siswa_id
+                var baseUrl = '{{ route("guru.nilai.raport.cetak", ["siswaId" => "__siswa_id__"]) }}';
+                var finalUrl = baseUrl.replace('__siswa_id__', siswaId);
+                finalUrl += '?tahun_ajaran=' + encodeURIComponent($('select[name="tahun_ajaran"]').val());
+                finalUrl += '&semester=' + encodeURIComponent($('select[name="semester"]').val());
+
+                // Update action form
+                $(this).attr('action', finalUrl);
+                return true;
             });
-            
-            // ============================================================
-            // MENU CETAK RAPORT - BUKA MODAL
-            // ============================================================
-            
-            $('#menuCetakRaport').on('click', function(e) {
-                e.preventDefault();
-                var modal = new bootstrap.Modal(document.getElementById('pilihSiswaRaportModal'));
-                modal.show();
-            });
-            
-            // ============================================================
-            // AUTO CLOSE ALERT
-            // ============================================================
-            
+
+            // Auto close alert
             setTimeout(function() {
-                $('.alert').alert('close');
+                $('.alert').fadeOut('slow');
             }, 5000);
-            
-            // ============================================================
-            // TOOLTIP
-            // ============================================================
-            
+
+            // Tooltip
             $('[data-bs-toggle="tooltip"]').tooltip();
         });
-        
-        // ============================================================
-        // FUNGSI LOGOUT DENGAN KONFIRMASI - PERBAIKAN
-        // ============================================================
-        
+
+        // ============================================
+        // LOGOUT
+        // ============================================
         function confirmLogout() {
             Swal.fire({
                 title: 'Yakin ingin logout?',
@@ -1141,9 +914,7 @@
             });
         }
 
-        // Event listener untuk logout dari sidebar
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar logout button
             var sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
             if (sidebarLogoutBtn) {
                 sidebarLogoutBtn.addEventListener('click', function(e) {
@@ -1152,7 +923,6 @@
                 });
             }
 
-            // Dropdown logout button
             var dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
             if (dropdownLogoutBtn) {
                 dropdownLogoutBtn.addEventListener('click', function(e) {
@@ -1162,7 +932,7 @@
             }
         });
     </script>
-    
+
     @stack('scripts')
 </body>
 </html>
