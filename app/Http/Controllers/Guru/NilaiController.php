@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\View;
 
 class NilaiController extends Controller
 {
@@ -36,21 +37,16 @@ class NilaiController extends Controller
                     ->with('error', 'Anda tidak terdaftar sebagai guru.');
             }
 
-            // =============================================
-            // 🔥 AMBIL KELAS: Prioritas dari jadwal, fallback ke semua kelas
-            // =============================================
-            $kelas = Kelas::whereHas('jadwal', function($q) use ($guru) {
+            // Ambil kelas: prioritas dari jadwal, fallback ke semua kelas
+            $kelas = Kelas::whereHas('jadwal', function ($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->orderBy('nama_kelas')->get();
 
-            // Fallback: kalau guru belum punya jadwal, ambil semua kelas
             if ($kelas->isEmpty()) {
                 $kelas = Kelas::orderBy('nama_kelas')->get();
             }
 
-            // =============================================
-            // 🔥 AMBIL MAPEL: Prioritas dari jadwal, fallback ke semua mapel
-            // =============================================
+            // Ambil mapel: prioritas dari jadwal, fallback ke semua mapel
             $mapelIds = DB::table('jadwal')
                 ->where('guru_id', $guru->id)
                 ->whereNull('deleted_at')
@@ -59,21 +55,18 @@ class NilaiController extends Controller
 
             $mapel = Mapel::whereIn('id', $mapelIds)->orderBy('nama_mapel')->get();
 
-            // Fallback: kalau guru belum punya mapel, ambil semua mapel
             if ($mapel->isEmpty()) {
                 $mapel = Mapel::orderBy('nama_mapel')->get();
             }
 
-            // =============================================
-            // 🔥 STATISTIK: Hitung dari semua nilai (draft + published)
-            // =============================================
+            // Statistik nilai
             $statistik = [];
             foreach ($kelas as $k) {
                 $statistik[$k->id] = [];
                 foreach ($mapel as $m) {
                     $nilai = Nilai::where('kelas_id', $k->id)
-                                  ->where('mapel_id', $m->id)
-                                  ->get();
+                        ->where('mapel_id', $m->id)
+                        ->get();
 
                     $jumlahSiswa = $nilai->count();
                     $rataRata = $jumlahSiswa > 0 ? $nilai->avg('nilai_akhir') : 0;
@@ -91,10 +84,10 @@ class NilaiController extends Controller
             }
 
             $tahunAjaranList = Nilai::where('guru_id', $guru->id)
-                                    ->distinct()
-                                    ->pluck('tahun_ajaran')
-                                    ->filter()
-                                    ->toArray();
+                ->distinct()
+                ->pluck('tahun_ajaran')
+                ->filter()
+                ->toArray();
 
             if (empty($tahunAjaranList)) {
                 $tahunAjaranList = [date('Y') . '/' . (date('Y') + 1)];
@@ -140,16 +133,12 @@ class NilaiController extends Controller
                     ->with('error', 'Data guru tidak ditemukan.');
             }
 
-            // =============================================
-            // 🔥 AUTO-PILIH KELAS & MAPEL
-            // Prioritas: request → session → pertama dari DB
-            // =============================================
+            // Auto-pilih kelas & mapel
             $kelasId = $request->kelas_id ?? session('nilai_kelas_id');
             $mapelId = $request->mapel_id ?? session('nilai_mapel_id');
 
-            // Auto-pilih kelas pertama kalau belum ada
             if (!$kelasId) {
-                $kelasPertama = Kelas::whereHas('jadwal', function($q) use ($guru) {
+                $kelasPertama = Kelas::whereHas('jadwal', function ($q) use ($guru) {
                     $q->where('guru_id', $guru->id);
                 })->first();
 
@@ -160,9 +149,8 @@ class NilaiController extends Controller
                 $kelasId = $kelasPertama ? $kelasPertama->id : null;
             }
 
-            // Auto-pilih mapel pertama kalau belum ada
             if (!$mapelId) {
-                $mapelPertama = Mapel::whereHas('jadwal', function($q) use ($guru) {
+                $mapelPertama = Mapel::whereHas('jadwal', function ($q) use ($guru) {
                     $q->where('guru_id', $guru->id);
                 })->first();
 
@@ -173,22 +161,19 @@ class NilaiController extends Controller
                 $mapelId = $mapelPertama ? $mapelPertama->id : null;
             }
 
-            // Simpan ke session
             session(['nilai_kelas_id' => $kelasId, 'nilai_mapel_id' => $mapelId]);
 
-            // Kalau masih kosong, redirect ke index dengan info
             if (!$kelasId || !$mapelId) {
                 return redirect()->route('guru.nilai.index')
-                    ->with('info', 'Belum ada data kelas atau mata pelajaran. Silakan hubungi administrator untuk menambah data.');
+                    ->with('info', 'Belum ada data kelas atau mata pelajaran. Silakan hubungi administrator.');
             }
 
-            // Cek otorisasi: guru mengajar mapel ini di kelas ini
+            // Cek otorisasi
             $isAuthorized = Jadwal::where('guru_id', $guru->id)
-                                  ->where('kelas_id', $kelasId)
-                                  ->where('mata_pelajaran', $mapelId)
-                                  ->exists();
+                ->where('kelas_id', $kelasId)
+                ->where('mata_pelajaran', $mapelId)
+                ->exists();
 
-            // Kalau tidak ada jadwal sama sekali, izinkan (fallback mode)
             $hasAnyJadwal = Jadwal::where('guru_id', $guru->id)->exists();
 
             if (!$isAuthorized && $hasAnyJadwal) {
@@ -197,10 +182,10 @@ class NilaiController extends Controller
             }
 
             $siswa = Siswa::where('kelas_id', $kelasId)
-                          ->where('status', 'aktif')
-                          ->with('user')
-                          ->orderBy('nama')
-                          ->get();
+                ->where('status', 'aktif')
+                ->with('user')
+                ->orderBy('nama')
+                ->get();
 
             if ($siswa->isEmpty()) {
                 return redirect()->route('guru.nilai.index')
@@ -221,11 +206,11 @@ class NilaiController extends Controller
             // Ambil nilai yang sudah ada
             foreach ($siswa as $s) {
                 $s->nilai = Nilai::where('siswa_id', $s->id)
-                                 ->where('mapel_id', $mapelId)
-                                 ->where('guru_id', $guru->id)
-                                 ->where('tahun_ajaran', $tahunAjaran)
-                                 ->where('semester', $semester)
-                                 ->first();
+                    ->where('mapel_id', $mapelId)
+                    ->where('guru_id', $guru->id)
+                    ->where('tahun_ajaran', $tahunAjaran)
+                    ->where('semester', $semester)
+                    ->first();
             }
 
             return view('guru.nilai.input', compact(
@@ -366,7 +351,7 @@ class NilaiController extends Controller
 
     /**
      * =============================================
-     * FUNGSI RAPORT SISWA
+     * RAPORT SISWA
      * =============================================
      */
 
@@ -383,11 +368,10 @@ class NilaiController extends Controller
 
             $semesterList = ['ganjil', 'genap'];
 
-            $kelasDiAjar = Kelas::whereHas('jadwal', function($q) use ($guru) {
+            $kelasDiAjar = Kelas::whereHas('jadwal', function ($q) use ($guru) {
                 $q->where('guru_id', $guru->id);
             })->orderBy('nama_kelas')->get();
 
-            // Fallback: kalau tidak ada jadwal, ambil semua kelas
             if ($kelasDiAjar->isEmpty()) {
                 $kelasDiAjar = Kelas::orderBy('nama_kelas')->get();
             }
@@ -426,12 +410,11 @@ class NilaiController extends Controller
                 ->orderBy('nama')
                 ->get();
 
-            $mapel = Mapel::whereHas('jadwal', function($query) use ($guru, $selectedKelasId) {
+            $mapel = Mapel::whereHas('jadwal', function ($query) use ($guru, $selectedKelasId) {
                 $query->where('guru_id', $guru->id)
-                      ->where('kelas_id', $selectedKelasId);
+                    ->where('kelas_id', $selectedKelasId);
             })->get();
 
-            // Fallback: kalau tidak ada jadwal, ambil semua mapel
             if ($mapel->isEmpty()) {
                 $mapel = Mapel::orderBy('nama_mapel')->get();
             }
@@ -584,6 +567,10 @@ class NilaiController extends Controller
         }
     }
 
+    /**
+     * Cetak raport per siswa
+     * ✅ Fallback: kalau view 'raport-cetak' tidak ada, otomatis pakai 'raport'
+     */
     public function raportCetak($siswaId, Request $request)
     {
         try {
@@ -610,7 +597,7 @@ class NilaiController extends Controller
             $rataRata = $nilaiSiswa->avg('nilai_akhir') ?? 0;
             $predikatKeseluruhan = $this->getPredikat($rataRata);
 
-            return view('guru.nilai.raport-cetak', compact(
+            $data = compact(
                 'siswa',
                 'nilaiSiswa',
                 'rataRata',
@@ -618,10 +605,40 @@ class NilaiController extends Controller
                 'tahunAjaran',
                 'semester',
                 'guru'
-            ));
+            );
+
+            // ✅ Cek view mana yang tersedia
+            if (View::exists('guru.nilai.raport-cetak')) {
+                return view('guru.nilai.raport-cetak', $data);
+            }
+
+            if (View::exists('guru.nilai.raport-cetak.blade.php')) {
+                return view('guru.nilai.raport-cetak', $data);
+            }
+
+            // Fallback: pakai view 'raport' kalau 'raport-cetak' tidak ada
+            Log::warning('View guru.nilai.raport-cetak tidak ditemukan, fallback ke guru.nilai.raport');
+
+            // Kalau view 'raport' butuh banyak variabel, kita buat variabel kosong
+            return view('guru.nilai.raport', array_merge($data, [
+                'kelasDiAjar' => collect(),
+                'mapel' => collect(),
+                'dataNilai' => [],
+                'kelas' => $siswa->kelas,
+                'selectedKelasId' => $siswa->kelas_id,
+                'tahunAjaranList' => [$tahunAjaran],
+                'semesterList' => ['ganjil', 'genap'],
+                'rataRataSiswa' => [],
+            ]));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Siswa tidak ditemukan: ' . $siswaId);
+            return redirect()->route('guru.nilai.raport')
+                ->with('error', 'Siswa tidak ditemukan.');
 
         } catch (\Exception $e) {
             Log::error('Error in raport cetak: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
             return redirect()->route('guru.nilai.raport')
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -656,12 +673,12 @@ class NilaiController extends Controller
             $semester = $request->semester ?? 'ganjil';
 
             $draftCount = Nilai::where('kelas_id', $kelasId)
-                            ->where('mapel_id', $mapelId)
-                            ->where('tahun_ajaran', $tahunAjaran)
-                            ->where('semester', $semester)
-                            ->where('guru_id', $guru->id)
-                            ->where('status', 'draft')
-                            ->count();
+                ->where('mapel_id', $mapelId)
+                ->where('tahun_ajaran', $tahunAjaran)
+                ->where('semester', $semester)
+                ->where('guru_id', $guru->id)
+                ->where('status', 'draft')
+                ->count();
 
             if ($draftCount === 0) {
                 return redirect()->route('guru.nilai.index')
@@ -669,16 +686,16 @@ class NilaiController extends Controller
             }
 
             $updated = Nilai::where('kelas_id', $kelasId)
-                            ->where('mapel_id', $mapelId)
-                            ->where('tahun_ajaran', $tahunAjaran)
-                            ->where('semester', $semester)
-                            ->where('guru_id', $guru->id)
-                            ->where('status', 'draft')
-                            ->update([
-                                'status' => 'published',
-                                'is_rapor' => true,
-                                'updated_at' => now()
-                            ]);
+                ->where('mapel_id', $mapelId)
+                ->where('tahun_ajaran', $tahunAjaran)
+                ->where('semester', $semester)
+                ->where('guru_id', $guru->id)
+                ->where('status', 'draft')
+                ->update([
+                    'status' => 'published',
+                    'is_rapor' => true,
+                    'updated_at' => now()
+                ]);
 
             return redirect()->route('guru.nilai.index')
                 ->with('success', $updated . ' nilai berhasil dipublish ke raport.');
@@ -702,7 +719,7 @@ class NilaiController extends Controller
             $data['nilai_harian_1'] ?? null,
             $data['nilai_harian_2'] ?? null,
             $data['nilai_harian_3'] ?? null
-        ], function($v) {
+        ], function ($v) {
             return $v !== null && $v !== '';
         });
         $rataHarian = count($nilaiHarian) > 0 ? array_sum($nilaiHarian) / count($nilaiHarian) : 0;
@@ -710,7 +727,7 @@ class NilaiController extends Controller
         $nilaiTugas = array_filter([
             $data['nilai_tugas_1'] ?? null,
             $data['nilai_tugas_2'] ?? null
-        ], function($v) {
+        ], function ($v) {
             return $v !== null && $v !== '';
         });
         $rataTugas = count($nilaiTugas) > 0 ? array_sum($nilaiTugas) / count($nilaiTugas) : 0;
@@ -749,10 +766,10 @@ class NilaiController extends Controller
     private function getTahunAjaranList($guruId)
     {
         $list = Nilai::where('guru_id', $guruId)
-                     ->distinct()
-                     ->pluck('tahun_ajaran')
-                     ->filter()
-                     ->toArray();
+            ->distinct()
+            ->pluck('tahun_ajaran')
+            ->filter()
+            ->toArray();
 
         if (empty($list)) {
             $list = [date('Y') . '/' . (date('Y') + 1)];

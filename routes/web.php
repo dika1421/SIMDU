@@ -72,7 +72,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::put('/jurusan/{id}', [ManajemenSekolahController::class, 'jurusanUpdate'])->name('jurusan.update');
         Route::delete('/jurusan/{id}', [ManajemenSekolahController::class, 'jurusanDestroy'])->name('jurusan.destroy');
 
-        // ================== TAHUN AJARAN ==================
+        // TAHUN AJARAN
         Route::get('/tahun-ajaran', [ManajemenSekolahController::class, 'tahunAjaran'])->name('tahun-ajaran');
         Route::post('/tahun-ajaran', [ManajemenSekolahController::class, 'tahunAjaranStore'])->name('tahun-ajaran.store');
         Route::put('/tahun-ajaran/{id}', [ManajemenSekolahController::class, 'tahunAjaranUpdate'])->name('tahun-ajaran.update');
@@ -132,7 +132,7 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
         Route::post('/change-password', [KepalaSekolahProfil::class, 'changePassword'])->name('change-password');
     });
 
-    // ================== PENGATURAN KEPALA SEKOLAH ==================
+    // PENGATURAN KEPALA SEKOLAH
     Route::get('/pengaturan', [KepalaSekolahPengaturan::class, 'index'])->name('pengaturan');
     Route::put('/pengaturan/profil', [KepalaSekolahPengaturan::class, 'updateProfil'])->name('pengaturan.update-profil');
     Route::put('/pengaturan/keamanan', [KepalaSekolahPengaturan::class, 'updateKeamanan'])->name('pengaturan.update-keamanan');
@@ -140,71 +140,51 @@ Route::middleware(['auth', 'check.role:kepala_sekolah'])->prefix('kepala-sekolah
 
 // ================== ADMINISTRASI ==================
 Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->name('administrasi.')->group(function () {
-    // Dashboard
     Route::get('/dashboard', [AdministrasiDashboard::class, 'index'])->name('dashboard');
 
-    // ============================================
-    // Manajemen Jurusan
-    // ============================================
+    // Jurusan
     Route::resource('jurusan', JurusanController::class);
 
-    // ============================================
-    // Manajemen Kelas
-    // ============================================
+    // Kelas
     Route::post('/kelas/import', [KelasController::class, 'import'])->name('kelas.import');
     Route::get('/kelas/download-template', [KelasController::class, 'downloadTemplate'])->name('kelas.download-template');
     Route::get('/kelas/export', [KelasController::class, 'export'])->name('kelas.export');
     Route::get('/kelas/get-kelas-list', [KelasController::class, 'getKelasList'])->name('kelas.get-list');
-
     Route::resource('kelas', KelasController::class);
 
-    // ============================================
-    // Manajemen Mata Pelajaran
-    // ============================================
+    // Mapel
     Route::get('/mapel/get-mapel-list', [MapelController::class, 'getMapelList'])->name('mapel.get-list');
     Route::post('/mapel/import', [MapelController::class, 'import'])->name('mapel.import');
     Route::get('/mapel/download-template', [MapelController::class, 'downloadTemplate'])->name('mapel.download-template');
     Route::get('/mapel/export', [MapelController::class, 'export'])->name('mapel.export');
-
     Route::resource('mapel', MapelController::class);
 
-    // ============================================
-    // Manajemen Siswa
-    // ============================================
+    // Siswa
     Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import');
     Route::get('/siswa/download-template', [SiswaController::class, 'downloadTemplate'])->name('siswa.download-template');
     Route::get('/siswa/export', [SiswaController::class, 'export'])->name('siswa.export');
     Route::get('/siswa/{id}/reset-password', [SiswaController::class, 'resetPassword'])->name('siswa.reset-password');
     Route::post('/siswa/{siswa}/mutasi', [SiswaController::class, 'mutasi'])->name('siswa.mutasi');
-
     Route::resource('siswa', SiswaController::class);
 
-    // ============================================
-    // Manajemen Guru
-    // ============================================
+    // Guru
     Route::post('/guru/import', [AdministrasiGuruController::class, 'import'])->name('guru.import');
     Route::get('/guru/export', [AdministrasiGuruController::class, 'export'])->name('guru.export');
-
     Route::resource('guru', AdministrasiGuruController::class);
 
-    // =============================================
-    // API UNTUK ADMINISTRASI
-    // =============================================
+    // API
     Route::prefix('api')->name('api.')->group(function () {
         Route::get('/guru/search', [ApiGuruController::class, 'search'])->name('guru.search');
         Route::get('/guru/by-nuptk', [ApiGuruController::class, 'getByNuptk'])->name('guru.by-nuptk');
     });
 
-    // =============================================
-    // MANAJEMEN JADWAL
-    // =============================================
+    // Jadwal
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
         Route::get('/create', [JadwalController::class, 'create'])->name('create');
-
         Route::get('/', [JadwalController::class, 'index'])->name('index');
         Route::post('/', [JadwalController::class, 'store'])->name('store');
         Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
@@ -252,47 +232,33 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/card-info', [RfidController::class, 'getCardInfo'])->name('card-info');
     });
 
-    // ============================================
-    // KEUANGAN
-    // ============================================
+    // Keuangan
     Route::prefix('keuangan')->name('keuangan.')->group(function () {
         Route::get('/get-siswa-by-kelas', [KeuanganController::class, 'getSiswaByKelas'])->name('get-siswa-by-kelas');
         Route::get('/cari-siswa', [KeuanganController::class, 'cariSiswa'])->name('cari-siswa');
-
-        // SPP
         Route::get('/spp', [KeuanganController::class, 'sppIndex'])->name('spp');
         Route::get('/spp/create', [KeuanganController::class, 'sppCreate'])->name('spp.create');
         Route::post('/spp', [KeuanganController::class, 'sppStore'])->name('spp.store');
         Route::get('/spp/laporan', [KeuanganController::class, 'sppLaporan'])->name('spp.laporan');
-
-        // Pembayaran Lain
         Route::get('/pembayaran-lain', [KeuanganController::class, 'pembayaranLainIndex'])->name('pembayaran-lain.index');
         Route::get('/pembayaran-lain/create', [KeuanganController::class, 'pembayaranLainCreate'])->name('pembayaran-lain.create');
         Route::post('/pembayaran-lain', [KeuanganController::class, 'pembayaranLainStore'])->name('pembayaran-lain.store');
-
-        // Laporan
         Route::get('/laporan', [KeuanganController::class, 'laporanKeuangan'])->name('laporan');
         Route::get('/laporan/export', [KeuanganController::class, 'exportLaporan'])->name('laporan.export');
-
-        // Dinamis
         Route::get('/spp/{id}/edit', [KeuanganController::class, 'sppEdit'])->name('spp.edit');
         Route::put('/spp/{id}', [KeuanganController::class, 'sppUpdate'])->name('spp.update');
         Route::delete('/spp/{id}', [KeuanganController::class, 'sppDestroy'])->name('spp.destroy');
-
         Route::get('/pembayaran-lain/{id}/edit', [KeuanganController::class, 'pembayaranLainEdit'])->name('pembayaran-lain.edit');
         Route::put('/pembayaran-lain/{id}', [KeuanganController::class, 'pembayaranLainUpdate'])->name('pembayaran-lain.update');
         Route::delete('/pembayaran-lain/{id}', [KeuanganController::class, 'pembayaranLainDestroy'])->name('pembayaran-lain.destroy');
     });
 
-    // ============================================
     // Arsip
-    // ============================================
     Route::prefix('arsip')->name('arsip.')->group(function () {
         Route::get('/', [ArsipController::class, 'index'])->name('index');
         Route::get('/create', [ArsipController::class, 'create'])->name('create');
         Route::post('/', [ArsipController::class, 'store'])->name('store');
         Route::get('/trash', [ArsipController::class, 'trash'])->name('trash');
-
         Route::get('/{id}', [ArsipController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [ArsipController::class, 'edit'])->name('edit');
         Route::put('/{id}', [ArsipController::class, 'update'])->name('update');
@@ -302,9 +268,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}/force-delete', [ArsipController::class, 'forceDelete'])->name('force-delete');
     });
 
-    // ============================================
     // Komunikasi
-    // ============================================
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [AdministrasiKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [AdministrasiKomunikasi::class, 'create'])->name('create');
@@ -312,19 +276,15 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/broadcast', [AdministrasiKomunikasi::class, 'broadcastForm'])->name('broadcast');
         Route::post('/broadcast/send', [AdministrasiKomunikasi::class, 'sendBroadcast'])->name('send-broadcast');
         Route::get('/unread-count', [AdministrasiKomunikasi::class, 'getUnreadCount'])->name('unread-count');
-
         Route::get('/{id}', [AdministrasiKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [AdministrasiKomunikasi::class, 'destroy'])->name('destroy');
     });
 
-    // ============================================
     // Galeri
-    // ============================================
     Route::prefix('galeri')->name('galeri.')->group(function () {
         Route::get('/', [GaleriController::class, 'index'])->name('index');
         Route::get('/create', [GaleriController::class, 'create'])->name('create');
         Route::post('/', [GaleriController::class, 'store'])->name('store');
-
         Route::get('/{id}', [GaleriController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [GaleriController::class, 'edit'])->name('edit');
         Route::put('/{id}', [GaleriController::class, 'update'])->name('update');
@@ -332,9 +292,7 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/{id}/status', [GaleriController::class, 'updateStatus'])->name('status');
     });
 
-    // =============================================
-    // MANAJEMEN ROLE & PERMISSION
-    // =============================================
+    // Role & Permission
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/create', [RoleController::class, 'create'])->name('create');
@@ -353,18 +311,14 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::delete('/{id}', [PermissionController::class, 'destroy'])->name('destroy');
     });
 
-    // =============================================
-    // MANAJEMEN USER ROLE (Multi-Role)
-    // =============================================
+    // User Roles (Multi-Role)
     Route::prefix('user-roles')->name('user-roles.')->group(function () {
         Route::get('/', [UserRoleController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [UserRoleController::class, 'edit'])->name('edit');
         Route::put('/{id}', [UserRoleController::class, 'update'])->name('update');
     });
 
-    // =============================================
-    // MANAJEMEN HAK AKSES PER USER
-    // =============================================
+    // Hak Akses per User
     Route::prefix('user-permission')->name('user-permission.')->group(function () {
         Route::get('/', [UserPermissionController::class, 'index'])->name('index');
         Route::get('/{id}/edit', [UserPermissionController::class, 'edit'])->name('edit');
@@ -380,19 +334,12 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::post('/change-password', [AdministrasiDashboard::class, 'changePassword'])->name('change-password');
     });
 
-    // =============================================
-    // ✅ PENGATURAN ADMINISTRASI (UPDATED)
-    // =============================================
+    // Pengaturan Administrasi
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
-        // Halaman utama pengaturan
         Route::get('/', [AdministrasiPengaturan::class, 'index'])->name('index');
-
-        // Update tiap tab
         Route::put('/umum', [AdministrasiPengaturan::class, 'updateUmum'])->name('update-umum');
         Route::put('/notifikasi', [AdministrasiPengaturan::class, 'updateNotifikasi'])->name('update-notifikasi');
         Route::put('/keamanan', [AdministrasiPengaturan::class, 'updateKeamanan'])->name('update-keamanan');
-
-        // Backup database
         Route::post('/backup', [AdministrasiPengaturan::class, 'backup'])->name('backup');
     });
 });
@@ -401,17 +348,27 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
 Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::get('/dashboard', [GuruDashboard::class, 'index'])->name('dashboard');
 
+    // =============================================
+    // NILAI & RAPORT (GURU)
+    // Route statis HARUS di atas route dinamis
+    // =============================================
     Route::prefix('nilai')->name('nilai.')->group(function () {
+        // Route statis
         Route::get('/', [NilaiController::class, 'index'])->name('index');
         Route::get('/input', [NilaiController::class, 'input'])->name('input');
         Route::post('/save', [NilaiController::class, 'save'])->name('save');
         Route::post('/publish', [NilaiController::class, 'publish'])->name('publish');
         Route::get('/raport', [NilaiController::class, 'raport'])->name('raport');
-        Route::get('/raport/detail/{siswaId}', [NilaiController::class, 'raportDetail'])->name('raport.detail');
+
+        // Route raport detail & cetak
         Route::get('/raport/cetak/{siswaId}', [NilaiController::class, 'raportCetak'])->name('raport.cetak');
+        Route::get('/raport/detail/{siswaId}', [NilaiController::class, 'raportDetail'])->name('raport.detail');
+
+        // Export
         Route::get('/export/{kelas_id?}', [NilaiController::class, 'export'])->name('export');
     });
 
+    // Absensi Siswa
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/', [AbsensiSiswaController::class, 'index'])->name('index');
         Route::get('/scan', [AbsensiSiswaController::class, 'scan'])->name('scan');
@@ -425,19 +382,20 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::get('/get-mata-pelajaran', [AbsensiSiswaController::class, 'getMataPelajaranByKelas'])->name('get-mata-pelajaran');
     });
 
+    // Komunikasi
     Route::prefix('komunikasi')->name('komunikasi.')->group(function () {
         Route::get('/', [GuruKomunikasi::class, 'index'])->name('index');
         Route::get('/create', [GuruKomunikasi::class, 'create'])->name('create');
         Route::post('/', [GuruKomunikasi::class, 'store'])->name('store');
         Route::get('/mark-all-read', [GuruKomunikasi::class, 'markAllAsRead'])->name('mark-all-read');
         Route::get('/unread-count', [GuruKomunikasi::class, 'getUnreadCount'])->name('unread-count');
-
         Route::get('/{id}', [GuruKomunikasi::class, 'show'])->name('show');
         Route::delete('/{id}', [GuruKomunikasi::class, 'destroy'])->name('destroy');
         Route::post('/{id}/mark-read', [GuruKomunikasi::class, 'markAsRead'])->name('mark-read');
         Route::post('/{id}/reply', [GuruKomunikasi::class, 'reply'])->name('reply');
     });
 
+    // Kalender
     Route::prefix('kalender')->name('kalender.')->group(function () {
         Route::get('/', [KalenderController::class, 'index'])->name('index');
         Route::get('/events', [KalenderController::class, 'getEvents'])->name('events');
@@ -446,12 +404,14 @@ Route::middleware(['auth', 'check.role:guru'])->prefix('guru')->name('guru.')->g
         Route::delete('/event/{id}', [KalenderController::class, 'destroyEvent'])->name('event.destroy');
     });
 
+    // Kinerja
     Route::prefix('kinerja')->name('kinerja.')->group(function () {
         Route::get('/', [KinerjaController::class, 'index'])->name('index');
         Route::get('/detail/{id}', [KinerjaController::class, 'detail'])->name('detail');
         Route::get('/export', [KinerjaController::class, 'export'])->name('export');
     });
 
+    // Profil
     Route::prefix('profil')->name('profil.')->group(function () {
         Route::get('/', [GuruDashboard::class, 'profil'])->name('index');
         Route::get('/edit', [GuruDashboard::class, 'editProfil'])->name('edit');
