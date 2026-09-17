@@ -12,6 +12,7 @@ use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class JadwalController extends Controller
 {
@@ -21,7 +22,6 @@ class JadwalController extends Controller
     private function getDaftarMapel()
     {
         $mapelArray = [
-            // Kelompok A (Umum/Wajib)
             ['id' => 1, 'nama' => 'Pendidikan Agama dan Budi Pekerti (PAI)', 'kode' => 'PAI', 'kelompok' => 'A'],
             ['id' => 2, 'nama' => 'Praktik Ibadah (PAI Mulok)', 'kode' => 'PRAK-IBADAH', 'kelompok' => 'A'],
             ['id' => 3, 'nama' => 'PPKn', 'kode' => 'PPKN', 'kelompok' => 'A'],
@@ -243,7 +243,6 @@ class JadwalController extends Controller
                 return back()->with('error', 'Jam selesai harus lebih besar dari jam mulai')->withInput();
             }
 
-            // Cek bentrok ruangan
             $bentrok = Jadwal::where('hari', $request->hari)
                 ->where('ruangan', $request->ruang)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -258,7 +257,6 @@ class JadwalController extends Controller
                 return back()->with('error', 'Jadwal bentrok! Ruangan sudah digunakan pada jam tersebut.')->withInput();
             }
 
-            // Cek bentrok guru
             $guruBentrok = Jadwal::where('hari', $request->hari)
                 ->where('guru_id', $request->guru_id)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -273,7 +271,6 @@ class JadwalController extends Controller
                 return back()->with('error', 'Jadwal bentrok! Guru sudah mengajar pada jam tersebut.')->withInput();
             }
 
-            // Cek bentrok kelas
             $kelasBentrok = Jadwal::where('hari', $request->hari)
                 ->where('kelas_id', $request->kelas_id)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -288,7 +285,6 @@ class JadwalController extends Controller
                 return back()->with('error', 'Jadwal bentrok! Kelas sudah memiliki jadwal pada jam tersebut.')->withInput();
             }
 
-            // Buat jadwal
             $jadwal = Jadwal::create([
                 'kelas_id' => $request->kelas_id,
                 'mapel_id' => $request->mapel_id,
@@ -425,7 +421,6 @@ class JadwalController extends Controller
                 $semester = ($bulan >= 1 && $bulan <= 6) ? 'genap' : 'ganjil';
             }
 
-            // Cek bentrok ruangan
             $bentrok = Jadwal::where('hari', $request->hari)
                 ->where('ruangan', $request->ruang)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -441,7 +436,6 @@ class JadwalController extends Controller
                 return back()->with('error', 'Jadwal bentrok! Ruangan sudah digunakan pada jam tersebut.')->withInput();
             }
 
-            // Cek bentrok guru
             $guruBentrok = Jadwal::where('hari', $request->hari)
                 ->where('guru_id', $request->guru_id)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -542,7 +536,7 @@ class JadwalController extends Controller
     }
 
     /**
-     * Export jadwal (untuk fitur export)
+     * Export jadwal
      */
     public function export(Request $request)
     {
@@ -550,7 +544,7 @@ class JadwalController extends Controller
     }
 
     /**
-     * Copy jadwal dari satu kelas ke kelas lain
+     * Copy jadwal
      */
     public function copy(Request $request)
     {
@@ -576,7 +570,6 @@ class JadwalController extends Controller
             $hasConflict = false;
             $message = '';
 
-            // Cek bentrok kelas
             $queryKelas = Jadwal::where('hari', $hari)
                 ->where('kelas_id', $kelasId)
                 ->where('tahun_ajaran', $tahunAjaran)
@@ -591,7 +584,6 @@ class JadwalController extends Controller
                 $message = 'Kelas sudah memiliki jadwal di waktu yang sama.';
             }
 
-            // Cek bentrok guru
             if (!$hasConflict && $guruId) {
                 $queryGuru = Jadwal::where('hari', $hari)
                     ->where('guru_id', $guruId)
@@ -608,7 +600,6 @@ class JadwalController extends Controller
                 }
             }
 
-            // Cek bentrok ruangan
             if (!$hasConflict && $ruang) {
                 $queryRuang = Jadwal::where('hari', $hari)
                     ->where('ruangan', $ruang)
@@ -634,7 +625,8 @@ class JadwalController extends Controller
 
     /**
      * ============================================================
-     * 🔥 IMPORT JADWAL DARI CSV/EXCEL
+     * 🔥 IMPORT JADWAL DARI CSV (VERSI FIXED)
+     * Auto-detect kolom yang ada di tabel
      * ============================================================
      */
     public function import(Request $request)
@@ -649,21 +641,31 @@ class JadwalController extends Controller
             $file = $request->file('file');
             $ext = strtolower($file->getClientOriginalExtension());
 
-            // Baca file CSV
+            // Baca CSV
             if (in_array($ext, ['csv', 'txt'])) {
                 $rows = array_map('str_getcsv', file($file->getRealPath()));
             } else {
-                // Untuk Excel, butuh package maatwebsite/excel
-                return back()->with('error', 'Untuk file Excel (.xlsx/.xls), silakan Save As → CSV terlebih dahulu, lalu upload CSV-nya.');
+                return back()->with('error', 'Untuk file Excel (.xlsx/.xls), silakan Save As → CSV terlebih dahulu.');
             }
 
             if (empty($rows) || count($rows) < 2) {
                 return back()->with('error', 'File kosong atau tidak ada data.');
             }
 
-            // Ambil header
+            // Header
             $header = array_map('strtolower', array_map('trim', $rows[0]));
             array_shift($rows);
+
+            // Deteksi nama kolom di tabel
+            $kolomMapel = Schema::getColumnListing('mata_pelajarans');
+            $kolomGuru  = Schema::getColumnListing('gurus');
+            $kolomKelas = Schema::getColumnListing('kelas');
+
+            Log::info('=== IMPORT JADWAL DIMULAI ===');
+            Log::info('Header CSV: ' . json_encode($header));
+            Log::info('Kolom mapel: ' . json_encode($kolomMapel));
+            Log::info('Kolom guru: ' . json_encode($kolomGuru));
+            Log::info('Kolom kelas: ' . json_encode($kolomKelas));
 
             $imported = 0;
             $skipped = 0;
@@ -679,31 +681,54 @@ class JadwalController extends Controller
 
                 $data = array_combine($header, array_pad($row, count($header), null));
 
+                // Trim semua value
+                $data = array_map(function ($v) {
+                    return is_string($v) ? trim($v) : $v;
+                }, $data);
+
+                Log::info("Baris {$rowNum}:", $data);
+
                 // Validasi field wajib
                 if (empty($data['hari']) || empty($data['jam_mulai']) || empty($data['jam_selesai'])) {
                     $errors[] = "Baris {$rowNum}: hari/jam_mulai/jam_selesai wajib diisi";
                     $skipped++;
+                    Log::warning("SKIP Baris {$rowNum}: field wajib kosong");
                     continue;
                 }
 
-                // Cari kelas by nama
+                // ==========================================
+                // CARI KELAS
+                // ==========================================
                 $kelasId = null;
                 if (!empty($data['kelas'])) {
-                    $kelas = Kelas::where('nama_kelas', $data['kelas'])
-                        ->orWhere('nama', $data['kelas'])
-                        ->first();
+                    $q = Kelas::query();
+                    if (in_array('nama_kelas', $kolomKelas)) {
+                        $q->where('nama_kelas', $data['kelas']);
+                    }
+                    if (in_array('nama', $kolomKelas)) {
+                        $q->orWhere('nama', $data['kelas']);
+                    }
+                    $kelas = $q->first();
                     $kelasId = $kelas->id ?? null;
+                    Log::info("Kelas '{$data['kelas']}' → " . ($kelasId ?? 'NULL'));
                 }
 
-                // Cari mapel by nama
+                // ==========================================
+                // CARI MAPEL
+                // ==========================================
                 $mapelId = null;
                 if (!empty($data['mata_pelajaran'])) {
-                    $mapel = Mapel::where('nama_mapel', $data['mata_pelajaran'])
-                        ->orWhere('nama', $data['mata_pelajaran'])
-                        ->first();
+                    $q = Mapel::query();
+                    if (in_array('nama_mapel', $kolomMapel)) {
+                        $q->where('nama_mapel', $data['mata_pelajaran']);
+                    }
+                    if (in_array('nama', $kolomMapel)) {
+                        $q->orWhere('nama', $data['mata_pelajaran']);
+                    }
+                    $mapel = $q->first();
                     $mapelId = $mapel->id ?? null;
 
-                    // Fallback: cari di daftar mapel hardcoded
+                    // Fallback ke daftar hardcoded
                     if (!$mapelId) {
                         $daftar = $this->getDaftarMapel();
                         $found = $daftar->firstWhere('nama', $data['mata_pelajaran']);
@@ -711,21 +736,32 @@ class JadwalController extends Controller
                             $mapelId = $found->id;
                         }
                     }
+                    Log::info("Mapel '{$data['mata_pelajaran']}' → " . ($mapelId ?? 'NULL'));
                 }
 
-                // Cari guru by nama
+                // ==========================================
+                // CARI GURU
+                // ==========================================
                 $guruId = null;
                 if (!empty($data['guru'])) {
-                    $guru = Guru::where('nama_lengkap', $data['guru'])
-                        ->orWhere('nama', $data['guru'])
-                        ->orWhereHas('user', function($q) use ($data) {
-                            $q->where('name', $data['guru']);
-                        })
-                        ->first();
+                    $q = Guru::query();
+                    if (in_array('nama_lengkap', $kolomGuru)) {
+                        $q->where('nama_lengkap', $data['guru']);
+                    }
+                    if (in_array('nama', $kolomGuru)) {
+                        $q->orWhere('nama', $data['guru']);
+                    }
+                    $q->orWhereHas('user', function ($u) use ($data) {
+                        $u->where('name', $data['guru']);
+                    });
+                    $guru = $q->first();
                     $guruId = $guru->id ?? null;
+                    Log::info("Guru '{$data['guru']}' → " . ($guruId ?? 'NULL'));
                 }
 
-                // Skip kalau kelas/mapel/guru tidak ditemukan
+                // ==========================================
+                // SKIP kalau ada yang tidak ditemukan
+                // ==========================================
                 if (!$kelasId || !$mapelId || !$guruId) {
                     $missed = [];
                     if (!$kelasId) $missed[] = "kelas '{$data['kelas']}'";
@@ -733,10 +769,13 @@ class JadwalController extends Controller
                     if (!$guruId) $missed[] = "guru '{$data['guru']}'";
                     $errors[] = "Baris {$rowNum}: " . implode(', ', $missed) . " tidak ditemukan";
                     $skipped++;
+                    Log::warning("SKIP Baris {$rowNum}: " . implode(', ', $missed));
                     continue;
                 }
 
-                // Insert atau update
+                // ==========================================
+                // INSERT / UPDATE
+                // ==========================================
                 Jadwal::updateOrCreate(
                     [
                         'hari' => strtolower($data['hari']),
@@ -755,9 +794,12 @@ class JadwalController extends Controller
                 );
 
                 $imported++;
+                Log::info("✅ Baris {$rowNum} BERHASIL di-import");
             }
 
             DB::commit();
+
+            Log::info("=== IMPORT SELESAI: {$imported} berhasil, {$skipped} di-skip ===");
 
             $message = "✅ {$imported} jadwal berhasil diimport.";
             if ($skipped > 0) {
@@ -771,6 +813,7 @@ class JadwalController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Import jadwal error: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
             return back()->with('error', 'Gagal import: ' . $e->getMessage());
         }
     }
@@ -795,7 +838,7 @@ class JadwalController extends Controller
         ];
 
         $samples = [
-            ['Senin', '07:00', '08:30', 'X A PEMASARAN', 'Matematika', 'Aceng Ma\'sum, S.Pd', 'R-101', '2025/2026', 'ganjil'],
+            ['Senin', '07:00', '08:30', 'X A PEMASARAN', 'Matematika', "Aceng Ma'sum, S.Pd", 'R-101', '2025/2026', 'ganjil'],
             ['Senin', '08:30', '10:00', 'X A PEMASARAN', 'Bahasa Indonesia', 'Siti Hamimah, S.Ag', 'R-101', '2025/2026', 'ganjil'],
             ['Selasa', '07:00', '08:30', 'X B PEMASARAN', 'Bahasa Inggris', 'Abdul Azis, S.Pd', 'R-102', '2025/2026', 'ganjil'],
             ['Selasa', '08:30', '10:00', 'X B PEMASARAN', 'Penjaskes', 'Krisdianarti', 'Lapangan', '2025/2026', 'ganjil'],
@@ -810,8 +853,6 @@ class JadwalController extends Controller
         header('Expires: 0');
 
         $output = fopen('php://output', 'w');
-
-        // Tambah BOM supaya Excel bisa baca UTF-8
         fputs($output, "\xEF\xBB\xBF");
 
         fputcsv($output, $headers);
