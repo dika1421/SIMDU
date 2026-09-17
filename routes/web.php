@@ -178,15 +178,27 @@ Route::middleware(['auth', 'check.role:administrasi'])->prefix('administrasi')->
         Route::get('/guru/by-nuptk', [ApiGuruController::class, 'getByNuptk'])->name('guru.by-nuptk');
     });
 
-    // Jadwal
+    // =============================================
+    // JADWAL PELAJARAN
+    // ⚠️ Route statis HARUS di atas route dinamis /{id}
+    // =============================================
     Route::prefix('jadwal')->name('jadwal.')->group(function () {
+        // Route statis (tanpa parameter)
         Route::get('/kalender', [JadwalController::class, 'kalender'])->name('kalender');
         Route::post('/copy', [JadwalController::class, 'copy'])->name('copy');
         Route::post('/check-conflict', [JadwalController::class, 'checkConflict'])->name('check-conflict');
         Route::get('/export', [JadwalController::class, 'export'])->name('export');
         Route::get('/create', [JadwalController::class, 'create'])->name('create');
+
+        // ✅ BARU: Import & Download Template
+        Route::post('/import', [JadwalController::class, 'import'])->name('import');
+        Route::get('/download-template', [JadwalController::class, 'downloadTemplate'])->name('download-template');
+
+        // Route utama
         Route::get('/', [JadwalController::class, 'index'])->name('index');
         Route::post('/', [JadwalController::class, 'store'])->name('store');
+
+        // Route dinamis (dengan parameter) — TARUH PALING BAWAH
         Route::get('/{id}', [JadwalController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [JadwalController::class, 'edit'])->name('edit');
         Route::put('/{id}', [JadwalController::class, 'update'])->name('update');

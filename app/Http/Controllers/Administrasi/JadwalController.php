@@ -631,4 +631,195 @@ class JadwalController extends Controller
             return response()->json(['hasConflict' => false, 'message' => 'Error checking conflict']);
         }
     }
+
+    /**
+     * ============================================================
+     * 🔥 IMPORT JADWAL DARI CSV/EXCEL
+     * ============================================================
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $file = $request->file('file');
+            $ext = strtolower($file->getClientOriginalExtension());
+
+            // Baca file CSV
+            if (in_array($ext, ['csv', 'txt'])) {
+                $rows = array_map('str_getcsv', file($file->getRealPath()));
+            } else {
+                // Untuk Excel, butuh package maatwebsite/excel
+                return back()->with('error', 'Untuk file Excel (.xlsx/.xls), silakan Save As → CSV terlebih dahulu, lalu upload CSV-nya.');
+            }
+
+            if (empty($rows) || count($rows) < 2) {
+                return back()->with('error', 'File kosong atau tidak ada data.');
+            }
+
+            // Ambil header
+            $header = array_map('strtolower', array_map('trim', $rows[0]));
+            array_shift($rows);
+
+            $imported = 0;
+            $skipped = 0;
+            $errors = [];
+
+            foreach ($rows as $index => $row) {
+                $rowNum = $index + 2;
+
+                // Skip baris kosong
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                $data = array_combine($header, array_pad($row, count($header), null));
+
+                // Validasi field wajib
+                if (empty($data['hari']) || empty($data['jam_mulai']) || empty($data['jam_selesai'])) {
+                    $errors[] = "Baris {$rowNum}: hari/jam_mulai/jam_selesai wajib diisi";
+                    $skipped++;
+                    continue;
+                }
+
+                // Cari kelas by nama
+                $kelasId = null;
+                if (!empty($data['kelas'])) {
+                    $kelas = Kelas::where('nama_kelas', $data['kelas'])
+                        ->orWhere('nama', $data['kelas'])
+                        ->first();
+                    $kelasId = $kelas->id ?? null;
+                }
+
+                // Cari mapel by nama
+                $mapelId = null;
+                if (!empty($data['mata_pelajaran'])) {
+                    $mapel = Mapel::where('nama_mapel', $data['mata_pelajaran'])
+                        ->orWhere('nama', $data['mata_pelajaran'])
+                        ->first();
+                    $mapelId = $mapel->id ?? null;
+
+                    // Fallback: cari di daftar mapel hardcoded
+                    if (!$mapelId) {
+                        $daftar = $this->getDaftarMapel();
+                        $found = $daftar->firstWhere('nama', $data['mata_pelajaran']);
+                        if ($found) {
+                            $mapelId = $found->id;
+                        }
+                    }
+                }
+
+                // Cari guru by nama
+                $guruId = null;
+                if (!empty($data['guru'])) {
+                    $guru = Guru::where('nama_lengkap', $data['guru'])
+                        ->orWhere('nama', $data['guru'])
+                        ->orWhereHas('user', function($q) use ($data) {
+                            $q->where('name', $data['guru']);
+                        })
+                        ->first();
+                    $guruId = $guru->id ?? null;
+                }
+
+                // Skip kalau kelas/mapel/guru tidak ditemukan
+                if (!$kelasId || !$mapelId || !$guruId) {
+                    $missed = [];
+                    if (!$kelasId) $missed[] = "kelas '{$data['kelas']}'";
+                    if (!$mapelId) $missed[] = "mapel '{$data['mata_pelajaran']}'";
+                    if (!$guruId) $missed[] = "guru '{$data['guru']}'";
+                    $errors[] = "Baris {$rowNum}: " . implode(', ', $missed) . " tidak ditemukan";
+                    $skipped++;
+                    continue;
+                }
+
+                // Insert atau update
+                Jadwal::updateOrCreate(
+                    [
+                        'hari' => strtolower($data['hari']),
+                        'jam_mulai' => $data['jam_mulai'],
+                        'kelas_id' => $kelasId,
+                        'guru_id' => $guruId,
+                        'tahun_ajaran' => $data['tahun_ajaran'] ?? date('Y') . '/' . (date('Y') + 1),
+                        'semester' => strtolower($data['semester'] ?? 'ganjil'),
+                    ],
+                    [
+                        'jam_selesai' => $data['jam_selesai'],
+                        'mapel_id' => $mapelId,
+                        'ruangan' => $data['ruangan'] ?? null,
+                        'status' => 'aktif',
+                    ]
+                );
+
+                $imported++;
+            }
+
+            DB::commit();
+
+            $message = "✅ {$imported} jadwal berhasil diimport.";
+            if ($skipped > 0) {
+                $message .= " ⚠️ {$skipped} baris di-skip.";
+            }
+
+            return redirect()->route('administrasi.jadwal.index')
+                ->with('success', $message)
+                ->with('import_errors', $errors);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Import jadwal error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal import: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ============================================================
+     * 🔥 DOWNLOAD TEMPLATE IMPORT JADWAL
+     * ============================================================
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'hari',
+            'jam_mulai',
+            'jam_selesai',
+            'kelas',
+            'mata_pelajaran',
+            'guru',
+            'ruangan',
+            'tahun_ajaran',
+            'semester',
+        ];
+
+        $samples = [
+            ['Senin', '07:00', '08:30', 'X A PEMASARAN', 'Matematika', 'Aceng Ma\'sum, S.Pd', 'R-101', '2025/2026', 'ganjil'],
+            ['Senin', '08:30', '10:00', 'X A PEMASARAN', 'Bahasa Indonesia', 'Siti Hamimah, S.Ag', 'R-101', '2025/2026', 'ganjil'],
+            ['Selasa', '07:00', '08:30', 'X B PEMASARAN', 'Bahasa Inggris', 'Abdul Azis, S.Pd', 'R-102', '2025/2026', 'ganjil'],
+            ['Selasa', '08:30', '10:00', 'X B PEMASARAN', 'Penjaskes', 'Krisdianarti', 'Lapangan', '2025/2026', 'ganjil'],
+            ['Rabu', '07:00', '08:30', 'X A PEMASARAN', 'Pendidikan Agama', 'Drs. H. Khadri Imbali, MA', 'R-101', '2025/2026', 'ganjil'],
+        ];
+
+        $filename = 'template-import-jadwal-' . date('Y-m-d') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        // Tambah BOM supaya Excel bisa baca UTF-8
+        fputs($output, "\xEF\xBB\xBF");
+
+        fputcsv($output, $headers);
+        foreach ($samples as $row) {
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        exit;
+    }
 }

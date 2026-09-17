@@ -56,6 +56,7 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        cursor: pointer;
     }
     .btn-glass:hover {
         background: rgba(255,255,255,0.35);
@@ -333,6 +334,56 @@
         color: #dc2626;
     }
 
+    /* ========== MODAL IMPORT ========== */
+    .modal-import .modal-content {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-import .modal-header {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #fff;
+        border: none;
+        padding: 20px 24px;
+    }
+    .modal-import .modal-body { padding: 26px; }
+    .modal-import .modal-footer { border: none; padding: 16px 24px 22px; }
+    .upload-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s;
+        background: #f8fafc;
+    }
+    .upload-zone:hover {
+        border-color: #10b981;
+        background: #ecfdf5;
+    }
+    .upload-zone.dragover {
+        border-color: #10b981;
+        background: #d1fae5;
+    }
+    .upload-zone .upload-icon {
+        font-size: 2.5rem;
+        color: #10b981;
+        margin-bottom: 10px;
+    }
+    .file-info {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-top: 12px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+    .file-info.show { display: flex; }
+    .file-info i { color: #059669; font-size: 1.2rem; }
+
     @media (max-width: 768px) {
         .page-header-jadwal { padding: 18px; }
         .page-header-jadwal h1 { font-size: 1.15rem; }
@@ -365,6 +416,9 @@
             <a href="{{ route('administrasi.jadwal.kalender') }}" class="btn-glass">
                 <i class="fas fa-calendar-week"></i> Kalender
             </a>
+            <button type="button" class="btn-glass" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-import"></i> Import
+            </button>
             <a href="{{ route('administrasi.jadwal.create') }}" class="btn-glass">
                 <i class="fas fa-plus"></i> Tambah Jadwal
             </a>
@@ -382,6 +436,12 @@
 @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
         <i class="fas fa-exclamation-triangle me-2"></i> {!! session('error') !!}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+@if(session('warning'))
+    <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> {!! session('warning') !!}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 @endif
@@ -520,9 +580,7 @@
                         }
                     }
 
-                    // Ambil ruangan dari berbagai kemungkinan field
                     $namaRuangan = $j->ruangan ?? $j->ruang ?? '-';
-
                     $hariClass = strtolower($j->hari);
                     $initialGuru = strtoupper(substr($namaGuru, 0, 1));
                 @endphp
@@ -604,9 +662,14 @@
                             </div>
                             <h5 class="fw-bold mb-2">Belum ada data jadwal</h5>
                             <p class="text-muted mb-3">Silakan tambahkan jadwal pelajaran terlebih dahulu</p>
-                            <a href="{{ route('administrasi.jadwal.create') }}" class="btn btn-primary rounded-3">
-                                <i class="fas fa-plus me-1"></i> Tambah Jadwal
-                            </a>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <button type="button" class="btn btn-success rounded-3" data-bs-toggle="modal" data-bs-target="#importModal">
+                                    <i class="fas fa-file-import me-1"></i> Import Jadwal
+                                </button>
+                                <a href="{{ route('administrasi.jadwal.create') }}" class="btn btn-primary rounded-3">
+                                    <i class="fas fa-plus me-1"></i> Tambah Manual
+                                </a>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -653,6 +716,91 @@
     </div>
 </div>
 
+{{-- ============ IMPORT MODAL ============ --}}
+<div class="modal fade modal-import" id="importModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-import me-2"></i> Import Jadwal dari Excel/CSV
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('administrasi.jadwal.import') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                @csrf
+                <div class="modal-body">
+
+                    {{-- Step 1: Download Template --}}
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style="background:#f0f9ff;border:1px solid #bae6fd;">
+                        <div style="width:40px;height:40px;border-radius:10px;background:#0ea5e9;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">1</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold" style="font-size:0.9rem;">Download Template</div>
+                            <small class="text-muted">Gunakan template agar format file sesuai</small>
+                        </div>
+                        <a href="{{ route('administrasi.jadwal.download-template') }}" class="btn btn-sm btn-outline-primary rounded-3">
+                            <i class="fas fa-download me-1"></i> Template
+                        </a>
+                    </div>
+
+                    {{-- Step 2: Upload --}}
+                    <div class="d-flex align-items-start gap-3 p-3 rounded-3 mb-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+                        <div style="width:40px;height:40px;border-radius:10px;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">2</div>
+                        <div class="flex-grow-1 w-100">
+                            <div class="fw-bold mb-2" style="font-size:0.9rem;">Upload File</div>
+
+                            <div class="upload-zone" id="uploadZone">
+                                <input type="file" name="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none;" required>
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="fw-semibold">Klik untuk pilih file</div>
+                                <small class="text-muted">atau drag & drop file ke sini</small>
+                                <div class="mt-2">
+                                    <small class="text-muted">Format: <strong>.CSV, .XLSX, .XLS</strong> — Maks 5MB</small>
+                                </div>
+                            </div>
+
+                            <div class="file-info" id="fileInfo">
+                                <i class="fas fa-file-excel"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold" id="fileName">-</div>
+                                    <small class="text-muted" id="fileSize">-</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger rounded-3" onclick="clearFile()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Step 3: Info --}}
+                    <div class="d-flex align-items-start gap-3 p-3 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
+                        <div style="width:40px;height:40px;border-radius:10px;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">!</div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold mb-1" style="font-size:0.9rem;">Perhatian</div>
+                            <ul class="mb-0 ps-3" style="font-size:0.82rem;">
+                                <li>Baris pertama (header) akan di-skip otomatis</li>
+                                <li>Pastikan kolom <code>kelas</code>, <code>mata_pelajaran</code>, dan <code>guru</code> sesuai dengan nama di sistem</li>
+                                <li>Format jam: <code>HH:MM</code> (contoh: <code>07:00</code>)</li>
+                                <li>Kelas/Mapel/Guru yang tidak ditemukan akan di-skip</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-success rounded-3" id="btnImport">
+                        <i class="fas fa-file-import me-1"></i> Mulai Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -668,7 +816,77 @@
                 });
             }
         }
+
+        // ===== UPLOAD ZONE =====
+        var uploadZone = document.getElementById('uploadZone');
+        var fileInput = document.getElementById('fileInput');
+
+        if (uploadZone && fileInput) {
+            uploadZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            uploadZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', function() {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showFileInfo(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    showFileInfo(this.files[0]);
+                }
+            });
+        }
+
+        // ===== IMPORT FORM SUBMIT =====
+        var importForm = document.getElementById('importForm');
+        if (importForm) {
+            importForm.addEventListener('submit', function(e) {
+                if (!fileInput.files.length) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'File Belum Dipilih',
+                        text: 'Silakan pilih file terlebih dahulu',
+                        confirmButtonColor: '#10b981'
+                    });
+                    return false;
+                }
+
+                var btn = document.getElementById('btnImport');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Memproses...';
+                btn.disabled = true;
+            });
+        }
     });
+
+    function showFileInfo(file) {
+        var fileInfo = document.getElementById('fileInfo');
+        var fileName = document.getElementById('fileName');
+        var fileSize = document.getElementById('fileSize');
+
+        fileName.textContent = file.name;
+        fileSize.textContent = (file.size / 1024).toFixed(2) + ' KB';
+        fileInfo.classList.add('show');
+    }
+
+    function clearFile() {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfo').classList.remove('show');
+    }
 
     function deleteJadwal(id, info) {
         document.getElementById('deleteInfo').innerText = info;
