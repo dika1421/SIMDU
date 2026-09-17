@@ -625,8 +625,7 @@ class JadwalController extends Controller
 
     /**
      * ============================================================
-     * 🔥 IMPORT JADWAL DARI CSV (VERSI FIXED)
-     * Auto-detect kolom yang ada di tabel
+     * 🔥 IMPORT JADWAL DARI CSV (FINAL - HANDLE BOM + EXTRA COMMA)
      * ============================================================
      */
     public function import(Request $request)
@@ -641,7 +640,6 @@ class JadwalController extends Controller
             $file = $request->file('file');
             $ext = strtolower($file->getClientOriginalExtension());
 
-            // Baca CSV
             if (in_array($ext, ['csv', 'txt'])) {
                 $rows = array_map('str_getcsv', file($file->getRealPath()));
             } else {
@@ -652,20 +650,32 @@ class JadwalController extends Controller
                 return back()->with('error', 'File kosong atau tidak ada data.');
             }
 
-            // Header
+            // ==========================================
+            // HANDLE HEADER + BOM
+            // ==========================================
             $header = array_map('strtolower', array_map('trim', $rows[0]));
+
+            // Hapus BOM dari header pertama
+            if (isset($header[0])) {
+                $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+                $header[0] = preg_replace('/^\x{FEFF}/u', '', $header[0]);
+                $header[0] = trim($header[0]);
+            }
+
+            // Buang kolom kosong dari header
+            $header = array_filter($header, function ($h) {
+                return !empty($h) && $h !== '';
+            });
+
             array_shift($rows);
 
-            // Deteksi nama kolom di tabel
+            // Deteksi kolom tabel
             $kolomMapel = Schema::getColumnListing('mata_pelajarans');
             $kolomGuru  = Schema::getColumnListing('gurus');
             $kolomKelas = Schema::getColumnListing('kelas');
 
             Log::info('=== IMPORT JADWAL DIMULAI ===');
-            Log::info('Header CSV: ' . json_encode($header));
-            Log::info('Kolom mapel: ' . json_encode($kolomMapel));
-            Log::info('Kolom guru: ' . json_encode($kolomGuru));
-            Log::info('Kolom kelas: ' . json_encode($kolomKelas));
+            Log::info('Header CSV (clean): ' . json_encode($header));
 
             $imported = 0;
             $skipped = 0;
@@ -674,10 +684,12 @@ class JadwalController extends Controller
             foreach ($rows as $index => $row) {
                 $rowNum = $index + 2;
 
-                // Skip baris kosong
                 if (empty(array_filter($row))) {
                     continue;
                 }
+
+                // Potong row sesuai jumlah header
+                $row = array_slice($row, 0, count($header));
 
                 $data = array_combine($header, array_pad($row, count($header), null));
 
@@ -688,7 +700,6 @@ class JadwalController extends Controller
 
                 Log::info("Baris {$rowNum}:", $data);
 
-                // Validasi field wajib
                 if (empty($data['hari']) || empty($data['jam_mulai']) || empty($data['jam_selesai'])) {
                     $errors[] = "Baris {$rowNum}: hari/jam_mulai/jam_selesai wajib diisi";
                     $skipped++;
@@ -696,9 +707,7 @@ class JadwalController extends Controller
                     continue;
                 }
 
-                // ==========================================
                 // CARI KELAS
-                // ==========================================
                 $kelasId = null;
                 if (!empty($data['kelas'])) {
                     $q = Kelas::query();
@@ -713,9 +722,7 @@ class JadwalController extends Controller
                     Log::info("Kelas '{$data['kelas']}' → " . ($kelasId ?? 'NULL'));
                 }
 
-                // ==========================================
                 // CARI MAPEL
-                // ==========================================
                 $mapelId = null;
                 if (!empty($data['mata_pelajaran'])) {
                     $q = Mapel::query();
@@ -728,7 +735,6 @@ class JadwalController extends Controller
                     $mapel = $q->first();
                     $mapelId = $mapel->id ?? null;
 
-                    // Fallback ke daftar hardcoded
                     if (!$mapelId) {
                         $daftar = $this->getDaftarMapel();
                         $found = $daftar->firstWhere('nama', $data['mata_pelajaran']);
@@ -739,9 +745,7 @@ class JadwalController extends Controller
                     Log::info("Mapel '{$data['mata_pelajaran']}' → " . ($mapelId ?? 'NULL'));
                 }
 
-                // ==========================================
                 // CARI GURU
-                // ==========================================
                 $guruId = null;
                 if (!empty($data['guru'])) {
                     $q = Guru::query();
@@ -759,9 +763,7 @@ class JadwalController extends Controller
                     Log::info("Guru '{$data['guru']}' → " . ($guruId ?? 'NULL'));
                 }
 
-                // ==========================================
                 // SKIP kalau ada yang tidak ditemukan
-                // ==========================================
                 if (!$kelasId || !$mapelId || !$guruId) {
                     $missed = [];
                     if (!$kelasId) $missed[] = "kelas '{$data['kelas']}'";
@@ -773,9 +775,7 @@ class JadwalController extends Controller
                     continue;
                 }
 
-                // ==========================================
                 // INSERT / UPDATE
-                // ==========================================
                 Jadwal::updateOrCreate(
                     [
                         'hari' => strtolower($data['hari']),
@@ -820,29 +820,19 @@ class JadwalController extends Controller
 
     /**
      * ============================================================
-     * 🔥 DOWNLOAD TEMPLATE IMPORT JADWAL
+     * DOWNLOAD TEMPLATE IMPORT JADWAL
      * ============================================================
      */
     public function downloadTemplate()
     {
         $headers = [
-            'hari',
-            'jam_mulai',
-            'jam_selesai',
-            'kelas',
-            'mata_pelajaran',
-            'guru',
-            'ruangan',
-            'tahun_ajaran',
-            'semester',
+            'hari', 'jam_mulai', 'jam_selesai', 'kelas',
+            'mata_pelajaran', 'guru', 'ruangan', 'tahun_ajaran', 'semester',
         ];
 
         $samples = [
             ['Senin', '07:00', '08:30', 'X A PEMASARAN', 'Matematika', "Aceng Ma'sum, S.Pd", 'R-101', '2025/2026', 'ganjil'],
             ['Senin', '08:30', '10:00', 'X A PEMASARAN', 'Bahasa Indonesia', 'Siti Hamimah, S.Ag', 'R-101', '2025/2026', 'ganjil'],
-            ['Selasa', '07:00', '08:30', 'X B PEMASARAN', 'Bahasa Inggris', 'Abdul Azis, S.Pd', 'R-102', '2025/2026', 'ganjil'],
-            ['Selasa', '08:30', '10:00', 'X B PEMASARAN', 'Penjaskes', 'Krisdianarti', 'Lapangan', '2025/2026', 'ganjil'],
-            ['Rabu', '07:00', '08:30', 'X A PEMASARAN', 'Pendidikan Agama', 'Drs. H. Khadri Imbali, MA', 'R-101', '2025/2026', 'ganjil'],
         ];
 
         $filename = 'template-import-jadwal-' . date('Y-m-d') . '.csv';
@@ -853,13 +843,10 @@ class JadwalController extends Controller
         header('Expires: 0');
 
         $output = fopen('php://output', 'w');
-        fputs($output, "\xEF\xBB\xBF");
-
         fputcsv($output, $headers);
         foreach ($samples as $row) {
             fputcsv($output, $row);
         }
-
         fclose($output);
         exit;
     }
