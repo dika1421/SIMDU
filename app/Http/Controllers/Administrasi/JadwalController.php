@@ -562,7 +562,7 @@ class JadwalController extends Controller
             $hari = $request->hari;
             $jamMulai = $request->jam_mulai;
             $jamSelesai = $request->jam_selesai;
-            $ruang = $request->ruang;
+            $ruang = $request->ruangan;
             $excludeId = $request->exclude_id;
             $tahunAjaran = $request->tahun_ajaran ?? date('Y') . '/' . (date('Y') + 1);
             $semester = $request->semester ?? 'ganjil';
@@ -625,7 +625,8 @@ class JadwalController extends Controller
 
     /**
      * ============================================================
-     * 🔥 IMPORT JADWAL DARI CSV (FINAL - HANDLE BOM + EXTRA COMMA)
+     * 🔥 IMPORT JADWAL DARI CSV
+     * Handle BOM + extra comma + auto-create mapel
      * ============================================================
      */
     public function import(Request $request)
@@ -655,14 +656,12 @@ class JadwalController extends Controller
             // ==========================================
             $header = array_map('strtolower', array_map('trim', $rows[0]));
 
-            // Hapus BOM dari header pertama
             if (isset($header[0])) {
                 $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
                 $header[0] = preg_replace('/^\x{FEFF}/u', '', $header[0]);
                 $header[0] = trim($header[0]);
             }
 
-            // Buang kolom kosong dari header
             $header = array_filter($header, function ($h) {
                 return !empty($h) && $h !== '';
             });
@@ -679,6 +678,7 @@ class JadwalController extends Controller
 
             $imported = 0;
             $skipped = 0;
+            $newMapelCount = 0;
             $errors = [];
 
             foreach ($rows as $index => $row) {
@@ -690,7 +690,6 @@ class JadwalController extends Controller
 
                 // Potong row sesuai jumlah header
                 $row = array_slice($row, 0, count($header));
-
                 $data = array_combine($header, array_pad($row, count($header), null));
 
                 // Trim semua value
@@ -703,11 +702,12 @@ class JadwalController extends Controller
                 if (empty($data['hari']) || empty($data['jam_mulai']) || empty($data['jam_selesai'])) {
                     $errors[] = "Baris {$rowNum}: hari/jam_mulai/jam_selesai wajib diisi";
                     $skipped++;
-                    Log::warning("SKIP Baris {$rowNum}: field wajib kosong");
                     continue;
                 }
 
+                // ==========================================
                 // CARI KELAS
+                // ==========================================
                 $kelasId = null;
                 if (!empty($data['kelas'])) {
                     $q = Kelas::query();
@@ -722,7 +722,9 @@ class JadwalController extends Controller
                     Log::info("Kelas '{$data['kelas']}' → " . ($kelasId ?? 'NULL'));
                 }
 
-                // CARI MAPEL
+                // ==========================================
+                // CARI MAPEL — AUTO-CREATE
+                // ==========================================
                 $mapelId = null;
                 if (!empty($data['mata_pelajaran'])) {
                     $q = Mapel::query();
@@ -733,19 +735,29 @@ class JadwalController extends Controller
                         $q->orWhere('nama', $data['mata_pelajaran']);
                     }
                     $mapel = $q->first();
-                    $mapelId = $mapel->id ?? null;
 
-                    if (!$mapelId) {
-                        $daftar = $this->getDaftarMapel();
-                        $found = $daftar->firstWhere('nama', $data['mata_pelajaran']);
-                        if ($found) {
-                            $mapelId = $found->id;
+                    // ✅ AUTO-CREATE kalau mapel tidak ada
+                    if (!$mapel) {
+                        try {
+                            $mapel = Mapel::create([
+                                'nama_mapel' => $data['mata_pelajaran'],
+                                'kode_mapel' => 'MAPEL-' . time() . rand(100, 999),
+                                'kelompok' => 'C',
+                            ]);
+                            $newMapelCount++;
+                            Log::info("🆕 Mapel BARU: '{$data['mata_pelajaran']}' → ID {$mapel->id}");
+                        } catch (\Exception $e) {
+                            Log::error("Gagal buat mapel '{$data['mata_pelajaran']}': " . $e->getMessage());
                         }
                     }
+
+                    $mapelId = $mapel ? $mapel->id : null;
                     Log::info("Mapel '{$data['mata_pelajaran']}' → " . ($mapelId ?? 'NULL'));
                 }
 
+                // ==========================================
                 // CARI GURU
+                // ==========================================
                 $guruId = null;
                 if (!empty($data['guru'])) {
                     $q = Guru::query();
@@ -763,7 +775,7 @@ class JadwalController extends Controller
                     Log::info("Guru '{$data['guru']}' → " . ($guruId ?? 'NULL'));
                 }
 
-                // SKIP kalau ada yang tidak ditemukan
+                // Skip kalau ada yang tidak ditemukan
                 if (!$kelasId || !$mapelId || !$guruId) {
                     $missed = [];
                     if (!$kelasId) $missed[] = "kelas '{$data['kelas']}'";
@@ -775,7 +787,9 @@ class JadwalController extends Controller
                     continue;
                 }
 
+                // ==========================================
                 // INSERT / UPDATE
+                // ==========================================
                 Jadwal::updateOrCreate(
                     [
                         'hari' => strtolower($data['hari']),
@@ -799,9 +813,12 @@ class JadwalController extends Controller
 
             DB::commit();
 
-            Log::info("=== IMPORT SELESAI: {$imported} berhasil, {$skipped} di-skip ===");
+            Log::info("=== IMPORT SELESAI: {$imported} berhasil, {$skipped} di-skip, {$newMapelCount} mapel baru ===");
 
             $message = "✅ {$imported} jadwal berhasil diimport.";
+            if ($newMapelCount > 0) {
+                $message .= " 🆕 {$newMapelCount} mapel baru dibuat.";
+            }
             if ($skipped > 0) {
                 $message .= " ⚠️ {$skipped} baris di-skip.";
             }
