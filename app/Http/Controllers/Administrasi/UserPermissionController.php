@@ -20,19 +20,38 @@ class UserPermissionController extends Controller
         try {
             $query = User::with(['role', 'roles', 'userPermissions']);
 
+            // =============================================
+            // 🔥 FILTER ROLE — Handle tipe ID (numeric) vs NAMA (string)
+            // =============================================
             if ($request->filled('role')) {
-                $roleFilter = $request->role;
-                $query->where(function ($q) use ($roleFilter) {
-                    $q->where('role_id', $roleFilter)
-                      ->orWhere('role', $roleFilter)
-                      ->orWhereHas('roles', function ($rq) use ($roleFilter) {
-                          $rq->where('name', $roleFilter);
-                      });
-                });
+                $roleFilter = $request->input('role');
+
+                if (is_numeric($roleFilter)) {
+                    // Filter pakai ID role
+                    $roleId = (int) $roleFilter;
+                    $query->where(function ($q) use ($roleId) {
+                        $q->where('role_id', $roleId)
+                          ->orWhereHas('roles', function ($rq) use ($roleId) {
+                              $rq->where('roles.id', $roleId);
+                          });
+                    });
+                } else {
+                    // Filter pakai NAMA role
+                    $roleName = (string) $roleFilter;
+                    $query->where(function ($q) use ($roleName) {
+                        $q->where('role', $roleName)
+                          ->orWhereHas('roles', function ($rq) use ($roleName) {
+                              $rq->where('roles.name', $roleName);
+                          });
+                    });
+                }
             }
 
+            // =============================================
+            // PENCARIAN nama/email
+            // =============================================
             if ($request->filled('search')) {
-                $search = $request->search;
+                $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");
@@ -45,7 +64,11 @@ class UserPermissionController extends Controller
             return view('administrasi.user-permission.index', compact('users', 'roles'));
 
         } catch (\Exception $e) {
-            Log::error('Error user permission index: ' . $e->getMessage());
+            Log::error('Error user permission index: ' . $e->getMessage(), [
+                'role_param'   => $request->input('role'),
+                'search_param' => $request->input('search'),
+                'trace'        => $e->getTraceAsString(),
+            ]);
             return back()->with('error', 'Gagal memuat data: ' . $e->getMessage());
         }
     }
@@ -58,15 +81,13 @@ class UserPermissionController extends Controller
         try {
             $user = User::with(['role', 'roles', 'userPermissions'])->findOrFail($id);
 
-            // Semua role untuk checkbox
             $roles = Role::orderBy('name')->get();
 
             // Role ID yang dimiliki user saat ini
-            // Gabungkan dari relasi many-to-many + fallback ke role_id & role string
             $selectedRoleIds = $user->roles->pluck('id')->map(fn($v) => (int) $v)->toArray();
 
             if (empty($selectedRoleIds)) {
-                // Fallback: kalau belum ada di pivot, cek role_id
+                // Fallback: cek role_id
                 if ($user->role_id) {
                     $selectedRoleIds[] = (int) $user->role_id;
                 } elseif (!empty($user->role)) {
@@ -78,7 +99,6 @@ class UserPermissionController extends Controller
                 }
             }
 
-            // Info role yang sedang dimiliki (untuk ditampilkan)
             $currentRoles = Role::whereIn('id', $selectedRoleIds)->orderBy('name')->get();
 
             return view('administrasi.user-permission.edit', compact(
@@ -94,7 +114,7 @@ class UserPermissionController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error user permission edit: ' . $e->getMessage(), [
-                'id' => $id,
+                'id'    => $id,
                 'trace' => $e->getTraceAsString(),
             ]);
             return redirect()->route('administrasi.user-permission.index')
@@ -122,24 +142,22 @@ class UserPermissionController extends Controller
             $user = User::findOrFail($id);
             $roleIds = array_map('intval', $request->role_ids);
 
-            // Ambil role-role baru
             $newRoles = Role::whereIn('id', $roleIds)->get();
 
             if ($newRoles->isEmpty()) {
                 throw new \Exception('Role yang dipilih tidak ditemukan.');
             }
 
-            // Sync ke pivot table role_user
+            // Sync ke pivot
             $user->roles()->sync($roleIds);
 
-            // Update role_id di tabel users → pakai role pertama sebagai default
-            // (untuk backward compatibility dengan kolom role_id & role string)
+            // Update role_id & role string (backward compat)
             $primaryRole = $newRoles->first();
             $user->role_id = $primaryRole->id;
             $user->role = $primaryRole->name;
             $user->save();
 
-            // Reset semua override permission karena role berubah
+            // Reset override permission
             UserPermission::where('user_id', $user->id)->delete();
 
             DB::commit();

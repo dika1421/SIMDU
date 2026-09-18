@@ -405,7 +405,8 @@
                     <select name="role" id="filter_role" class="form-select">
                         <option value="">Semua Role</option>
                         @foreach($roles as $role)
-                            <option value="{{ $role->name }}" {{ request('role') == $role->name ? 'selected' : '' }}>
+                            {{-- ✅ FIX: pakai $role->id (angka), bukan $role->name (string) --}}
+                            <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>
                                 {{ ucfirst($role->name) }}
                             </option>
                         @endforeach
@@ -454,7 +455,6 @@
                         @php
                             $overrideCount = $user->userPermissions->count();
 
-                            // ✅ FIX: Tentukan role yang ditampilkan tanpa akses $user->role (yang string)
                             $displayRoles = collect();
                             if ($user->roles->count() > 0) {
                                 $displayRoles = $user->roles->pluck('name');
