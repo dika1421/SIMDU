@@ -23,9 +23,16 @@
             box-sizing: border-box;
         }
         
+        /* ===== BACKGROUND UTAMA (FIXED) ===== */
         body {
-            background: #ffffff;
+            /* Background gambar dipindahkan ke body agar tetap ada saat scroll */
+            background: linear-gradient(rgba(13, 20, 69, 0.85), rgba(13, 20, 69, 0.85)), url('{{ asset("images/gedung-sekolah.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Kunci agar background tidak ikut bergerak */
             overflow-x: hidden;
+            color: #333;
         }
         
         /* ===== SCROLLBAR ===== */
@@ -139,15 +146,10 @@
             color: white !important;
         }
         
-        /* ===== HERO SECTION (DIUBAH BACKGROUNDNYA) ===== */
+        /* ===== HERO SECTION ===== */
         .hero-section {
             padding: 140px 0 100px;
-            /* Background diganti dengan gambar gedung-sekolah.jpg */
-            background: linear-gradient(rgba(13, 20, 69, 0.85), rgba(26, 35, 126, 0.75)), url('{{ asset("images/gedung-sekolah.jpg") }}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Efek parallax ringan */
+            /* Background dihapus dari sini karena sudah ada di body */
             position: relative;
             overflow: hidden;
             min-height: 100vh;
@@ -173,7 +175,7 @@
             position: absolute;
             width: 6px;
             height: 6px;
-            background: #ffffff; /* Ubah warna titik menjadi putih agar terlihat di background gelap */
+            background: #ffffff;
             border-radius: 50%;
             opacity: 0.2;
             animation: floatDot 15s linear infinite;
@@ -187,8 +189,8 @@
         
         .hero-badge {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.15); /* Ubah background badge */
-            color: #ffffff; /* Ubah warna teks badge */
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
             padding: 6px 20px;
             border-radius: 50px;
             font-size: 0.8rem;
@@ -201,7 +203,7 @@
         .hero-title {
             font-size: 4rem;
             font-weight: 900;
-            color: #ffffff; /* Ubah warna judul menjadi putih */
+            color: #ffffff;
             line-height: 1.1;
             margin-bottom: 20px;
             letter-spacing: -1px;
@@ -215,7 +217,7 @@
         }
         
         .hero-title .highlight-blue {
-            background: linear-gradient(135deg, #64b5f6, #90caf9); /* Ubah warna highlight biru agar kontras */
+            background: linear-gradient(135deg, #64b5f6, #90caf9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -223,7 +225,7 @@
         
         .hero-subtitle {
             font-size: 1.15rem;
-            color: rgba(255, 255, 255, 0.85); /* Ubah warna subtitle */
+            color: rgba(255, 255, 255, 0.85);
             line-height: 1.8;
             margin-bottom: 35px;
             max-width: 500px;
@@ -238,8 +240,8 @@
             position: relative;
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3); /* Pertegas bayangan */
-            background: rgba(255, 255, 255, 0.1); /* Transparan */
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
             padding: 20px;
             animation: floatImage 5s ease-in-out infinite;
             backdrop-filter: blur(10px);
@@ -303,7 +305,7 @@
         .hero-image .floating-badge .text small { display: block; font-weight: 400; font-size: 0.7rem; color: #999; }
         
         .btn-primary-custom {
-            background: linear-gradient(135deg, #4caf50, #43a047); /* Ubah warna tombol utama agar lebih menonjol */
+            background: linear-gradient(135deg, #4caf50, #43a047);
             color: white;
             padding: 16px 45px;
             border-radius: 50px;
@@ -342,11 +344,11 @@
         
         .btn-outline-custom {
             background: transparent;
-            color: #ffffff; /* Ubah warna teks tombol outline */
+            color: #ffffff;
             padding: 16px 45px;
             border-radius: 50px;
             font-weight: 600;
-            border: 2px solid #ffffff; /* Ubah border menjadi putih */
+            border: 2px solid #ffffff;
             transition: all 0.4s ease;
             text-decoration: none;
             display: inline-flex;
@@ -361,10 +363,22 @@
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
         }
         
+        /* ===== SECTION STYLING (GLASSMORPHISM) ===== */
+        /* Agar background tetap terlihat, section diberi background transparan */
+        .stat-section, 
+        .features-section, 
+        .visi-misi-section, 
+        .struktur-section, 
+        .gallery-section {
+            background: rgba(255, 255, 255, 0.92); /* Putih transparan */
+            backdrop-filter: blur(10px); /* Efek kaca */
+            position: relative;
+            z-index: 1;
+        }
+
         /* ===== STATISTIK ===== */
         .stat-section {
             padding: 70px 0;
-            background: white;
             position: relative;
         }
         
@@ -407,7 +421,7 @@
         
         .stat-item .label {
             font-size: 0.95rem;
-            color: #888;
+            color: #555;
             font-weight: 500;
             margin-top: 5px;
         }
@@ -422,7 +436,6 @@
         /* ===== FITUR ===== */
         .features-section {
             padding: 100px 0;
-            background: #f8faff;
         }
         
         .section-title {
@@ -443,7 +456,7 @@
         
         .section-subtitle {
             text-align: center;
-            color: #888;
+            color: #666;
             margin-bottom: 60px;
             font-size: 1.1rem;
         }
@@ -569,7 +582,6 @@
         /* ===== VISI & MISI ===== */
         .visi-misi-section {
             padding: 100px 0;
-            background: #ffffff;
         }
         
         .vision-card, .mission-card {
@@ -620,7 +632,6 @@
         /* ===== STRUKTUR ORGANISASI ===== */
         .struktur-section {
             padding: 100px 0;
-            background: #f8faff;
         }
         
         .struktur-card {
@@ -713,7 +724,6 @@
         /* ===== GALERI ===== */
         .gallery-section {
             padding: 100px 0;
-            background: #ffffff;
         }
         
         .gallery-card {
@@ -792,6 +802,7 @@
             background: linear-gradient(135deg, #1a237e, #0d1445);
             position: relative;
             overflow: hidden;
+            z-index: 1;
         }
         
         .cta-section::before {
@@ -864,6 +875,8 @@
             background: #0d1445;
             color: white;
             padding: 60px 0 20px;
+            position: relative;
+            z-index: 1;
         }
         
         .footer h5 {
@@ -1016,7 +1029,6 @@
 
 <!-- ===== HERO SECTION ===== -->
 <section class="hero-section" id="home">
-    <!-- BG Shape dihapus karena sudah pakai gambar background -->
     <div class="floating-dots">
         @for($i = 0; $i < 20; $i++)
             <span style="left: {{ rand(5, 95) }}%; top: {{ rand(5, 95) }}%; animation-delay: {{ rand(0, 10) }}s;"></span>
@@ -1351,7 +1363,7 @@
 
             @if($galleries->count() > 8)
                 <div class="text-center mt-5" data-aos="fade-up">
-                    <a href="#" class="btn btn-outline-custom">
+                    <a href="#" class="btn btn-outline-custom" style="border-color: #1a237e; color: #1a237e;">
                         Lihat Semua <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
