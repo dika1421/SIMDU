@@ -25,14 +25,14 @@
         
         /* ===== BACKGROUND UTAMA (FIXED) ===== */
         body {
-            /* Background gambar dipindahkan ke body agar tetap ada saat scroll */
+            /* Background gambar dengan overlay gelap agar teks putih terbaca */
             background: linear-gradient(rgba(13, 20, 69, 0.85), rgba(13, 20, 69, 0.85)), url('{{ asset("images/gedung-sekolah.jpg") }}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed; /* Kunci agar background tidak ikut bergerak */
             overflow-x: hidden;
-            color: #333;
+            color: #fff; /* Ubah warna teks default menjadi putih */
         }
         
         /* ===== SCROLLBAR ===== */
@@ -49,7 +49,7 @@
         
         /* ===== NAVBAR ===== */
         .navbar {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 1px 30px rgba(0,0,0,0.06);
@@ -149,17 +149,11 @@
         /* ===== HERO SECTION ===== */
         .hero-section {
             padding: 140px 0 100px;
-            /* Background dihapus dari sini karena sudah ada di body */
             position: relative;
             overflow: hidden;
             min-height: 100vh;
             display: flex;
             align-items: center;
-        }
-        
-        /* Menghapus bg-shape karena sudah pakai gambar */
-        .hero-section .bg-shape {
-            display: none;
         }
         
         .hero-section .floating-dots {
@@ -363,33 +357,22 @@
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
         }
         
-        /* ===== SECTION STYLING (GLASSMORPHISM) ===== */
-        /* Agar background tetap terlihat, section diberi background transparan */
+        /* ===== SECTION STYLING (FULL TRANSPARAN) ===== */
+        /* Menghapus background solid agar gambar tetap terlihat */
         .stat-section, 
         .features-section, 
         .visi-misi-section, 
         .struktur-section, 
         .gallery-section {
-            background: rgba(255, 255, 255, 0.92); /* Putih transparan */
-            backdrop-filter: blur(10px); /* Efek kaca */
+            background: transparent; /* Benar-benar transparan */
             position: relative;
             z-index: 1;
+            padding: 80px 0;
         }
 
         /* ===== STATISTIK ===== */
         .stat-section {
             padding: 70px 0;
-            position: relative;
-        }
-        
-        .stat-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(26, 35, 126, 0.1), transparent);
         }
         
         .stat-item {
@@ -406,29 +389,26 @@
             transform: translateY(-50%);
             height: 40px;
             width: 1px;
-            background: rgba(0,0,0,0.06);
+            background: rgba(255,255,255,0.2);
         }
         
         .stat-item .number {
             font-size: 3rem;
             font-weight: 900;
-            background: linear-gradient(135deg, #1a237e, #4caf50);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff; /* Ubah jadi putih */
             line-height: 1.2;
         }
         
         .stat-item .label {
             font-size: 0.95rem;
-            color: #555;
+            color: rgba(255,255,255,0.8);
             font-weight: 500;
             margin-top: 5px;
         }
         
         .stat-item .icon-stat {
             font-size: 2rem;
-            color: rgba(26, 35, 126, 0.1);
+            color: rgba(255,255,255,0.3);
             margin-bottom: 10px;
             display: block;
         }
@@ -442,7 +422,7 @@
             text-align: center;
             font-size: 2.8rem;
             font-weight: 900;
-            color: #1a237e;
+            color: #ffffff; /* Ubah jadi putih */
             margin-bottom: 10px;
             letter-spacing: -0.5px;
         }
@@ -456,20 +436,20 @@
         
         .section-subtitle {
             text-align: center;
-            color: #666;
+            color: rgba(255,255,255,0.8); /* Ubah jadi putih transparan */
             margin-bottom: 60px;
             font-size: 1.1rem;
         }
         
         .feature-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95); /* Kartu tetap putih agar terbaca */
             padding: 35px 30px;
             border-radius: 20px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.04);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             height: 100%;
             text-align: center;
-            border: 1px solid rgba(0,0,0,0.04);
+            border: 1px solid rgba(255,255,255,0.2);
             position: relative;
             overflow: hidden;
         }
@@ -492,8 +472,8 @@
         
         .feature-card:hover {
             transform: translateY(-12px) scale(1.01);
-            box-shadow: 0 25px 60px rgba(26, 35, 126, 0.10);
-            border-color: rgba(26, 35, 126, 0.1);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
         }
         
         .feature-card .icon-wrapper {
@@ -551,7 +531,7 @@
         }
         
         .feature-card p {
-            color: #777;
+            color: #555;
             font-size: 0.95rem;
             line-height: 1.7;
             position: relative;
@@ -586,17 +566,18 @@
         
         .vision-card, .mission-card {
             transition: all 0.4s ease;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
         }
         
         .vision-card:hover, .mission-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
         }
         
         .vision-card .visi-text {
             font-size: 1.1rem;
-            color: #555;
+            color: #333;
             line-height: 1.9;
             font-style: italic;
             padding-left: 20px;
@@ -611,12 +592,12 @@
         
         .mission-list li {
             padding: 8px 0;
-            color: #444;
+            color: #333;
             font-size: 0.98rem;
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            border-bottom: 1px solid rgba(0,0,0,0.04);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
         .mission-list li:last-child {
@@ -635,11 +616,11 @@
         }
         
         .struktur-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             padding: 25px 20px;
             border-radius: 16px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             height: 100%;
             transition: all 0.4s ease;
             border-top: 4px solid #1a237e;
@@ -647,7 +628,7 @@
         
         .struktur-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.10);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
         
         .struktur-card .avatar {
@@ -676,7 +657,7 @@
         
         .struktur-card .nama {
             font-size: 0.85rem;
-            color: #666;
+            color: #555;
             margin-bottom: 2px;
         }
         
@@ -691,7 +672,7 @@
             padding: 20px 45px;
             border-radius: 16px;
             color: white;
-            box-shadow: 0 10px 30px rgba(26,35,126,0.25);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             text-align: center;
         }
         
@@ -717,8 +698,7 @@
         .garis-hubung .garis {
             width: 2px;
             height: 30px;
-            background: #1a237e;
-            opacity: 0.2;
+            background: rgba(255,255,255,0.3);
         }
         
         /* ===== GALERI ===== */
@@ -732,14 +712,14 @@
             overflow: hidden;
             cursor: pointer;
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            background: #f8f9fa;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.1);
             height: 260px;
         }
         
         .gallery-card:hover {
             transform: translateY(-12px);
-            box-shadow: 0 20px 50px rgba(26, 35, 126, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
         }
         
         .gallery-card img {
@@ -759,7 +739,7 @@
             left: 0;
             right: 0;
             padding: 20px 20px 15px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.75));
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
             opacity: 0;
             transition: all 0.4s ease;
         }
@@ -1193,7 +1173,7 @@
         <div class="row g-4 mt-4">
             <!-- VISI -->
             <div class="col-lg-6" data-aos="fade-right" data-aos-duration="800">
-                <div class="vision-card" style="background: linear-gradient(135deg, #f0f2ff, #e8ecf8); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #1a237e;">
+                <div class="vision-card" style="background: rgba(240, 242, 255, 0.95); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #1a237e;">
                     <div class="d-flex align-items-center mb-4">
                         <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1a237e, #3949ab); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; flex-shrink: 0;">
                             <i class="fas fa-eye"></i>
@@ -1208,7 +1188,7 @@
 
             <!-- MISI -->
             <div class="col-lg-6" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
-                <div class="mission-card" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #4caf50;">
+                <div class="mission-card" style="background: rgba(232, 245, 233, 0.95); padding: 40px 35px; border-radius: 24px; height: 100%; border-left: 6px solid #4caf50;">
                     <div class="d-flex align-items-center mb-4">
                         <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #4caf50, #66bb6a); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; flex-shrink: 0;">
                             <i class="fas fa-bullseye"></i>
@@ -1250,7 +1230,7 @@
             @forelse($roots as $root)
                 <!-- Root (Kepala Sekolah / Pimpinan) -->
                 <div class="text-center mb-4">
-                    <div class="kepala-sekolah-box" style="background: linear-gradient(135deg, #1a237e, #283593); display: inline-block; padding: 20px 45px; border-radius: 16px; color: white; box-shadow: 0 10px 30px rgba(26,35,126,0.25);">
+                    <div class="kepala-sekolah-box" style="background: linear-gradient(135deg, #1a237e, #283593); display: inline-block; padding: 20px 45px; border-radius: 16px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                         <i class="fas fa-user-tie fa-2x d-block mb-2"></i>
                         <h5 style="font-weight: 700; margin-bottom: 2px;">{{ $root->nama_jabatan ?? $root->nama }}</h5>
                         <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">{{ $root->nama_pejabat ?? $root->jabatan }}</p>
@@ -1266,7 +1246,7 @@
                     <!-- Garis Hubung -->
                     <div class="garis-hubung" style="display: flex; justify-content: center; gap: 80px; flex-wrap: wrap; margin: 20px 0 30px;">
                         @for($i = 0; $i < min($root->children->count(), 8); $i++)
-                            <div style="width: 2px; height: 30px; background: #1a237e; opacity: 0.2;"></div>
+                            <div style="width: 2px; height: 30px; background: rgba(255,255,255,0.3);"></div>
                         @endfor
                     </div>
 
@@ -1274,12 +1254,12 @@
                     <div class="row g-4 justify-content-center">
                         @foreach($root->children->sortBy('urutan') as $index => $child)
                             <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ $loop->iteration * 100 }}">
-                                <div class="struktur-card" style="background: white; padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.05); height: 100%; transition: all 0.4s ease; border-top: 4px solid {{ $warna[$index % count($warna)] }};">
+                                <div class="struktur-card" style="background: rgba(255, 255, 255, 0.95); padding: 25px 20px; border-radius: 16px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.1); height: 100%; transition: all 0.4s ease; border-top: 4px solid {{ $warna[$index % count($warna)] }};">
                                     <div class="avatar" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 26px; color: white; background: linear-gradient(135deg, {{ $warna[$index % count($warna)] }}, {{ $warnaGradient[$index % count($warnaGradient)] }});">
                                         <i class="fas fa-user-graduate"></i>
                                     </div>
                                     <h6 style="font-weight: 700; color: #1a237e; margin-bottom: 2px; font-size: 0.95rem;">{{ $child->nama_jabatan ?? $child->nama }}</h6>
-                                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 2px;">{{ $child->nama_pejabat ?? $child->jabatan }}</p>
+                                    <p style="font-size: 0.85rem; color: #555; margin-bottom: 2px;">{{ $child->nama_pejabat ?? $child->jabatan }}</p>
                                     @if($child->guru)
                                         <span style="font-size: 0.7rem; color: #999;">
                                             <i class="fas fa-user me-1"></i>{{ $child->guru->user->name ?? $child->guru->nama_lengkap }}
@@ -1363,7 +1343,7 @@
 
             @if($galleries->count() > 8)
                 <div class="text-center mt-5" data-aos="fade-up">
-                    <a href="#" class="btn btn-outline-custom" style="border-color: #1a237e; color: #1a237e;">
+                    <a href="#" class="btn btn-outline-custom" style="border-color: #fff; color: #fff;">
                         Lihat Semua <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
