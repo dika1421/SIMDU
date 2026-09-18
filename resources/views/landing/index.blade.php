@@ -139,10 +139,15 @@
             color: white !important;
         }
         
-        /* ===== HERO SECTION ===== */
+        /* ===== HERO SECTION (DIUBAH BACKGROUNDNYA) ===== */
         .hero-section {
             padding: 140px 0 100px;
-            background: linear-gradient(160deg, #f0f2ff 0%, #e8ecf8 40%, #dce3f0 100%);
+            /* Background diganti dengan gambar gedung-sekolah.jpg */
+            background: linear-gradient(rgba(13, 20, 69, 0.85), rgba(26, 35, 126, 0.75)), url('{{ asset("images/gedung-sekolah.jpg") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Efek parallax ringan */
             position: relative;
             overflow: hidden;
             min-height: 100vh;
@@ -150,43 +155,9 @@
             align-items: center;
         }
         
+        /* Menghapus bg-shape karena sudah pakai gambar */
         .hero-section .bg-shape {
-            position: absolute;
-            border-radius: 50%;
-            opacity: 0.15;
-        }
-        
-        .hero-section .bg-shape-1 {
-            width: 600px;
-            height: 600px;
-            background: linear-gradient(135deg, #1a237e, #4caf50);
-            top: -200px;
-            right: -200px;
-            animation: floatShape 8s ease-in-out infinite;
-        }
-        
-        .hero-section .bg-shape-2 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, #4caf50, #1a237e);
-            bottom: -150px;
-            left: -150px;
-            animation: floatShape 10s ease-in-out infinite reverse;
-        }
-        
-        .hero-section .bg-shape-3 {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-            top: 30%;
-            left: 50%;
-            animation: floatShape 12s ease-in-out infinite;
-        }
-        
-        @keyframes floatShape {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -30px) scale(1.05); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
+            display: none;
         }
         
         .hero-section .floating-dots {
@@ -202,7 +173,7 @@
             position: absolute;
             width: 6px;
             height: 6px;
-            background: #1a237e;
+            background: #ffffff; /* Ubah warna titik menjadi putih agar terlihat di background gelap */
             border-radius: 50%;
             opacity: 0.2;
             animation: floatDot 15s linear infinite;
@@ -216,21 +187,21 @@
         
         .hero-badge {
             display: inline-block;
-            background: rgba(26, 35, 126, 0.1);
-            color: #1a237e;
+            background: rgba(255, 255, 255, 0.15); /* Ubah background badge */
+            color: #ffffff; /* Ubah warna teks badge */
             padding: 6px 20px;
             border-radius: 50px;
             font-size: 0.8rem;
             font-weight: 600;
             margin-bottom: 20px;
-            border: 1px solid rgba(26, 35, 126, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(10px);
         }
         
         .hero-title {
             font-size: 4rem;
             font-weight: 900;
-            color: #1a237e;
+            color: #ffffff; /* Ubah warna judul menjadi putih */
             line-height: 1.1;
             margin-bottom: 20px;
             letter-spacing: -1px;
@@ -244,7 +215,7 @@
         }
         
         .hero-title .highlight-blue {
-            background: linear-gradient(135deg, #1a237e, #3949ab);
+            background: linear-gradient(135deg, #64b5f6, #90caf9); /* Ubah warna highlight biru agar kontras */
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -252,7 +223,7 @@
         
         .hero-subtitle {
             font-size: 1.15rem;
-            color: #666;
+            color: rgba(255, 255, 255, 0.85); /* Ubah warna subtitle */
             line-height: 1.8;
             margin-bottom: 35px;
             max-width: 500px;
@@ -267,10 +238,11 @@
             position: relative;
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 40px 80px rgba(26, 35, 126, 0.15);
-            background: white;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3); /* Pertegas bayangan */
+            background: rgba(255, 255, 255, 0.1); /* Transparan */
             padding: 20px;
             animation: floatImage 5s ease-in-out infinite;
+            backdrop-filter: blur(10px);
         }
         
         @keyframes floatImage {
@@ -289,7 +261,7 @@
             background: white;
             padding: 12px 20px;
             border-radius: 15px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -331,7 +303,7 @@
         .hero-image .floating-badge .text small { display: block; font-weight: 400; font-size: 0.7rem; color: #999; }
         
         .btn-primary-custom {
-            background: linear-gradient(135deg, #1a237e, #283593);
+            background: linear-gradient(135deg, #4caf50, #43a047); /* Ubah warna tombol utama agar lebih menonjol */
             color: white;
             padding: 16px 45px;
             border-radius: 50px;
@@ -344,7 +316,7 @@
             gap: 10px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(26, 35, 126, 0.25);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
         }
         
         .btn-primary-custom::before {
@@ -364,17 +336,17 @@
         
         .btn-primary-custom:hover {
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 15px 45px rgba(26, 35, 126, 0.35);
+            box-shadow: 0 15px 45px rgba(76, 175, 80, 0.4);
             color: white;
         }
         
         .btn-outline-custom {
             background: transparent;
-            color: #1a237e;
+            color: #ffffff; /* Ubah warna teks tombol outline */
             padding: 16px 45px;
             border-radius: 50px;
             font-weight: 600;
-            border: 2px solid #1a237e;
+            border: 2px solid #ffffff; /* Ubah border menjadi putih */
             transition: all 0.4s ease;
             text-decoration: none;
             display: inline-flex;
@@ -383,10 +355,10 @@
         }
         
         .btn-outline-custom:hover {
-            background: #1a237e;
-            color: white;
+            background: #ffffff;
+            color: #1a237e;
             transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
         }
         
         /* ===== STATISTIK ===== */
@@ -1044,9 +1016,7 @@
 
 <!-- ===== HERO SECTION ===== -->
 <section class="hero-section" id="home">
-    <div class="bg-shape bg-shape-1"></div>
-    <div class="bg-shape bg-shape-2"></div>
-    <div class="bg-shape bg-shape-3"></div>
+    <!-- BG Shape dihapus karena sudah pakai gambar background -->
     <div class="floating-dots">
         @for($i = 0; $i < 20; $i++)
             <span style="left: {{ rand(5, 95) }}%; top: {{ rand(5, 95) }}%; animation-delay: {{ rand(0, 10) }}s;"></span>
