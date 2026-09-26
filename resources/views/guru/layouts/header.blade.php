@@ -168,7 +168,7 @@
         }
 
         /* ============================================
-           NAVBAR (TOPBAR) - BARU
+           NAVBAR (TOPBAR) - Disederhanakan
            ============================================ */
         .app-navbar {
             padding: 10px 25px;
@@ -183,7 +183,7 @@
             height: 70px;
         }
 
-        /* Navbar Left: Toggle & Breadcrumb */
+        /* Navbar Left: Toggle (Breadcrumb dihilangkan) */
         .navbar-left {
             display: flex;
             align-items: center;
@@ -206,63 +206,6 @@
         .sidebar-toggle-btn:hover {
             background-color: #f0f7ff;
             color: #3498db;
-        }
-
-        .breadcrumb-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .breadcrumb-container .page-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 0;
-            line-height: 1.2;
-        }
-        .breadcrumb-container .breadcrumb {
-            margin: 0;
-            padding: 0;
-            background: transparent;
-            font-size: 0.75rem;
-        }
-        .breadcrumb-container .breadcrumb-item a {
-            color: #7f8c8d;
-            text-decoration: none;
-        }
-        .breadcrumb-container .breadcrumb-item.active {
-            color: #3498db;
-            font-weight: 600;
-        }
-
-        /* Navbar Center: Search */
-        .navbar-search {
-            flex: 1;
-            max-width: 400px;
-            margin: 0 20px;
-            position: relative;
-        }
-        .navbar-search input {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            border-radius: 50px;
-            border: 1px solid #e2e8f0;
-            background-color: #f8fafc;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-        .navbar-search input:focus {
-            background-color: #fff;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            outline: none;
-        }
-        .navbar-search i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 0.9rem;
         }
 
         /* Navbar Right: Actions */
@@ -484,7 +427,6 @@
            ============================================ */
         @media (max-width: 992px) { 
             .app-sidebar { width: 240px; } 
-            .navbar-search { display: none; }
         }
 
         @media (max-width: 768px) {
@@ -504,7 +446,6 @@
             }
             .app-content { padding: 15px; }
             .stat-card h2 { font-size: 1.5rem; }
-            .breadcrumb-container { display: none; }
             .user-dropdown .user-info { display: none; }
         }
 
@@ -645,29 +586,14 @@
         <!-- MAIN CONTENT -->
         <main class="app-main">
             <!-- ============================================
-                 NAVBAR (TOPBAR) - BARU
+                 NAVBAR (TOPBAR) - Breadcrumb & Search Dihilangkan
                  ============================================ -->
             <nav class="app-navbar">
-                <!-- Left: Toggle & Breadcrumb -->
+                <!-- Left: Toggle Only -->
                 <div class="navbar-left">
                     <button class="sidebar-toggle-btn" id="sidebarToggle" type="button" title="Toggle Sidebar">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="breadcrumb-container">
-                        <h1 class="page-title">@yield('page-title', 'Dashboard')</h1>
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="{{ route('guru.dashboard') }}">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">@yield('breadcrumb', 'Dashboard')</li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-
-                <!-- Center: Search -->
-                <div class="navbar-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Cari siswa, kelas, atau menu..." id="globalSearch">
                 </div>
 
                 <!-- Right: Actions -->
