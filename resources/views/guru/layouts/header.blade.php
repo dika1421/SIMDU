@@ -40,7 +40,9 @@
 
         .app-wrapper { display: flex; height: 100vh; width: 100%; }
 
-        /* SIDEBAR */
+        /* ============================================
+           SIDEBAR
+           ============================================ */
         .app-sidebar {
             width: 280px;
             background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
@@ -51,7 +53,17 @@
             flex-shrink: 0;
             position: sticky;
             top: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
+        
+        /* Sidebar Collapse State */
+        .app-sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+            padding: 0;
+        }
+
         .sidebar-header {
             padding: 30px 20px 20px;
             text-align: center;
@@ -143,29 +155,152 @@
             100% { opacity: 0.6; transform: scale(0.95); }
         }
 
-        /* MAIN CONTENT */
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
         .app-main {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             background-color: #f8f9fa;
+            transition: all 0.3s ease;
         }
 
+        /* ============================================
+           NAVBAR (TOPBAR) - BARU
+           ============================================ */
         .app-navbar {
-            padding: 12px 25px;
-            background-color: white;
+            padding: 10px 25px;
+            background-color: #ffffff;
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            z-index: 999;
+            height: 70px;
         }
-        .app-navbar .brand-text { font-weight: 600; color: #2c3e50; }
-        .app-navbar .brand-text small { font-weight: 400; color: #7f8c8d; }
 
-        .navbar-actions { display: flex; align-items: center; gap: 15px; }
+        /* Navbar Left: Toggle & Breadcrumb */
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-toggle-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            color: #2c3e50;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-toggle-btn:hover {
+            background-color: #f0f7ff;
+            color: #3498db;
+        }
+
+        .breadcrumb-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .breadcrumb-container .page-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .breadcrumb-container .breadcrumb {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-size: 0.75rem;
+        }
+        .breadcrumb-container .breadcrumb-item a {
+            color: #7f8c8d;
+            text-decoration: none;
+        }
+        .breadcrumb-container .breadcrumb-item.active {
+            color: #3498db;
+            font-weight: 600;
+        }
+
+        /* Navbar Center: Search */
+        .navbar-search {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+            position: relative;
+        }
+        .navbar-search input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 50px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .navbar-search input:focus {
+            background-color: #fff;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            outline: none;
+        }
+        .navbar-search i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Navbar Right: Actions */
+        .navbar-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+
+        .nav-action-btn {
+            background: transparent;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .nav-action-btn:hover {
+            background-color: #f0f7ff;
+            color: #3498db;
+        }
+        .nav-action-btn .badge-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
 
         .user-dropdown {
             display: flex;
@@ -173,18 +308,40 @@
             gap: 10px;
             cursor: pointer;
             padding: 5px 12px;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: all 0.3s;
             border: 1px solid transparent;
         }
-        .user-dropdown:hover { background-color: #f8f9fa; border-color: #e9ecef; }
-        .user-dropdown .avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 600; font-size: 0.9rem;
+        .user-dropdown:hover { 
+            background-color: #f8f9fa; 
+            border-color: #e9ecef; 
         }
-        .user-dropdown .user-name { font-weight: 500; font-size: 0.9rem; color: #2c3e50; }
+        .user-dropdown .avatar {
+            width: 38px; 
+            height: 38px; 
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: white; 
+            font-weight: 600; 
+            font-size: 0.9rem;
+        }
+        .user-dropdown .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        .user-dropdown .user-name { 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            color: #2c3e50; 
+        }
+        .user-dropdown .user-role { 
+            font-size: 0.7rem; 
+            color: #94a3b8; 
+        }
 
         /* Dropdown Menu Styling */
         .dropdown-menu {
@@ -193,6 +350,7 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
             padding: 8px 0;
             min-width: 220px;
+            margin-top: 10px;
         }
         .dropdown-menu .dropdown-header {
             padding: 10px 16px 5px;
@@ -214,6 +372,9 @@
         .dropdown-menu .dropdown-item.text-danger:hover { background-color: #fde8e8; }
         .dropdown-menu .dropdown-divider { margin: 6px 0; }
 
+        /* ============================================
+           CONTENT AREA
+           ============================================ */
         .app-content {
             flex: 1;
             overflow-y: auto;
@@ -318,22 +479,40 @@
             border-radius: 0 0 16px 16px;
         }
 
-        /* Responsive */
-        @media (max-width: 992px) { .app-sidebar { width: 240px; } }
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 992px) { 
+            .app-sidebar { width: 240px; } 
+            .navbar-search { display: none; }
+        }
 
         @media (max-width: 768px) {
             .app-wrapper { flex-direction: column; }
-            .app-sidebar { width: 100%; height: auto; max-height: 300px; position: relative; }
+            .app-sidebar { 
+                width: 100%; 
+                height: auto; 
+                max-height: 300px; 
+                position: relative; 
+            }
             .sidebar-content { max-height: 200px; }
-            .app-navbar { flex-wrap: wrap; gap: 10px; }
+            .app-navbar { 
+                flex-wrap: wrap; 
+                gap: 10px; 
+                height: auto;
+                padding: 10px 15px;
+            }
             .app-content { padding: 15px; }
             .stat-card h2 { font-size: 1.5rem; }
+            .breadcrumb-container { display: none; }
+            .user-dropdown .user-info { display: none; }
         }
 
         @media (max-width: 576px) {
             .app-navbar { padding: 10px 15px; }
             .user-dropdown .user-name { display: none; }
             .app-content { padding: 10px; }
+            .navbar-actions { gap: 5px; }
         }
 
         @media print {
@@ -348,7 +527,7 @@
 <body>
     <div class="app-wrapper">
         <!-- SIDEBAR -->
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="appSidebar">
             <div class="sidebar-header">
                 <i class="fas fa-chalkboard-teacher"></i>
                 <h5>SIM Sekolah</h5>
@@ -465,23 +644,40 @@
 
         <!-- MAIN CONTENT -->
         <main class="app-main">
+            <!-- ============================================
+                 NAVBAR (TOPBAR) - BARU
+                 ============================================ -->
             <nav class="app-navbar">
-                <div>
-                    <span class="brand-text">
-                        <i class="fas fa-graduation-cap text-primary me-2"></i>
-                        SIM Sekolah
-                        <small>| Guru</small>
-                    </span>
+                <!-- Left: Toggle & Breadcrumb -->
+                <div class="navbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggle" type="button" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="breadcrumb-container">
+                        <h1 class="page-title">@yield('page-title', 'Dashboard')</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ route('guru.dashboard') }}">Home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">@yield('breadcrumb', 'Dashboard')</li>
+                            </ol>
+                        </nav>
+                    </div>
                 </div>
 
+                <!-- Center: Search -->
+                <div class="navbar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Cari siswa, kelas, atau menu..." id="globalSearch">
+                </div>
+
+                <!-- Right: Actions -->
                 <div class="navbar-actions">
+                    <!-- Notifikasi -->
                     <div class="dropdown">
-                        <button class="btn btn-light btn-sm position-relative" type="button" data-bs-toggle="dropdown">
+                        <button class="nav-action-btn" type="button" data-bs-toggle="dropdown" title="Notifikasi">
                             <i class="fas fa-bell"></i>
                             @if($unreadCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                    {{ $unreadCount }}
-                                </span>
+                                <span class="badge-dot"></span>
                             @endif
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px; max-height: 400px; overflow-y: auto;">
@@ -494,12 +690,34 @@
                         </ul>
                     </div>
 
+                    <!-- Pesan -->
+                    <div class="dropdown">
+                        <button class="nav-action-btn" type="button" data-bs-toggle="dropdown" title="Pesan">
+                            <i class="fas fa-envelope"></i>
+                            @if($unreadCount > 0)
+                                <span class="badge-dot" style="background-color: #3498db;"></span>
+                            @endif
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
+                            <li><h6 class="dropdown-header">Pesan Masuk</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="text-center text-muted py-3">
+                                <i class="fas fa-envelope-open fa-2x d-block mb-2"></i>
+                                Tidak ada pesan baru
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- User Profile -->
                     <div class="dropdown">
                         <div class="user-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="avatar">
                                 {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
                             </div>
-                            <span class="user-name">{{ Auth::user()->name ?? 'User' }}</span>
+                            <div class="user-info">
+                                <span class="user-name">{{ Auth::user()->name ?? 'User' }}</span>
+                                <span class="user-role">{{ Auth::user()->role ?? 'Guru' }}</span>
+                            </div>
                             <i class="fas fa-chevron-down text-muted" style="font-size: 0.7rem;"></i>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -541,6 +759,7 @@
                 </div>
             </nav>
 
+            <!-- CONTENT -->
             <div class="app-content">
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -580,7 +799,7 @@
     </div>
 
     <!-- ============================================================
-         MODAL CETAK RAPORT - DIPERBAIKI
+         MODAL CETAK RAPORT
          ============================================================ -->
     <div class="modal fade" id="pilihSiswaRaportModal" tabindex="-1" aria-labelledby="pilihSiswaRaportModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -600,29 +819,24 @@
                     @csrf
 
                     @php
-                        // ✅ Ambil data guru + kelas + siswa langsung di layout
                         $modalGuru = \App\Models\Guru::where('user_id', auth()->id())->first();
 
-                        // Kelas yang diajar guru
                         $modalKelas = collect();
                         if ($modalGuru) {
                             $modalKelas = \App\Models\Kelas::whereHas('jadwal', function($q) use ($modalGuru) {
                                 $q->where('guru_id', $modalGuru->id);
                             })->withCount('siswa')->orderBy('nama_kelas')->get();
 
-                            // Fallback: semua kelas
                             if ($modalKelas->isEmpty()) {
                                 $modalKelas = \App\Models\Kelas::withCount('siswa')->orderBy('nama_kelas')->get();
                             }
                         }
 
-                        // Ambil semua siswa aktif dengan relasi kelas & user
                         $modalSiswa = \App\Models\Siswa::with(['kelas', 'user'])
                             ->where('status', 'aktif')
                             ->orderBy('nama_lengkap')
                             ->get();
 
-                        // Tahun ajaran list
                         $modalTahun = [];
                         for ($i = date('Y') - 2; $i <= date('Y') + 1; $i++) {
                             $modalTahun[] = $i . '/' . ($i + 1);
@@ -757,7 +971,7 @@
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTables (kalau ada)
+            // Initialize DataTables
             if ($('.datatable').length && !$.fn.DataTable.isDataTable('.datatable')) {
                 $('.datatable').DataTable({
                     language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/id.json' },
@@ -772,7 +986,22 @@
             }
 
             // ============================================
-            // ✅ FIX: Ambil data siswa dari JSON script
+            // SIDEBAR TOGGLE
+            // ============================================
+            $('#sidebarToggle').on('click', function() {
+                $('#appSidebar').toggleClass('collapsed');
+                // Simpan state di localStorage
+                var isCollapsed = $('#appSidebar').hasClass('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            });
+
+            // Cek state sidebar saat halaman dimuat
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                $('#appSidebar').addClass('collapsed');
+            }
+
+            // ============================================
+            // AMBIL DATA SISWA DARI JSON
             // ============================================
             var siswaData = [];
             try {
@@ -787,7 +1016,7 @@
             console.log('Total siswa loaded:', siswaData.length);
 
             // ============================================
-            // ✅ FILTER SISWA BERDASARKAN KELAS
+            // FILTER SISWA BERDASARKAN KELAS
             // ============================================
             var $kelasSelect = $('#modalKelasSelect');
             var $siswaSelect = $('#modalSiswaSelect');
@@ -795,7 +1024,6 @@
             $kelasSelect.on('change', function() {
                 var kelasId = $(this).val();
 
-                // Reset siswa dropdown
                 $siswaSelect.html('<option value="">— Pilih Siswa —</option>');
 
                 if (!kelasId) {
@@ -804,7 +1032,6 @@
                     return;
                 }
 
-                // Filter siswa berdasarkan kelas_id (perbandingan string vs string)
                 var filtered = siswaData.filter(function(s) {
                     return String(s.kelas_id) === String(kelasId);
                 });
@@ -817,7 +1044,6 @@
                     return;
                 }
 
-                // Populate siswa
                 filtered.forEach(function(s) {
                     var label = s.nis + ' — ' + s.nama + ' (' + s.kelas_nama + ')';
                     $siswaSelect.append(
@@ -837,7 +1063,6 @@
             $('#menuCetakRaport').on('click', function(e) {
                 e.preventDefault();
 
-                // Reset form setiap kali modal dibuka
                 $kelasSelect.val('');
                 $siswaSelect.html('<option value="">— Pilih Kelas Terlebih Dahulu —</option>').prop('disabled', true);
 
@@ -874,13 +1099,11 @@
                     return false;
                 }
 
-                // Build URL dengan siswa_id
                 var baseUrl = '{{ route("guru.nilai.raport.cetak", ["siswaId" => "__siswa_id__"]) }}';
                 var finalUrl = baseUrl.replace('__siswa_id__', siswaId);
                 finalUrl += '?tahun_ajaran=' + encodeURIComponent($('select[name="tahun_ajaran"]').val());
                 finalUrl += '&semester=' + encodeURIComponent($('select[name="semester"]').val());
 
-                // Update action form
                 $(this).attr('action', finalUrl);
                 return true;
             });
