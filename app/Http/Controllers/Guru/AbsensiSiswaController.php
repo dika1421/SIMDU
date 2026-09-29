@@ -17,7 +17,7 @@ use Carbon\Carbon;
 class AbsensiSiswaController extends Controller
 {
     /**
-     * ✅ Helper: Ambil kolom tabel di PostgreSQL (dengan filter schema 'public')
+     * ✅ Helper: Ambil kolom tabel di PostgreSQL
      */
     private function getTableColumns($tableName)
     {
@@ -38,7 +38,7 @@ class AbsensiSiswaController extends Controller
 
     /**
      * ✅ Helper: Ambil mapel by kelas (untuk guru tertentu)
-     * Auto-detect nama kolom di tabel jadwal & mata_pelajarans.
+     * Diprioritaskan kolom 'mapel_id' karena di DB ini yang berisi data.
      */
     private function getMapelByKelas($guruId, $kelasId)
     {
@@ -47,7 +47,6 @@ class AbsensiSiswaController extends Controller
             Log::info("Guru ID: {$guruId}, Kelas ID: {$kelasId}");
 
             if (!$guruId || !$kelasId) {
-                Log::warning("Guru ID atau Kelas ID kosong");
                 return collect();
             }
 
@@ -56,7 +55,6 @@ class AbsensiSiswaController extends Controller
             Log::info("Kolom jadwal: " . json_encode($colJadwal));
 
             if (empty($colJadwal)) {
-                Log::error("Tabel 'jadwal' tidak ditemukan di schema public");
                 return collect();
             }
 
@@ -65,7 +63,6 @@ class AbsensiSiswaController extends Controller
                 ->where('guru_id', $guruId)
                 ->where('kelas_id', $kelasId);
 
-            // Cek soft delete hanya jika kolom ada
             if (in_array('deleted_at', $colJadwal)) {
                 $query->whereNull('deleted_at');
             }
@@ -77,22 +74,41 @@ class AbsensiSiswaController extends Controller
                 return collect();
             }
 
-            // 3. Deteksi kolom ID mapel di tabel jadwal
+            // 3. ✅ PRIORITAS: mapel_id dulu (karena di DB ini yang berisi data),
+            //    baru fallback ke mata_pelajaran_id, dst.
             $kolomIdMapel = null;
-            foreach (['mata_pelajaran_id', 'mapel_id', 'id_mapel', 'pelajaran_id'] as $col) {
+            $prioritasKolom = ['mapel_id', 'mata_pelajaran_id', 'id_mapel', 'pelajaran_id'];
+
+            foreach ($prioritasKolom as $col) {
                 if (in_array($col, $colJadwal)) {
-                    $kolomIdMapel = $col;
-                    break;
+                    // Cek apakah kolom ini benar-benar ada isinya (tidak semua NULL)
+                    $jumlahAdaIsi = $jadwal->filter(function ($j) use ($col) {
+                        return !empty($j->$col);
+                    })->count();
+
+                    Log::info("Kolom {$col}: {$jumlahAdaIsi} baris ada isinya");
+
+                    if ($jumlahAdaIsi > 0) {
+                        $kolomIdMapel = $col;
+                        Log::info("✅ Kolom ID Mapel dipilih: {$col}");
+                        break;
+                    }
                 }
             }
-            Log::info("Kolom ID Mapel: " . ($kolomIdMapel ?? 'TIDAK DITEMUKAN'));
 
-            // 4. Deteksi kolom nama mapel di tabel jadwal (fallback)
+            // 4. Deteksi kolom nama mapel di jadwal (fallback string)
             $kolomNamaMapelDiJadwal = null;
             foreach (['mata_pelajaran', 'nama_mapel', 'mapel'] as $col) {
                 if (in_array($col, $colJadwal)) {
-                    $kolomNamaMapelDiJadwal = $col;
-                    break;
+                    $jumlahAdaIsi = $jadwal->filter(function ($j) use ($col) {
+                        return !empty($j->$col);
+                    })->count();
+
+                    if ($jumlahAdaIsi > 0) {
+                        $kolomNamaMapelDiJadwal = $col;
+                        Log::info("Kolom Nama Mapel di Jadwal: {$col}");
+                        break;
+                    }
                 }
             }
 
@@ -120,7 +136,6 @@ class AbsensiSiswaController extends Controller
             Log::info("Kolom mata_pelajarans: " . json_encode($colMapel));
 
             if (empty($colMapel)) {
-                Log::error("Tabel 'mata_pelajarans' tidak ditemukan");
                 return collect();
             }
 
@@ -137,7 +152,6 @@ class AbsensiSiswaController extends Controller
                 Log::error("Kolom nama mapel tidak ditemukan di mata_pelajarans");
                 return collect();
             }
-            Log::info("Kolom Nama Mapel: {$kolomNamaDiMapel}");
 
             // 8. Query mapel berdasarkan ID
             $mapel = collect();
@@ -147,9 +161,11 @@ class AbsensiSiswaController extends Controller
                     ->whereIn('id', $mapelIds)
                     ->orderBy($kolomNamaDiMapel, 'asc')
                     ->get();
+
+                Log::info("Hasil query by ID: " . $mapel->count());
             }
 
-            // 9. Fallback: query berdasarkan nama
+            // 9. Fallback: query berdasarkan nama (jika ID tidak ada)
             if ($mapel->isEmpty() && !empty($mapelNames)) {
                 Log::info("Fallback query mapel by name");
                 $mapel = DB::table('mata_pelajarans')
@@ -157,6 +173,8 @@ class AbsensiSiswaController extends Controller
                     ->whereIn($kolomNamaDiMapel, $mapelNames)
                     ->orderBy($kolomNamaDiMapel, 'asc')
                     ->get();
+
+                Log::info("Hasil query by name: " . $mapel->count());
             }
 
             Log::info("Total mapel final: " . $mapel->count());
@@ -529,7 +547,6 @@ class AbsensiSiswaController extends Controller
             Log::info("=== AJAX getMataPelajaranByKelas ===");
             Log::info("Kelas ID: {$kelasId}, Guru ID: {$guru->id}");
 
-            // ✅ Ambil mapel pakai helper
             $mataPelajaran = $this->getMapelByKelas($guru->id, $kelasId);
 
             Log::info("Hasil final: " . $mataPelajaran->count() . " mapel");
