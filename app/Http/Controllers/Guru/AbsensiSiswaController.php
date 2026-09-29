@@ -19,7 +19,7 @@ class AbsensiSiswaController extends Controller
 {
     /**
      * ✅ Helper: Ambil mapel by kelas (untuk guru tertentu)
-     * Prioritas: mapel_id → mata_pelajaran_id → mata_pelajaran (string)
+     * Menggunakan relasi Eloquent yang lebih aman dan bersih.
      */
     private function getMapelByKelas($guruId, $kelasId)
     {
@@ -27,72 +27,58 @@ class AbsensiSiswaController extends Controller
             Log::info("=== getMapelByKelas ===");
             Log::info("Guru ID: {$guruId}, Kelas ID: {$kelasId}");
 
-            // Ambil semua mapel dari jadwal guru di kelas ini
-            $jadwalQuery = DB::table('jadwal')
-                ->where('guru_id', $guruId)
+            // 1. Ambil data jadwal guru di kelas ini
+            $jadwal = Jadwal::where('guru_id', $guruId)
                 ->where('kelas_id', $kelasId)
                 ->whereNull('deleted_at')
                 ->get();
 
-            Log::info("Jadwal ditemukan: " . $jadwalQuery->count());
-
-            if ($jadwalQuery->isEmpty()) {
+            if ($jadwal->isEmpty()) {
                 Log::warning("Tidak ada jadwal untuk guru {$guruId} di kelas {$kelasId}");
                 return collect();
             }
 
-            // Kumpulkan ID mapel dari berbagai kolom
-            $mapelIds = collect();
-            $mapelNames = collect();
+            // 2. Kumpulkan ID Mapel dari jadwal
+            // Asumsi: Tabel jadwal memiliki kolom 'mata_pelajaran_id' atau 'mapel_id'
+            $mapelIds = $jadwal->pluck('mata_pelajaran_id')
+                ->merge($jadwal->pluck('mapel_id'))
+                ->filter() // Buang yang null/kosong
+                ->unique()
+                ->values()
+                ->toArray();
 
-            foreach ($jadwalQuery as $j) {
-                // Prioritas 1: mapel_id (bigint)
-                if (!empty($j->mapel_id) && is_numeric($j->mapel_id)) {
-                    $mapelIds->push((int) $j->mapel_id);
+            Log::info("Mapel IDs ditemukan: " . json_encode($mapelIds));
+
+            if (empty($mapelIds)) {
+                // Fallback: Coba cari berdasarkan nama mapel (jika ada kolom 'mata_pelajaran' string)
+                $mapelNames = $jadwal->pluck('mata_pelajaran')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray();
+
+                if (!empty($mapelNames)) {
+                    Log::info("Fallback ke nama mapel: " . json_encode($mapelNames));
+                    $mapel = Mapel::whereIn('nama_mapel', $mapelNames)
+                        ->orderBy('nama_mapel', 'asc')
+                        ->get();
+                } else {
+                    return collect();
                 }
-
-                // Prioritas 2: mata_pelajaran_id (bigint)
-                if (!empty($j->mata_pelajaran_id) && is_numeric($j->mata_pelajaran_id)) {
-                    $mapelIds->push((int) $j->mata_pelajaran_id);
-                }
-
-                // Prioritas 3: mata_pelajaran (string nama)
-                if (!empty($j->mata_pelajaran) && !is_numeric($j->mata_pelajaran)) {
-                    $mapelNames->push(trim($j->mata_pelajaran));
-                }
-            }
-
-            $mapelIds = $mapelIds->unique()->filter()->values();
-            $mapelNames = $mapelNames->unique()->filter()->values();
-
-            Log::info("Mapel IDs terkumpul: " . json_encode($mapelIds));
-            Log::info("Mapel Names terkumpul: " . json_encode($mapelNames));
-
-            // Ambil mapel dari database berdasarkan ID
-            $mapelDariId = collect();
-            if ($mapelIds->isNotEmpty()) {
-                $mapelDariId = DB::table('mata_pelajarans')
-                    ->select('id', 'nama_mapel as nama')
-                    ->whereIn('id', $mapelIds)
+            } else {
+                // 3. Ambil data Mapel dari database berdasarkan ID yang ditemukan
+                $mapel = Mapel::whereIn('id', $mapelIds)
                     ->orderBy('nama_mapel', 'asc')
                     ->get();
             }
 
-            // Ambil mapel dari database berdasarkan nama
-            $mapelDariNama = collect();
-            if ($mapelNames->isNotEmpty()) {
-                $mapelDariNama = DB::table('mata_pelajarans')
-                    ->select('id', 'nama_mapel as nama')
-                    ->whereIn('nama_mapel', $mapelNames)
-                    ->orderBy('nama_mapel', 'asc')
-                    ->get();
-            }
-
-            // Gabungkan, hilangkan duplikat
-            $result = $mapelDariId->merge($mapelDariNama)
-                ->unique('id')
-                ->sortBy('nama')
-                ->values();
+            // 4. Format output agar sesuai dengan yang diharapkan View (id, nama)
+            $result = $mapel->map(function ($m) {
+                return (object) [
+                    'id' => $m->id,
+                    'nama' => $m->nama_mapel ?? $m->nama ?? '-'
+                ];
+            });
 
             Log::info("Total mapel untuk dropdown: " . $result->count());
 
@@ -139,7 +125,7 @@ class AbsensiSiswaController extends Controller
             $mataPelajaranId = $request->get('mata_pelajaran_id');
             $search = $request->get('search');
 
-            // ✅ Ambil mapel by kelas
+            // ✅ Ambil mapel by kelas menggunakan helper yang sudah diperbaiki
             $mataPelajaranList = collect();
             if ($kelasId) {
                 $mataPelajaranList = $this->getMapelByKelas($guru->id, $kelasId);
@@ -161,6 +147,7 @@ class AbsensiSiswaController extends Controller
                 });
             }
 
+            // Gunakan 'nama' atau 'nama_lengkap' sesuai struktur tabel siswa Anda
             $siswa = $query->orderBy('nama', 'asc')->get();
 
             foreach ($siswa as $s) {
@@ -437,7 +424,6 @@ class AbsensiSiswaController extends Controller
 
     /**
      * ✅ GET MATA PELAJARAN BY KELAS (AJAX) — FINAL
-     * Cek isi jadwal + mapel dari berbagai kolom
      */
     public function getMataPelajaranByKelas(Request $request)
     {
