@@ -551,12 +551,21 @@
 
                     <li class="menu-section">KALENDER</li>
                     <li>
+                        {{-- ✅ DIPERBAIKI: gunakan route('guru.kalender.index') --}}
                         @php
-                            $kalenderRoute = '';
-                            try { $kalenderRoute = route('guru.kalender'); } catch(\Exception $e) { $kalenderRoute = '#'; }
+                            $kalenderRoute = '#';
+                            try {
+                                $kalenderRoute = route('guru.kalender.index');
+                            } catch(\Exception $e) {
+                                try {
+                                    $kalenderRoute = route('guru.kalender');
+                                } catch(\Exception $e2) {
+                                    $kalenderRoute = '#';
+                                }
+                            }
                         @endphp
                         <a href="{{ $kalenderRoute }}"
-                           class="menu-item {{ request()->routeIs('guru.kalender') || request()->routeIs('guru.kalender.*') ? 'active' : '' }}">
+                           class="menu-item {{ request()->routeIs('guru.kalender.*') || request()->routeIs('guru.kalender') ? 'active' : '' }}">
                             <i class="fas fa-calendar-alt"></i> Kalender Akademik
                         </a>
                     </li>
@@ -916,7 +925,6 @@
             // ============================================
             $('#sidebarToggle').on('click', function() {
                 $('#appSidebar').toggleClass('collapsed');
-                // Simpan state di localStorage
                 var isCollapsed = $('#appSidebar').hasClass('collapsed');
                 localStorage.setItem('sidebarCollapsed', isCollapsed);
             });
