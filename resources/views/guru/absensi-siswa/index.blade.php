@@ -692,7 +692,7 @@
         var mapelSelect = document.getElementById('mapelSelect');
 
         // ============================================
-        // AUTO-LOAD MAPEL kalau kelas sudah dipilih
+        // AUTO-LOAD MAPEL kalau kelas sudah dipilih (PENTING!)
         // ============================================
         if (SELECTED_KELAS_ID) {
             loadMapel(SELECTED_KELAS_ID, SELECTED_MAPEL_ID);
@@ -776,6 +776,10 @@
                     opts += '<option value="' + m.id + '"' + sel + '>' + m.nama + '</option>';
                 });
                 mapelSelect.innerHTML = opts;
+
+                // Jika ada mapel yang terpilih dari URL, dan itu berbeda dengan yang di-load,
+                // kita tidak perlu submit ulang karena halaman sudah me-load data yang benar.
+                // Tapi jika ini adalah pertama kali load (bukan dari submit), kita bisa biarkan.
             } else {
                 mapelSelect.innerHTML = '<option value="">— Tidak ada mata pelajaran —</option>';
             }
