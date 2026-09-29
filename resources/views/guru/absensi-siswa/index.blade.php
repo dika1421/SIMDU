@@ -692,11 +692,31 @@
         var mapelSelect = document.getElementById('mapelSelect');
 
         // ============================================
-        // AUTO-LOAD MAPEL kalau kelas sudah dipilih (PENTING!)
+        // AUTO-LOAD MAPEL kalau kelas sudah dipilih
         // ============================================
         if (SELECTED_KELAS_ID) {
             loadMapel(SELECTED_KELAS_ID, SELECTED_MAPEL_ID);
         }
+
+        // ============================================
+        // ✅ AUTO-ISI JAM MASUK dengan waktu saat ini
+        // ============================================
+        var now = new Date();
+        var currentHour = String(now.getHours()).padStart(2, '0');
+        var currentMinute = String(now.getMinutes()).padStart(2, '0');
+        var currentTime = currentHour + ':' + currentMinute;
+
+        document.querySelectorAll('.status-select').forEach(function(sel) {
+            var siswaId = sel.getAttribute('data-id');
+            var waktuMasuk = document.querySelector('.waktu-masuk-' + siswaId);
+
+            if (!waktuMasuk) return;
+
+            // Kalau input jam masih kosong, isi dengan waktu saat ini
+            if (!waktuMasuk.value) {
+                waktuMasuk.value = currentTime;
+            }
+        });
 
         // ============================================
         // EVENT: kelas berubah → load mapel
@@ -736,14 +756,19 @@
                 if (this.value === 'hadir' || this.value === 'terlambat') {
                     waktuMasuk.disabled = false;
                     if (!waktuMasuk.value) {
-                        var now = new Date();
-                        var h = String(now.getHours()).padStart(2, '0');
-                        var m = String(now.getMinutes()).padStart(2, '0');
+                        // Isi dengan waktu saat ini kalau masih kosong
+                        var n = new Date();
+                        var h = String(n.getHours()).padStart(2, '0');
+                        var m = String(n.getMinutes()).padStart(2, '0');
                         waktuMasuk.value = h + ':' + m;
                     }
-                } else {
+                } else if (this.value === 'sakit' || this.value === 'izin' || this.value === 'alfa') {
+                    // Untuk sakit/izin/alfa, jam masuk tidak perlu diisi
                     waktuMasuk.disabled = true;
                     waktuMasuk.value = '';
+                } else {
+                    // Status kosong — biarkan input tetap bisa diakses tapi tetap ada nilainya
+                    waktuMasuk.disabled = false;
                 }
             });
         });
@@ -776,10 +801,6 @@
                     opts += '<option value="' + m.id + '"' + sel + '>' + m.nama + '</option>';
                 });
                 mapelSelect.innerHTML = opts;
-
-                // Jika ada mapel yang terpilih dari URL, dan itu berbeda dengan yang di-load,
-                // kita tidak perlu submit ulang karena halaman sudah me-load data yang benar.
-                // Tapi jika ini adalah pertama kali load (bukan dari submit), kita bisa biarkan.
             } else {
                 mapelSelect.innerHTML = '<option value="">— Tidak ada mata pelajaran —</option>';
             }
