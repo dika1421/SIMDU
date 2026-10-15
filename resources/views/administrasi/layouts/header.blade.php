@@ -703,7 +703,6 @@
                         <a href="{{ route('administrasi.galeri.index') }}"
                            class="menu-item {{ request()->routeIs('administrasi.galeri.*') ? 'active' : '' }}">
                             <i class="fas fa-images"></i> Galeri Kegiatan
-                            <span class="badge" style="background-color: #e74c3c; color: white; float: right; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; animation: pulse 1.5s infinite;">NEW</span>
                         </a>
                     </li>
 
