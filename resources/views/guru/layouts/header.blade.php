@@ -517,7 +517,6 @@
                         <a href="{{ route('guru.absensi.scan') }}"
                            class="menu-item {{ request()->routeIs('guru.absensi.scan') ? 'active' : '' }}">
                             <i class="fas fa-rss"></i> Scan RFID
-                            <span class="menu-new-badge">NEW</span>
                         </a>
                     </li>
 
