@@ -588,7 +588,6 @@
                     <li class="dropdown-submenu">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#absensiSholatMenu">
                             <i class="fas fa-mosque"></i> Absensi Sholat
-                            <span class="menu-new-badge">NEW</span>
                             <i class="fas fa-chevron-down chevron float-end mt-1"></i>
                         </a>
                         <div class="collapse {{ request()->routeIs('administrasi.absensi-sholat.*') ? 'show' : '' }}" id="absensiSholatMenu">
