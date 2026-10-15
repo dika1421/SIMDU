@@ -502,7 +502,6 @@
                     <li>
                         <a href="#" class="menu-item" id="menuCetakRaport">
                             <i class="fas fa-print"></i> Cetak Raport
-                            <span class="menu-new-badge">Baru</span>
                         </a>
                     </li>
 
